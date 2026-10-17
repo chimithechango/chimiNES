@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>chimiNES — NES emulator</title>
+<link id="siteFavicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23071120'/%3E%3Cpath d='M12 23 20 8 28 18 36 18 44 8 52 23 49 49 15 49Z' fill='%2300b7ff' stroke='%23eaf7ff' stroke-width='3'/%3E%3Crect x='20' y='27' width='7' height='7' fill='%23071120'/%3E%3Crect x='37' y='27' width='7' height='7' fill='%23071120'/%3E%3Cpath d='M24 40h16' stroke='%23071120' stroke-width='4'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#061020">
+<style>
+:root{--bg:#030916;--panel:rgba(5,18,36,.88);--line:#075ba9;--blue:#078cff;--cyan:#00c8ff;--text:#edf6ff;--muted:#83b5ef;--glow:0 0 24px #008cff20;--header-bg:#030b18d9;--panel-grad:linear-gradient(145deg,#06172aee,#020a16f2);--button-bg:#0757c9;--button-line:#0a8dff;--accent-soft:#0a2b4e;--screen-frame:#132b43}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#0b2b55 0,transparent 55%),var(--bg);color:var(--text);font:15px/1.45 system-ui,Segoe UI,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;gap:16px;padding:17px 24px;border-bottom:1px solid var(--line);box-shadow:0 5px 30px #007dff18;background:var(--header-bg);position:sticky;top:0;z-index:3;backdrop-filter:blur(16px)}
+.logo{width:54px;height:54px;border:2px solid var(--cyan);border-radius:13px;display:grid;place-items:center;font-size:32px;background:#07172b;box-shadow:0 0 20px #00baff22}
+.brand{font-weight:950;font-size:clamp(25px,4vw,39px);letter-spacing:-1.5px}.brand span{color:var(--cyan)}.tagline{border-left:1px solid #31516e;padding-left:17px;color:var(--muted);margin-left:4px}.spacer{flex:1}.version{font-size:12px;color:#6fa5df}
+main{display:grid;grid-template-columns:230px minmax(0,1fr) 275px;gap:16px;padding:18px;max-width:1600px;margin:auto}
+.panel{border:1px solid var(--line);border-radius:15px;background:var(--panel-grad);box-shadow:var(--glow);min-width:0}.panel-head{padding:15px 16px 10px;font-size:17px;font-weight:750;display:flex;align-items:center;gap:10px}.panel-head .ico{font-size:21px;color:var(--cyan)}
+.library{padding:0 7px 10px}.game{display:flex;align-items:center;gap:11px;width:100%;border:0;background:transparent;color:var(--muted);padding:10px;border-radius:8px;text-align:left;font:inherit;cursor:pointer}.game:hover{background:var(--accent-soft);color:white}.game.active{background:linear-gradient(90deg,#075edc,#08347b);color:white;box-shadow:inset 0 0 0 1px #178bff}.game .emoji{font-size:23px;width:28px;text-align:center}.sep{height:1px;background:#1c527c;margin:12px 10px}.navbtn{display:flex;gap:10px;align-items:center;padding:10px 12px;color:#8ec5ff;cursor:pointer;border:0;background:transparent;font:inherit;width:100%;text-align:left}.navbtn:hover{color:white;background:#0b2b4b;border-radius:8px}
+.center{padding:15px}.screen-shell{background:#000;border:1px solid #132b43;border-radius:10px;padding:9px;position:relative;overflow:hidden}.screen-shell:after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 25px #0008}
+#screen{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:256/240;image-rendering:pixelated;image-rendering:crisp-edges;background:#000;object-fit:contain}
+.screen-empty{position:absolute;inset:0;display:grid;place-content:center;text-align:center;color:#7da9d4;gap:8px;padding:20px}.screen-empty strong{font-size:20px;color:#eaf6ff}.screen-empty .big{font-size:45px}.screen-empty small{max-width:330px}
+.game-info{display:flex;align-items:center;gap:12px;padding:12px 5px 0}.cover{height:58px;width:58px;border:1px solid #145b96;border-radius:9px;background:linear-gradient(135deg,#0a3561,#06101f);display:grid;place-items:center;font-size:28px}.game-title{font-weight:750}.sub{font-size:12px;color:var(--muted)}.status{margin-left:auto;font-size:12px;color:#8fbfff;display:flex;align-items:center;gap:8px}.dot{width:9px;height:9px;background:#66778a;border-radius:50%;display:inline-block}.dot.on{background:#16e59a;box-shadow:0 0 10px #16e59a}
+.right{display:flex;flex-direction:column;gap:15px}.section{padding:0 15px 15px}.padart{height:120px;border:1px solid #365575;border-radius:12px;background:linear-gradient(145deg,#101c2b,#040a12);display:flex;align-items:center;justify-content:space-evenly;margin:4px 0 13px;box-shadow:inset 0 0 20px #0009}
+.dpad{width:86px;height:86px;position:relative}.dpad i{position:absolute;background:#1b2d41;border:2px solid #70869d;border-radius:5px;box-shadow:inset 0 0 5px #000}.dpad .v{width:27px;height:86px;left:30px}.dpad .h{height:27px;width:86px;top:30px}.buttons{display:flex;gap:10px;transform:rotate(-18deg)}.ab{width:35px;height:35px;border-radius:50%;background:#e6293d;border:3px solid #8c1729;box-shadow:0 3px 0 #64101c}.mapping{display:grid;grid-template-columns:70px 1fr;gap:8px 10px;color:var(--muted);align-items:center}.key{display:inline-block;text-align:center;border:1px solid #315b85;border-radius:6px;padding:3px 7px;min-width:40px;color:#d6eaff;background:#09182a;box-shadow:0 2px 0 #102f50;font-weight:700}
+.setting{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;margin:9px 0;color:#a8d2ff}.setting select{width:100%;padding:9px;border:1px solid #234c76;background:#061326;color:#eaf5ff;border-radius:8px;font:inherit;color-scheme:dark}.setting select option{background:#061326;color:#eaf5ff}.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;color:#a8d2ff}.toggle input{accent-color:var(--blue);width:18px;height:18px}
+.loadbox{padding:17px;border:1px solid #0879ff;border-radius:13px;background:linear-gradient(120deg,#0c2d61,#091b3b);text-align:center;cursor:pointer;color:#b7d7ff}.loadbox:hover,.loadbox.drag{background:#123e7c;box-shadow:0 0 24px #087bff32}.loadbox b{display:block;color:#fff;font-size:15px}.loadbox small{display:block;margin-top:3px}.loadicon{font-size:26px;color:#5aa6ff}.primary{border:1px solid var(--button-line);background:var(--button-bg);color:white;padding:9px 13px;border-radius:8px;cursor:pointer;font:inherit;font-weight:700}.primary:hover{filter:brightness(1.15)}.secondary{border:1px solid #294d70;background:#07182b;color:#a9d3ff;padding:8px 12px;border-radius:8px;cursor:pointer;font:inherit}.actionrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.footer{padding:0 20px 22px;text-align:center;color:#4f7eac;font-size:12px}.notice{font-size:12px;color:#8db5dd;margin-top:10px}.hidden{display:none!important}input[type=file]{display:none}
+.theme-control{display:flex;align-items:center;gap:8px;margin-left:8px}
+.theme-control label{font-size:12px;color:var(--muted);white-space:nowrap}
+.theme-control select{max-width:145px;padding:7px 9px;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:8px;font:inherit;color-scheme:dark}
+body[data-theme="purple"]{--bg:#10091b;--panel:rgba(30,15,48,.94);--line:#7543a6;--blue:#9a5cff;--cyan:#d09aff;--text:#f7efff;--muted:#c2a4e8;--glow:0 0 24px #9a5cff20;--header-bg:#160c25ed;--panel-grad:linear-gradient(145deg,#29143fee,#10091bf2);--button-bg:#7138b8;--button-line:#b07aff;--accent-soft:#392052;--screen-frame:#49305f}
+body[data-theme="forest"]{--bg:#07130d;--panel:rgba(9,32,20,.94);--line:#28764b;--blue:#20a85b;--cyan:#6bf0a2;--text:#edfff3;--muted:#9bd6b1;--glow:0 0 24px #20a85b20;--header-bg:#08180fed;--panel-grad:linear-gradient(145deg,#0d2a1bee,#06150cf2);--button-bg:#14783d;--button-line:#3bd77a;--accent-soft:#123c26;--screen-frame:#254c35}
+body[data-theme="sunset"]{--bg:#1b0c0b;--panel:rgba(48,21,18,.94);--line:#a64c32;--blue:#f06c3d;--cyan:#ffc06b;--text:#fff4e9;--muted:#e8b49a;--glow:0 0 24px #f06c3d20;--header-bg:#230e0bed;--panel-grad:linear-gradient(145deg,#3c1b16ee,#1b0c0bf2);--button-bg:#b84327;--button-line:#ff8a51;--accent-soft:#54261c;--screen-frame:#684033}
+body[data-theme="light"]{--bg:#eaf1f8;--panel:rgba(255,255,255,.97);--line:#9db6ce;--blue:#2466c5;--cyan:#0758a8;--text:#172b40;--muted:#4c6882;--glow:0 2px 16px #24466b18;--header-bg:#ffffffed;--panel-grad:linear-gradient(145deg,#ffffff,#edf4fb);--button-bg:#2466c5;--button-line:#1c5cae;--accent-soft:#d9e9f9;--screen-frame:#9db6ce}
+body[data-theme="light"] .logo,body[data-theme="light"] .cover{background:linear-gradient(135deg,#d8e9f8,#f5f9fd)}
+body[data-theme="light"] .game.active{background:linear-gradient(90deg,#2466c5,#477fca)}
+body[data-theme="light"] .secondary{background:#f5f9fd;color:#23496d;border-color:#a6bfd6}
+body[data-theme="light"] .key{background:#f5f9fd;color:#23496d;border-color:#a6bfd6;box-shadow:0 2px 0 #d3e0ec}
+body[data-theme="light"] .padart{background:linear-gradient(145deg,#e0eaf4,#f5f9fd)}
+body[data-theme="light"] .dpad i{background:#c0cedd;border-color:#6e8499}
+body[data-theme="light"] .setting select{background:#fff;color:#172b40}
+body[data-theme="light"] .setting select option{background:#fff;color:#172b40}
+body[data-theme="light"] .loadbox{background:linear-gradient(120deg,#dbeafa,#edf5ff);color:#23496d;border-color:#8eb3db}
+body[data-theme="light"] .loadbox b{color:#172b40}
+body[data-theme="light"] .screen-shell{background:#000;border-color:var(--screen-frame)}
+/* Display effects are layered above the canvas and never intercept controller input. */
+#dropZone.crt-mode:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,.28) 3px,rgba(0,0,0,.28) 4px);box-shadow:inset 0 0 34px 8px rgba(0,0,0,.55),inset 0 0 8px rgba(100,190,255,.12)}
+#dropZone.crt-mode #screen{filter:contrast(1.12) saturate(1.12);border-radius:3% / 2%;transform:scale(.985)}
+#aboutDialog{width:min(520px,calc(100% - 28px));padding:0;border:1px solid var(--line);border-radius:16px;background:var(--panel-grad);color:var(--text);box-shadow:0 20px 80px #0009}
+#aboutDialog::backdrop{background:rgba(0,5,15,.72);backdrop-filter:blur(5px)}
+.about-content{position:relative;padding:25px}.about-content h2{margin:6px 0 12px;font-size:26px}.about-content p{color:var(--muted);line-height:1.6}.about-mark{font-size:42px}.about-close{position:absolute;right:16px;top:16px}.about-link{display:inline-block;text-decoration:none}
+#screen{transition:filter .12s ease,transform .12s ease}
+.about-box{margin:0 10px 12px;padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--accent-soft);color:var(--text);font-size:13px;line-height:1.5}
+.about-box p{margin:8px 0;color:var(--muted)}.about-box a{color:var(--cyan)}
+.about-box[hidden]{display:none}
+
+@media(max-width:1050px){main{grid-template-columns:200px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.loadbox{grid-column:1/-1}}
+@media(max-width:700px){header{padding:12px}.tagline,.version{display:none}main{display:flex;flex-direction:column;padding:10px}.library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.library .panel-head,.library .sep,.library .navbtn{grid-column:1/-1}.right{display:flex}.game{padding:8px}.center{padding:9px}.status{font-size:0}.status .dot{font-size:12px}}
+
+
+/* ================================================================
+   chimiNES UI polish — theme-aware surfaces, controls and dropdowns
+   Theme changes are driven by body[data-theme] in the existing JS.
+   ================================================================ */
+:root {
+  --dropdown-bg: #07182b;
+  --control-bg: #07182b;
+  --surface-soft: rgba(7, 24, 43, .76);
+  --line-soft: #1c527c;
+  --hover-bg: #0b2b4b;
+  --focus-ring: color-mix(in srgb, var(--cyan) 42%, transparent);
+  --ui-shadow: 0 12px 34px rgba(0, 0, 0, .18);
+  --radius-ui: 14px;
+  --ease-ui: 160ms ease;
+}
+body[data-theme="purple"] {
+  --dropdown-bg: #211331;
+  --control-bg: #211331;
+  --surface-soft: rgba(35, 18, 53, .82);
+  --line-soft: #553779;
+  --hover-bg: #392052;
+}
+body[data-theme="forest"] {
+  --dropdown-bg: #0b2417;
+  --control-bg: #0b2417;
+  --surface-soft: rgba(10, 39, 23, .82);
+  --line-soft: #285f40;
+  --hover-bg: #123c26;
+}
+body[data-theme="sunset"] {
+  --dropdown-bg: #301713;
+  --control-bg: #301713;
+  --surface-soft: rgba(52, 25, 20, .84);
+  --line-soft: #7e3f2e;
+  --hover-bg: #54261c;
+}
+body[data-theme="light"] {
+  --dropdown-bg: #ffffff;
+  --control-bg: #f7faff;
+  --surface-soft: rgba(255, 255, 255, .88);
+  --line-soft: #c3d3e2;
+  --hover-bg: #d9e9f9;
+  --ui-shadow: 0 12px 32px rgba(35, 67, 101, .09);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background-image: radial-gradient(ellipse at 50% -20%, color-mix(in srgb, var(--cyan) 15%, transparent) 0, transparent 55%);
+  transition: background-color var(--ease-ui), color var(--ease-ui);
+}
+header {
+  border-bottom-color: color-mix(in srgb, var(--line) 72%, transparent);
+  box-shadow: 0 6px 28px color-mix(in srgb, var(--blue) 10%, transparent);
+}
+.logo {
+  color: var(--cyan);
+  border-color: var(--line);
+  background: linear-gradient(145deg, var(--accent-soft), var(--control-bg));
+  box-shadow: 0 0 24px color-mix(in srgb, var(--cyan) 15%, transparent);
+  transition: background var(--ease-ui), border-color var(--ease-ui), box-shadow var(--ease-ui);
+}
+.brand span { color: var(--cyan); }
+.tagline { border-left-color: var(--line); }
+.version, .footer { color: var(--muted); opacity: .78; }
+.panel {
+  border-color: color-mix(in srgb, var(--line) 82%, transparent);
+  box-shadow: var(--ui-shadow), var(--glow);
+  transition: border-color var(--ease-ui), background var(--ease-ui), box-shadow var(--ease-ui);
+}
+.panel-head { letter-spacing: .01em; }
+.panel-head .ico { color: var(--cyan); }
+.sep { background: var(--line-soft); opacity: .85; }
+.game, .navbtn {
+  border-radius: 9px;
+  transition: background var(--ease-ui), color var(--ease-ui), box-shadow var(--ease-ui), transform var(--ease-ui);
+}
+.game { color: var(--muted); }
+.game:hover, .navbtn:hover {
+  color: var(--text);
+  background: var(--hover-bg);
+}
+.game:active, .navbtn:active, .primary:active, .secondary:active { transform: translateY(1px); }
+.game.active {
+  color: #fff;
+  background: linear-gradient(110deg, var(--button-bg), var(--accent-soft));
+  box-shadow: inset 0 0 0 1px var(--button-line), 0 4px 14px color-mix(in srgb, var(--blue) 16%, transparent);
+}
+.screen-shell {
+  border-color: var(--screen-frame);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+}
+.game-info { min-width: 0; }
+.game-title { overflow-wrap: anywhere; }
+.cover {
+  flex: 0 0 auto;
+  border-color: var(--line);
+  background: linear-gradient(140deg, var(--accent-soft), var(--control-bg));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+.sub, .notice, .status { color: var(--muted); }
+.status { gap: 7px; }
+.padart {
+  border-color: var(--line);
+  background: linear-gradient(145deg, var(--surface-soft), var(--control-bg));
+}
+.dpad i {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--muted) 72%, var(--line));
+}
+.key {
+  color: var(--text);
+  border-color: var(--line);
+  background: var(--control-bg);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--line) 45%, transparent);
+}
+
+/* Theme-aware native select controls and their opened option menus. */
+select,
+.setting select,
+.theme-control select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 38px;
+  border: 1px solid var(--line) !important;
+  border-radius: 9px !important;
+  padding: 8px 34px 8px 11px !important;
+  color: var(--text) !important;
+  background-color: var(--control-bg) !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--cyan) 50%),
+    linear-gradient(135deg, var(--cyan) 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 15px) 50%,
+    calc(100% - 10px) 50% !important;
+  background-size: 5px 5px, 5px 5px !important;
+  background-repeat: no-repeat !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  font: inherit;
+  color-scheme: dark;
+  cursor: pointer;
+  transition: border-color var(--ease-ui), box-shadow var(--ease-ui), background-color var(--ease-ui);
+}
+.theme-control select { min-height: 36px; max-width: 160px; }
+select:hover { border-color: var(--cyan) !important; }
+select option, select optgroup {
+  background-color: var(--dropdown-bg) !important;
+  color: var(--text) !important;
+}
+body[data-theme="light"] select,
+body[data-theme="light"] .setting select,
+body[data-theme="light"] .theme-control select { color-scheme: light; }
+body[data-theme="light"] select option,
+body[data-theme="light"] select optgroup {
+  background-color: #fff !important;
+  color: #172b40 !important;
+}
+.setting {
+  grid-template-columns: minmax(0, .92fr) minmax(0, 1fr);
+  gap: 12px;
+  color: var(--muted);
+}
+.setting label, .toggle label, .theme-control label { color: var(--muted); }
+.toggle { color: var(--muted); }
+.toggle input {
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+input[type="checkbox"] { accent-color: var(--cyan); }
+
+.primary, .secondary {
+  min-height: 37px;
+  border-radius: 9px;
+  transition: filter var(--ease-ui), background var(--ease-ui), border-color var(--ease-ui), color var(--ease-ui), transform var(--ease-ui), box-shadow var(--ease-ui);
+}
+.primary {
+  border-color: var(--button-line);
+  background: linear-gradient(135deg, var(--button-bg), color-mix(in srgb, var(--button-bg) 72%, var(--blue)));
+  color: #fff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--blue) 14%, transparent);
+}
+.primary:hover { filter: brightness(1.1); box-shadow: 0 6px 17px color-mix(in srgb, var(--blue) 22%, transparent); }
+.secondary {
+  border-color: var(--line);
+  background: var(--control-bg);
+  color: var(--text);
+}
+.secondary:hover { background: var(--hover-bg); border-color: var(--cyan); }
+.loadbox {
+  border-color: var(--button-line);
+  color: var(--text);
+  background: linear-gradient(130deg, var(--accent-soft), var(--control-bg));
+  transition: border-color var(--ease-ui), background var(--ease-ui), box-shadow var(--ease-ui), transform var(--ease-ui);
+}
+.loadbox b { color: var(--text); }
+.loadicon { color: var(--cyan); }
+.loadbox:hover, .loadbox.drag {
+  border-color: var(--cyan);
+  background: linear-gradient(130deg, var(--hover-bg), var(--accent-soft));
+  box-shadow: 0 0 24px color-mix(in srgb, var(--blue) 16%, transparent);
+}
+#aboutBtn[aria-expanded="true"] { background: var(--accent-soft); color: var(--text); border-radius: 8px; }
+.about-box { border-color: var(--line); background: var(--accent-soft); }
+.about-box a { color: var(--cyan); }
+#aboutDialog { border-color: var(--line); }
+#aboutDialog::backdrop { background: rgba(0, 5, 15, .66); }
+
+button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible, .loadbox:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+select:focus-visible, .theme-control select:focus-visible {
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+  outline: none;
+}
+button:disabled { cursor: not-allowed; opacity: .55; }
+::selection { background: var(--cyan); color: var(--bg); }
+* { scrollbar-color: var(--line) var(--bg); scrollbar-width: thin; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--line); border: 2px solid var(--bg); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+
+@media (max-width: 700px) {
+  .theme-control { margin-left: auto; }
+  .theme-control label { display: none; }
+  .theme-control select { max-width: 135px; }
+  .setting { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .actionrow > button { flex: 1 1 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* Persistent save-state log */
+.state-manager { margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--line-soft); min-width: 0; }
+.state-manager-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.state-manager-title-wrap { min-width: 0; }
+.state-manager-title-wrap strong { display: block; color: var(--text); font-size: 14px; letter-spacing: .02em; }
+.state-manager-caption { color: var(--muted); opacity: .9; font-size: 11px; margin-top: 3px; }
+.state-manager-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.state-small-button { padding: 6px 9px; font-size: 11px; white-space: nowrap; }
+.state-log { display: grid; gap: 8px; max-height: 330px; overflow: auto; padding: 2px 3px 2px 0; scrollbar-color: var(--line) var(--surface-soft); }
+.state-empty { padding: 15px 12px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); background: var(--surface-soft); text-align: center; font-size: 12px; }
+.state-entry { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; padding: 10px; border: 1px solid var(--line-soft); border-radius: 10px; background: var(--surface-soft); transition: border-color var(--ease-ui), background var(--ease-ui); }
+.state-entry:hover { border-color: var(--line); background: var(--hover-bg); }
+.state-entry-info { min-width: 0; flex: 1; }
+.state-entry-name { color: var(--text); font-size: 12px; font-weight: 750; overflow-wrap: anywhere; }
+.state-entry-meta { color: var(--muted); font-size: 10px; margin-top: 3px; }
+.state-entry-tag { display: inline-block; margin-left: 5px; color: var(--cyan); font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .04em; }
+.state-entry-buttons { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.state-entry-buttons .secondary { padding: 5px 7px; font-size: 10px; }
+.state-entry-buttons .state-delete { color: var(--muted); }
+.state-log-note { color: var(--muted); font-size: 11px; padding: 3px 2px; }
+@media (max-width: 700px) { .state-manager-heading { flex-direction: column; align-items: stretch; } .state-manager-actions { justify-content: flex-start; } .state-entry { align-items: flex-start; flex-direction: column; } .state-entry-buttons { justify-content: flex-start; width: 100%; } }
+
+/* Additional color themes */
+body[data-theme="black"]{--bg:#050505;--panel:rgba(16,16,18,.97);--line:#42424a;--blue:#a8a8b8;--cyan:#f5f5ff;--text:#f5f5f7;--muted:#b0b0bb;--glow:0 0 26px #ffffff0b;--header-bg:#09090bed;--panel-grad:linear-gradient(145deg,#18181c,#080809);--button-bg:#292930;--button-line:#777784;--accent-soft:#29292f;--screen-frame:#38383f;--dropdown-bg:#17171b;--control-bg:#17171b;--surface-soft:rgba(25,25,29,.9);--line-soft:#393941;--hover-bg:#303038}
+body[data-theme="red"]{--bg:#190608;--panel:rgba(48,10,16,.95);--line:#a3293a;--blue:#ff334f;--cyan:#ff687b;--text:#fff0f2;--muted:#e5a2ac;--glow:0 0 24px #ff334f20;--header-bg:#21070bed;--panel-grad:linear-gradient(145deg,#40101a,#170609);--button-bg:#b91f37;--button-line:#ff5268;--accent-soft:#501521;--screen-frame:#682633;--dropdown-bg:#2b0b11;--control-bg:#2b0b11;--surface-soft:rgba(53,13,21,.84);--line-soft:#752230;--hover-bg:#501521}
+body[data-theme="orange"]{--bg:#1b1005;--panel:rgba(49,27,7,.95);--line:#a85a13;--blue:#ff8b1f;--cyan:#ffd080;--text:#fff7eb;--muted:#e8bf91;--glow:0 0 24px #ff8b1f20;--header-bg:#211204ed;--panel-grad:linear-gradient(145deg,#422509,#190e04);--button-bg:#bd5e0b;--button-line:#ff9d3b;--accent-soft:#512b0c;--screen-frame:#71451f;--dropdown-bg:#2e1907;--control-bg:#2e1907;--surface-soft:rgba(54,29,8,.85);--line-soft:#794716;--hover-bg:#512b0c}
+body[data-theme="pink"]{--bg:#1a0715;--panel:rgba(45,12,38,.95);--line:#a33b87;--blue:#ed4fc2;--cyan:#ff9be6;--text:#fff0fb;--muted:#e3a9d4;--glow:0 0 24px #ed4fc220;--header-bg:#210918ed;--panel-grad:linear-gradient(145deg,#3b1240,#180713);--button-bg:#a82c89;--button-line:#f36bce;--accent-soft:#4a1b45;--screen-frame:#68305f;--dropdown-bg:#2a1026;--control-bg:#2a1026;--surface-soft:rgba(49,15,43,.85);--line-soft:#743166;--hover-bg:#4a1b45}
+body[data-theme="ocean"]{--bg:#04131c;--panel:rgba(5,31,44,.96);--line:#167d91;--blue:#00a9cf;--cyan:#70f1ff;--text:#eaffff;--muted:#92d2dc;--glow:0 0 24px #00a9cf20;--header-bg:#061922ed;--panel-grad:linear-gradient(145deg,#0a3546,#04131c);--button-bg:#087f9d;--button-line:#26d3ed;--accent-soft:#0b3b4b;--screen-frame:#225765;--dropdown-bg:#082733;--control-bg:#082733;--surface-soft:rgba(8,44,57,.85);--line-soft:#1c5d6d;--hover-bg:#0b3b4b}
+body[data-theme="gold"]{--bg:#171105;--panel:rgba(43,32,8,.96);--line:#9a7620;--blue:#d4a52c;--cyan:#ffe28a;--text:#fff9e6;--muted:#d9c58b;--glow:0 0 24px #d4a52c20;--header-bg:#1e1606ed;--panel-grad:linear-gradient(145deg,#3b2b0b,#171105);--button-bg:#8e6b12;--button-line:#e7c04c;--accent-soft:#49370c;--screen-frame:#665322;--dropdown-bg:#2a2008;--control-bg:#2a2008;--surface-soft:rgba(49,38,9,.86);--line-soft:#716022;--hover-bg:#49370c}
+.controller-drawing{display:flex;align-items:center;justify-content:space-evenly;width:100%;height:100%}
+.controller-image{display:none;max-width:96%;max-height:96%;width:auto;height:auto;object-fit:contain;border-radius:8px}
+.controller-icon-wrap{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;vertical-align:middle;width:1.55em;height:1.55em}
+.controller-icon{display:block;width:100%;height:100%;object-fit:contain}
+.controller-icon-fallback{display:none;font-size:inherit;line-height:1}
+.logo .controller-icon-wrap{width:42px;height:42px}
+.cover .controller-icon-wrap{width:38px;height:38px}
+.panel-head .controller-icon-wrap{width:25px;height:25px}
+.screen-empty .controller-icon-wrap{width:56px;height:56px}
+.game .controller-icon-wrap{width:28px;height:28px;font-size:23px}
+.keybind-button{font:inherit;cursor:pointer;padding:3px 7px;min-width:38px}
+.keybind-button.listening{outline:2px solid var(--cyan);outline-offset:2px;background:var(--accent-soft);animation:keyPulse .8s ease-in-out infinite alternate}
+.keybind-help{margin-top:10px;color:var(--muted);font-size:11px;line-height:1.45}
+.keybind-actions{margin-top:8px}
+@keyframes keyPulse{to{box-shadow:0 0 0 4px var(--focus-ring)}}
+@media(prefers-reduced-motion:reduce){.keybind-button.listening{animation:none}}
+
+
+/* Final theme synchronization: rounded dropdowns, matching scrollbars, and a real pixel-scale viewport. */
+:root { --scroll-thumb: var(--line); --scroll-track: var(--dropdown-bg); }
+html, body, .library, .screen-shell {
+  scrollbar-color: var(--cyan) var(--scroll-track);
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: var(--scroll-track); border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: var(--line); border: 2px solid var(--scroll-track); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+select, .theme-control select, .setting select {
+  appearance: none;
+  -webkit-appearance: none;
+  color: var(--text) !important;
+  background-color: var(--dropdown-bg) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  padding: 9px 34px 9px 12px !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 3px 10px rgba(0,0,0,.10);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23a8c9e8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color var(--ease-ui), box-shadow var(--ease-ui), background-color var(--ease-ui);
+}
+select:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-color: var(--cyan) !important; }
+select option, select optgroup { background: var(--dropdown-bg) !important; color: var(--text) !important; }
+body[data-theme="light"] select, body[data-theme="light"] select option { color-scheme: light; }
+body:not([data-theme="light"]) select, body:not([data-theme="light"]) select option { color-scheme: dark; }
+.screen-shell { overflow: hidden; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 260px; scrollbar-width: none; }
+.screen-shell::-webkit-scrollbar { display: none; }
+#screen { flex: 0 0 auto; width: min(768px, 100%); height: auto; max-width: 100%; aspect-ratio: 256 / 240; object-fit: contain; }
+#dropZone:fullscreen { width: 100vw; height: 100vh; min-height: 0; padding: 0; border: 0; border-radius: 0; background: #000; display: flex; align-items: center; justify-content: center; }
+#dropZone:fullscreen #screen { max-width: 100vw; max-height: 100vh; width: auto; height: auto; object-fit: contain; }
+#dropZone:fullscreen #emptyState { position: fixed; }
+#dropZone:fullscreen #fpsOverlay { top: 18px; left: 18px; }
+#dropZone.crt-mode #screen { transform-origin: center center; }
+@media(max-width:700px) { .theme-control select { max-width: 145px; } }
+
+/* Logo polish: remove the badge completely and enlarge the controller artwork. */
+.logo {
+  width: 78px !important;
+  height: 78px !important;
+  flex: 0 0 78px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  overflow: visible !important;
+}
+.logo::before, .logo::after { content: none !important; display: none !important; }
+.logo .controller-icon-wrap {
+  width: 76px !important;
+  height: 76px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.logo .controller-icon {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+@media (max-width: 700px) {
+  .logo { width: 60px !important; height: 60px !important; flex-basis: 60px !important; }
+  .logo .controller-icon-wrap { width: 60px !important; height: 60px !important; }
+}
+
+
+#fpsOverlay{position:absolute;top:14px;left:14px;z-index:2;padding:4px 8px;border:1px solid var(--line);border-radius:7px;background:rgba(0,0,0,.78);color:#7dffb2;font:700 12px/1.3 ui-monospace,monospace;pointer-events:none}
+#fpsOverlay[hidden]{display:none}
+#screen.zapper-active{cursor:crosshair}
+#zapperBindings .keybind-button{min-width:62px}
+
+/* Extra palettes */
+body[data-theme="teal"]{--bg:#041513;--panel:rgba(6,36,34,.96);--line:#16877e;--blue:#00b9a7;--cyan:#72ffe6;--text:#eafffa;--muted:#9bd8ce;--glow:0 0 24px #00b9a720;--header-bg:#061d1aed;--panel-grad:linear-gradient(145deg,#0b3934,#041513);--button-bg:#087f73;--button-line:#27d8c4;--accent-soft:#0d443e;--screen-frame:#24645d;--dropdown-bg:#082b27;--control-bg:#082b27;--surface-soft:rgba(8,44,40,.85);--line-soft:#1d625a;--hover-bg:#0d443e}
+body[data-theme="amber"]{--bg:#191105;--panel:rgba(47,31,7,.96);--line:#a87518;--blue:#e59b18;--cyan:#ffe09a;--text:#fff8e8;--muted:#dec18b;--glow:0 0 24px #e59b1820;--header-bg:#211705ed;--panel-grad:linear-gradient(145deg,#402b0b,#191105);--button-bg:#a56b0c;--button-line:#f2bd45;--accent-soft:#4b350d;--screen-frame:#6c5424;--dropdown-bg:#2d2008;--control-bg:#2d2008;--surface-soft:rgba(53,39,10,.85);--line-soft:#725a21;--hover-bg:#4b350d}
+body[data-theme="matrix"]{--bg:#020b04;--panel:rgba(4,25,8,.97);--line:#17652a;--blue:#20d84a;--cyan:#7dff91;--text:#e9ffec;--muted:#8ccf98;--glow:0 0 24px #20d84a1a;--header-bg:#031007ed;--panel-grad:linear-gradient(145deg,#09240e,#020b04);--button-bg:#126c29;--button-line:#32ed58;--accent-soft:#10351a;--screen-frame:#22552c;--dropdown-bg:#061b0a;--control-bg:#061b0a;--surface-soft:rgba(7,32,13,.86);--line-soft:#1c4e27;--hover-bg:#10351a}
+body[data-theme="lavender"]{--bg:#110e1b;--panel:rgba(34,27,51,.96);--line:#8976b8;--blue:#aa92ff;--cyan:#e0d5ff;--text:#faf7ff;--muted:#c1b4e6;--glow:0 0 24px #aa92ff1c;--header-bg:#171225ed;--panel-grad:linear-gradient(145deg,#2b2342,#110e1b);--button-bg:#6c56ad;--button-line:#b8a4ff;--accent-soft:#3a2e57;--screen-frame:#554777;--dropdown-bg:#211a32;--control-bg:#211a32;--surface-soft:rgba(39,31,59,.86);--line-soft:#51416f;--hover-bg:#3a2e57}
+body[data-theme="slate"]{--bg:#10151c;--panel:rgba(29,38,49,.97);--line:#526779;--blue:#7b9bb6;--cyan:#c5e5ff;--text:#f0f6fb;--muted:#a9bdce;--glow:0 0 24px #7b9bb610;--header-bg:#151d26ed;--panel-grad:linear-gradient(145deg,#273442,#10151c);--button-bg:#405b70;--button-line:#91b8d7;--accent-soft:#304454;--screen-frame:#526779;--dropdown-bg:#202b35;--control-bg:#202b35;--surface-soft:rgba(35,47,59,.86);--line-soft:#405463;--hover-bg:#304454}
+
+body[data-theme="vantablack"]{--bg:#000;--panel:rgba(2,2,2,.99);--line:#171717;--blue:#bdbdbd;--cyan:#f5f5f5;--text:#f4f4f4;--muted:#888;--glow:0 0 18px #ffffff05;--header-bg:#000000f5;--panel-grad:linear-gradient(145deg,#080808,#000);--button-bg:#111;--button-line:#333;--accent-soft:#101010;--screen-frame:#151515;--dropdown-bg:#050505;--control-bg:#050505;--surface-soft:rgba(5,5,5,.98);--line-soft:#1b1b1b;--hover-bg:#121212}
+body[data-theme="ice"]{--bg:#07131d;--panel:rgba(12,31,46,.97);--line:#397d9b;--blue:#5ccaff;--cyan:#d5f4ff;--text:#f0fbff;--muted:#9dc8d9;--glow:0 0 24px #5ccaff20;--header-bg:#081a27ed;--panel-grad:linear-gradient(145deg,#14384b,#07131d);--button-bg:#205d79;--button-line:#6bd8ff;--accent-soft:#17394b;--screen-frame:#2c627a;--dropdown-bg:#0b2533;--control-bg:#0b2533;--surface-soft:rgba(12,38,52,.9);--line-soft:#28566a;--hover-bg:#174156}
+body[data-theme="copper"]{--bg:#1a0d08;--panel:rgba(46,24,15,.97);--line:#9c5738;--blue:#d67d4e;--cyan:#ffc29b;--text:#fff3ec;--muted:#d8a58e;--glow:0 0 24px #d67d4e18;--header-bg:#211109ed;--panel-grad:linear-gradient(145deg,#482718,#180b07);--button-bg:#874324;--button-line:#d98659;--accent-soft:#512b1b;--screen-frame:#71432e;--dropdown-bg:#2b160e;--control-bg:#2b160e;--surface-soft:rgba(54,28,17,.88);--line-soft:#74432e;--hover-bg:#512b1b}
+body[data-theme="ultraviolet"]{--bg:#10051c;--panel:rgba(31,12,52,.97);--line:#7742b0;--blue:#b66cff;--cyan:#e4c2ff;--text:#fbf3ff;--muted:#c5a5df;--glow:0 0 24px #b66cff20;--header-bg:#160925ed;--panel-grad:linear-gradient(145deg,#39185b,#10051c);--button-bg:#622b91;--button-line:#c28aff;--accent-soft:#40205d;--screen-frame:#593578;--dropdown-bg:#211033;--control-bg:#211033;--surface-soft:rgba(40,17,61,.88);--line-soft:#58357a;--hover-bg:#40205d}
+body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;--blue:#d4c17e;--cyan:#fff0bd;--text:#fffbed;--muted:#d2c9a7;--glow:0 0 24px #fff0bd12;--header-bg:#201e15ed;--panel-grad:linear-gradient(145deg,#403b28,#19170f);--button-bg:#74683b;--button-line:#e1d18f;--accent-soft:#4d462b;--screen-frame:#716947;--dropdown-bg:#2b281b;--control-bg:#2b281b;--surface-soft:rgba(49,45,30,.88);--line-soft:#716847;--hover-bg:#4d462b}
+
+/* Controls heading: remove the badge/frame from the controller icon itself. */
+.panel-head .ico.controller-icon-wrap,
+.panel-head .controller-icon-wrap,
+.panel-head .ico.controller-icon-wrap::before,
+.panel-head .ico.controller-icon-wrap::after {
+  display:inline-flex!important; width:25px!important; height:25px!important;
+  min-width:0!important; padding:0!important; margin:0!important;
+  border:0!important; outline:0!important; background:transparent!important;
+  box-shadow:none!important; border-radius:0!important; filter:none!important;
+  overflow:hidden!important; position:relative!important;
+}
+.panel-head .ico.controller-icon-wrap { color:inherit!important; }
+.panel-head .controller-icon {
+  display:block!important; width:100%!important; height:100%!important;
+  padding:0!important; margin:0!important; border:0!important; outline:0!important;
+  background:transparent!important; box-shadow:none!important; border-radius:0!important;
+  object-fit:contain!important;
+  /* The border is baked into controller.png, so crop its outer edge visually. */
+  transform:scale(1.35)!important; clip-path:inset(8% 8% 8% 8%)!important;
+}
+.panel-head .controller-icon-fallback { border:0!important; background:transparent!important; box-shadow:none!important; }
+
+</style>
+</head>
+<body>
+<svg aria-hidden="true" width="0" height="0" style="position:absolute;overflow:hidden"><defs>
+<filter id="color-protanopia"><feColorMatrix type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0 0  0 0 0 1 0"/></filter>
+<filter id="color-deuteranopia"><feColorMatrix type="matrix" values="0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0 0  0 0 0 1 0"/></filter>
+<filter id="color-tritanopia"><feColorMatrix type="matrix" values="0.95 0.05 0 0 0  0 0.433 0.567 0 0 0  0 0.475 0.525 0 0 0  0 0 0 1 0"/></filter>
+</defs></svg>
+
+<header>
+  <div class="logo" aria-hidden="true"><span class="controller-icon-wrap"><img class="controller-icon" src="controller.png" alt=""><span class="controller-icon-fallback">🕹️</span></span></div>
+  <div class="brand">chimi<span>NES</span></div>
+  <div class="tagline">classic nes gaming within your browser.</div>
+  <div class="spacer"></div>
+  <div class="theme-control"><label for="themeSelect">hud theme</label><select id="themeSelect" aria-label="HUD theme">
+    <option value="default">neon blue</option><option value="purple">purple haze</option><option value="forest">forest</option><option value="sunset">sunset</option><option value="light">light</option><option value="black">midnight black</option><option value="red">arcade red</option><option value="orange">electric orange</option><option value="pink">hot pink</option><option value="ocean">deep ocean</option><option value="gold">retro gold</option><option value="teal">neon teal</option><option value="amber">amber glow</option><option value="matrix">matrix green</option><option value="lavender">soft lavender</option><option value="slate">slate gray</option><option value="vantablack">vantablack (true black)</option><option value="ice">arctic ice</option><option value="copper">copper forge</option><option value="ultraviolet">ultraviolet</option><option value="cream">warm cream</option>
+  </select></div>
+  <div class="version">browser edition · v1.0</div>
+</header>
+<main>
+  <aside class="panel">
+    <div class="panel-head"><span class="ico">▣</span> saved roms</div>
+    <div class="library" id="savedRoms"><div class="notice" style="padding:8px 10px">Your imported ROMs will appear here and stay saved in this browser.</div></div>
+    <div class="sep"></div>
+    <button class="navbtn" id="loadNav">📂　import rom (.nes)</button>
+    <button class="navbtn" id="aboutBtn" aria-expanded="false" aria-controls="aboutBox">ⓘ　about chimiNES <span id="aboutChevron" style="margin-left:auto">＋</span></button>
+    <div id="aboutBox" class="about-box" hidden>
+      <strong>About chimiNES</strong>
+      <p>chimiNES is a browser-based NES emulator interface powered by JSNES. Import a .nes ROM you have the right to use, then play with the arrow keys, Z (A), X (B), Enter (Start), and Shift (Select).</p>
+      <p>Imported ROMs are saved locally in this browser. Game audio is played through your browser's Web Audio support. Themes, pixel filters, and CRT mode customize the interface and display.</p>
+      <a href="https://github.com/bfirsh/jsnes" target="_blank" rel="noopener noreferrer">JSNES project ↗</a>
+    </div>
+    <div class="notice" style="padding:0 12px 14px">roms are stored locally in this browser. clearing site data removes them.</div>
+  </aside>
+
+  <section class="panel center">
+    <div class="screen-shell" id="dropZone">
+      <canvas id="screen" width="256" height="240" aria-label="NES game screen"></canvas>
+      <div id="fpsOverlay" aria-live="off" hidden>FPS: --</div>
+      <div class="screen-empty" id="emptyState">
+        <div class="big"><span class="controller-icon-wrap"><img class="controller-icon" src="controller.png" alt=""><span class="controller-icon-fallback">🎮</span></span></div><strong>ready when you are.</strong>
+        <small>import a .nes rom to play. imported roms are saved in this browser for next time.</small>
+        <button class="primary" id="loadMain">choose rom</button>
+      </div>
+    </div>
+    <div class="game-info">
+      <div class="cover"><span class="controller-icon-wrap"><img class="controller-icon" src="controller.png" alt=""><span class="controller-icon-fallback">🕹️</span></span></div>
+      <div><div class="game-title" id="gameTitle">no game loaded</div><div class="sub" id="gameSub">select a rom file to begin</div></div>
+      <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Waiting for ROM</span></div>
+    </div>
+    <div class="actionrow">
+      <button class="primary" id="pauseBtn">▶ start / resume</button>
+      <button class="secondary" id="resetBtn">↻ reset</button>
+      <button class="secondary" id="fullscreenBtn" type="button" aria-label="Toggle ROM fullscreen">⛶ fullscreen</button>
+      <button class="secondary" id="saveBtn">save state</button>
+      <button class="secondary" id="loadStateBtn">load state</button>
+    </div>
+    <section class="state-manager" aria-labelledby="stateManagerTitle">
+      <div class="state-manager-heading">
+        <div class="state-manager-title-wrap">
+          <strong id="stateManagerTitle">save-state log</strong>
+          <div class="state-manager-caption">Checkpoints are saved in this browser. Export backups to keep them.</div>
+        </div>
+        <div class="state-manager-actions">
+          <button class="secondary state-small-button" id="exportStatesBtn" type="button">export all</button>
+          <button class="secondary state-small-button" id="importStateBtn" type="button">import .json</button>
+        </div>
+      </div>
+      <div class="state-log" id="saveStateLog" aria-live="polite"><div class="state-empty">No checkpoints yet. Play a game and click <b>save state</b>.</div></div>
+    </section>
+    <div class="notice" id="notice">tip: click the game screen first, then use the keyboard. playback speed can be adjusted in settings. roms are stored locally in this browser.</div>
+  </section>
+
+  <aside class="right">
+    <section class="panel">
+      <div class="panel-head"><span class="ico controller-icon-wrap"><img class="controller-icon" src="controller.png" alt=""><span class="controller-icon-fallback">🎮</span></span> controls</div>
+      <div class="section">
+        <div class="padart" aria-hidden="true"><div class="controller-drawing"><div class="dpad"><i class="v"></i><i class="h"></i></div><div class="buttons"><div class="ab"></div><div class="ab"></div></div></div><img id="controllerImage" class="controller-image" alt="NES controller"></div>
+        <div class="mapping" id="keyMapping">
+          <span><button class="key keybind-button" data-bind="up" type="button">↑</button> <button class="key keybind-button" data-bind="down" type="button">↓</button></span><span>= d-pad vertical</span>
+          <span><button class="key keybind-button" data-bind="left" type="button">←</button> <button class="key keybind-button" data-bind="right" type="button">→</button></span><span>= d-pad horizontal</span>
+          <span><button class="key keybind-button" data-bind="a" type="button">Z</button></span><span>= A button</span>
+          <span><button class="key keybind-button" data-bind="b" type="button">X</button></span><span>= B button</span>
+          <span><button class="key keybind-button" data-bind="start" type="button">Enter</button></span><span>= Start</span>
+          <span><button class="key keybind-button" data-bind="select" type="button">Shift</button></span><span>= Select</span>
+        </div>
+        <div class="keybind-help" id="keybindHelp">Click any key above, then press the key you want to use. Changes are saved in this browser.</div>
+        <div class="actionrow keybind-actions"><button class="secondary" id="resetKeybinds" type="button">reset keybinds</button></div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><span class="ico">🧪</span> experimental</div>
+      <div class="section">
+        <div class="toggle"><label for="zapperToggle">NES Zapper (mouse aim + click)</label><input id="zapperToggle" type="checkbox"></div>
+        <div class="toggle"><label for="fpsToggle">show FPS counter</label><input id="fpsToggle" type="checkbox"></div>
+        <div id="zapperBindings" class="mapping" style="margin-top:10px">
+          <span><button class="key keybind-button" data-bind="zapperFire" type="button">Mouse 1</button></span><span>= zapper fire</span>
+          <span><button class="key keybind-button" data-bind="zapperReload" type="button">R</button></span><span>= zapper reload/offscreen</span>
+        </div>
+        <div class="keybind-help" id="zapperHelp">Enable Zapper for mouse aiming and firing. Click a key to remap keyboard actions; mouse fire remains available.</div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><span class="ico">⚙</span> settings</div>
+      <div class="section">
+        <div class="setting"><label for="speed">playback speed</label><select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1× normal</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option><option value="2.5">2.5×</option><option value="3">3×</option><option value="4">4×</option></select></div>
+        <div class="setting"><label for="scale">screen scale</label><select id="scale"><option value="0.5">0.5×</option><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="2.5">2.5×</option><option value="3" selected>3×</option><option value="3.5">3.5×</option><option value="4">4×</option><option value="5">5×</option><option value="6">6×</option><option value="8">8×</option></select></div>
+        <div class="setting"><label for="filter">pixel filter</label><select id="filter"><option value="pixel" selected>pixel perfect</option><option value="smooth">smooth</option></select></div>
+        <div class="setting"><label for="colorRendering">color rendering</label><select id="colorRendering"><option value="normal" selected>normal colors</option><option value="protanopia">protanopia aid (red-weak)</option><option value="deuteranopia">deuteranopia aid (green-weak)</option><option value="tritanopia">tritanopia aid (blue-weak)</option><option value="monochrome">monochrome</option><option value="sepia">sepia</option><option value="highcontrast">high contrast</option><option value="invert">inverted colors</option></select></div>
+        <div class="toggle"><label for="crtMode">crt mode</label><input id="crtMode" type="checkbox"></div>
+        <div class="toggle"><label for="sound">sound enabled</label><input id="sound" type="checkbox" checked></div>
+        <div class="toggle"><label for="autostart">auto-start on load</label><input id="autostart" type="checkbox"></div>
+        <div class="notice">save states are stored in this browser. Use the save-state log to load, export, or import checkpoints.</div>
+      </div>
+    </section>
+    <label class="loadbox" id="loadBox" for="romFile"><span class="loadicon">⇧</span><b>load rom</b><small>click or drag a .nes file here</small></label>
+  </aside>
+</main>
+
+<div class="footer">chimiNES v1.0 · made for your browser · load roms you have the right to use.</div>
+<input type="file" id="romFile" accept=".nes,application/octet-stream">
+<input type="file" id="stateFile" accept=".json,application/json">
+<!-- Compatibility workaround: JSNES 2.1.0 has a reported sprite-layer scrambling issue in SMB3/Kirby. Use the stable 1.2.1 core for this custom renderer. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsnes/1.2.1/jsnes.min.js" crossorigin="anonymous"></script>
+<script>
+(() => {
+ const $=id=>document.getElementById(id), canvas=$('screen'),ctx=canvas.getContext('2d',{alpha:false});
+ let nes=null,romLoaded=false,paused=true,raf=0,frameImage=ctx.createImageData(256,240),currentName='',lastTick=0,acc=0;
+ let activeColorRendering='normal';
+ let audioContext=null,audioProcessor=null,audioGain=null,audioRead=0,audioWrite=0,audioCount=0;
+ const AUDIO_BUFFER_SIZE=32768;
+ const audioLeft=new Float32Array(AUDIO_BUFFER_SIZE),audioRight=new Float32Array(AUDIO_BUFFER_SIZE);
+ const soundToggle=$('sound');
+ try{soundToggle.checked=localStorage.getItem('chimiNES_sound')!=='0';}catch(_){}
+ const DB='chimiNES_ROM_DB',STORE='roms',STATE_STORE='states';ctx.fillStyle='#000';ctx.fillRect(0,0,256,240);
+ const notice=m=>$('notice').textContent=m;
+ function status(m,on=false){$('statusText').textContent=m;$('statusDot').classList.toggle('on',on);}
+ function clearAudioQueue(){audioRead=audioWrite=audioCount=0;}
+ function setupAudio(){
+   if(audioContext)return audioContext;
+   const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+   if(!AudioContextClass)return null;
+   try{
+     audioContext=new AudioContextClass({latencyHint:'interactive'});
+     audioProcessor=audioContext.createScriptProcessor(2048,0,2);
+     audioGain=audioContext.createGain();
+     audioGain.gain.value=0.78;
+     audioProcessor.onaudioprocess=e=>{
+       const left=e.outputBuffer.getChannelData(0),right=e.outputBuffer.getChannelData(1);
+       if(!soundToggle.checked){left.fill(0);right.fill(0);clearAudioQueue();return;}
+       for(let i=0;i<left.length;i++){
+         if(audioCount>0){left[i]=audioLeft[audioRead];right[i]=audioRight[audioRead];audioRead=(audioRead+1)%AUDIO_BUFFER_SIZE;audioCount--;}
+         else{left[i]=0;right[i]=0;}
+       }
+     };
+     audioProcessor.connect(audioGain);audioGain.connect(audioContext.destination);
+     return audioContext;
+   }catch(e){
+     try{audioProcessor?.disconnect();audioGain?.disconnect();audioContext?.close();}catch(_){}
+     audioContext=null;audioProcessor=null;audioGain=null;
+     return null;
+   }
+ }
+ function resumeAudio(){
+   const audio=setupAudio();
+   if(audio&&audio.state==='suspended')audio.resume().catch(()=>{});
+   return audio;
+ }
+ function queueAudioSample(left,right){
+   if(!soundToggle.checked||!audioContext||audioContext.state!=='running')return;
+   // If rendering falls behind, discard the oldest samples rather than building latency.
+   if(audioCount>=AUDIO_BUFFER_SIZE){audioRead=(audioRead+1)%AUDIO_BUFFER_SIZE;audioCount--;}
+   audioLeft[audioWrite]=Number.isFinite(left)?left:0;
+   audioRight[audioWrite]=Number.isFinite(right)?right:0;
+   audioWrite=(audioWrite+1)%AUDIO_BUFFER_SIZE;audioCount++;
+ }
+ function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,2);r.onupgradeneeded=()=>{const d=r.result; if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'name'}); let states;if(!d.objectStoreNames.contains(STATE_STORE))states=d.createObjectStore(STATE_STORE,{keyPath:'id',autoIncrement:true});else states=r.transaction.objectStore(STATE_STORE);if(!states.indexNames.contains('romName'))states.createIndex('romName','romName',{unique:false});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+ async function dbOp(mode,fn,storeName=STORE){const d=await openDB();return new Promise((res,rej)=>{let t;try{t=d.transaction(storeName,mode);const s=t.objectStore(storeName),r=fn(s);r.onsuccess=()=>res(r.result);r.onerror=()=>{d.close();rej(r.error||new Error('Storage request failed.'));};t.oncomplete=()=>d.close();t.onerror=()=>{const err=t.error||new Error('Storage transaction failed.');d.close();rej(err);};t.onabort=()=>{const err=t.error||new Error('Storage transaction was aborted.');d.close();rej(err);};}catch(e){d.close();rej(e);}});}
+ function stateFileBase(name){return String(name||'game').replace(/\.nes$/i,'').replace(/[^a-z0-9._-]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,64)||'game';}
+ function portableState(record){return {format:'chimiNES-save-state',formatVersion:1,romName:record.romName,createdAt:record.createdAt,state:record.state};}
+ function downloadJSON(filename,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+ function sameRomName(a,b){return String(a||'').toLocaleLowerCase()===String(b||'').toLocaleLowerCase();}
+ function formatStateDate(value){const date=new Date(value);return Number.isNaN(date.getTime())?'date unavailable':date.toLocaleString();}
+ async function listSaveStates(){
+   const box=$('saveStateLog');if(!box)return;let records=[];
+   try{records=await dbOp('readonly',store=>store.getAll(),STATE_STORE);}catch(e){box.replaceChildren();const msg=document.createElement('div');msg.className='state-empty';msg.textContent='Save-state storage is unavailable in this browser. Try opening the file in a browser window with site storage enabled.';box.append(msg);return;}
+   records.sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));box.replaceChildren();
+   if(!records.length){const empty=document.createElement('div');empty.className='state-empty';empty.innerHTML='No checkpoints yet. Play a game and click <b>save state</b>.';box.append(empty);return;}
+   const visible=records.slice(0,20);
+   visible.forEach(record=>{
+     const row=document.createElement('div');row.className='state-entry';
+     const info=document.createElement('div');info.className='state-entry-info';
+     const title=document.createElement('div');title.className='state-entry-name';title.textContent=String(record.romName||'Unknown game');
+     if(romLoaded&&sameRomName(currentName,record.romName)){const tag=document.createElement('span');tag.className='state-entry-tag';tag.textContent='current game';title.append(tag);}
+     const meta=document.createElement('div');meta.className='state-entry-meta';meta.textContent=formatStateDate(record.createdAt);info.append(title,meta);
+     const actions=document.createElement('div');actions.className='state-entry-buttons';
+     const load=document.createElement('button');load.type='button';load.className='secondary';load.textContent='load';load.title='Load this checkpoint';load.addEventListener('click',async()=>{load.disabled=true;try{await restoreStateRecord(record);}catch(e){notice('Could not load save state: '+(e?.message||e));}finally{load.disabled=false;}});
+     const exp=document.createElement('button');exp.type='button';exp.className='secondary';exp.textContent='export';exp.title='Export this checkpoint as a JSON file';exp.addEventListener('click',()=>{try{downloadJSON(stateFileBase(record.romName)+'-save-'+new Date(record.createdAt||Date.now()).toISOString().replace(/[:.]/g,'-')+'.json',portableState(record));notice('Exported save state for '+record.romName+'.');}catch(e){notice('Could not export save state: '+(e?.message||e));}});
+     const del=document.createElement('button');del.type='button';del.className='secondary state-delete';del.textContent='delete';del.title='Delete this checkpoint';del.addEventListener('click',async()=>{if(!confirm('Delete this save state for '+record.romName+'?'))return;try{await dbOp('readwrite',store=>store.delete(record.id),STATE_STORE);await listSaveStates();notice('Save state deleted.');}catch(e){notice('Could not delete save state: '+(e?.message||e));}});
+     actions.append(load,exp,del);row.append(info,actions);box.append(row);
+   });
+   if(records.length>visible.length){const note=document.createElement('div');note.className='state-log-note';note.textContent='Showing the 20 most recent checkpoints of '+records.length+'. “Export all” includes the full log.';box.append(note);}
+ }
+ async function saveCurrentState(){
+   if(!nes||!romLoaded)throw new Error('Load a ROM before saving a state.');
+   if(typeof nes.toJSON!=='function')throw new Error('This emulator core does not support save states.');
+   // JSON round-tripping makes a detached, exportable snapshot rather than retaining mutable emulator references.
+   const rawState=nes.toJSON();
+   // JSNES builds can return either a plain object or a JSON string. Normalize both
+   // forms into a detached object before writing to IndexedDB or exporting.
+   const state=typeof rawState==='string'?JSON.parse(rawState):JSON.parse(JSON.stringify(rawState));
+   if(!state||typeof state!=='object'||Array.isArray(state))throw new Error('The emulator returned an invalid save state.');
+   const record={format:'chimiNES-save-state',formatVersion:1,romName:currentName,createdAt:Date.now(),state};
+   await dbOp('readwrite',store=>store.add(record),STATE_STORE);
+   await listSaveStates();notice('Saved a checkpoint for '+currentName+'. It will remain in this browser until deleted; use Export to back it up.');
+ }
+ async function restoreStateRecord(record){
+   if(!record||!record.state||(typeof record.state!=='object'&&typeof record.state!=='string'))throw new Error('This save-state file is missing its emulator data.');
+   let snapshot=record.state;
+   if(typeof snapshot==='string'){try{snapshot=JSON.parse(snapshot);}catch(_){throw new Error('This save state contains invalid serialized emulator data.');}}
+   if(!snapshot||typeof snapshot!=='object'||Array.isArray(snapshot))throw new Error('This save state contains invalid emulator data.');
+   if(nes&&typeof nes.fromJSON!=='function')throw new Error('This emulator core does not support loading save states.');
+   if(!romLoaded||!sameRomName(currentName,record.romName)){
+     let savedRom;try{savedRom=await dbOp('readonly',store=>store.get(record.romName));}catch(e){throw new Error('Could not read the saved ROM library. '+(e?.message||''));}
+     if(!savedRom)throw new Error('This checkpoint belongs to '+record.romName+'. Load that ROM first (or import it into your saved ROM library), then load the checkpoint.');
+     await loadBytes(new Uint8Array(savedRom.bytes),savedRom.name,false);
+     if(!romLoaded||!sameRomName(currentName,record.romName))throw new Error('Could not load the ROM linked to this checkpoint.');
+   }
+   if(!nes||typeof nes.fromJSON!=='function')throw new Error('This emulator core does not support loading save states.');
+   paused=true;cancelAnimationFrame(raf);clearAudioQueue();resumeAudio();
+   try{nes.fromJSON(snapshot);}
+   catch(e){paused=false;run();throw new Error('The emulator could not restore this snapshot. It may belong to a different ROM or an incompatible JSNES state. '+(e?.message||''));}
+   // JSNES restores the PPU state as part of fromJSON; avoid advancing the game
+   // an extra frame immediately after restoring the checkpoint.
+   paused=false;$('pauseBtn').textContent='Ⅱ Pause';status('Save state loaded',true);run();
+   notice('Loaded checkpoint for '+record.romName+'. If the game looks wrong, try a newer checkpoint or reset the game.');
+ }
+ async function loadLatestState(){
+   let records;try{records=await dbOp('readonly',store=>store.getAll(),STATE_STORE);}catch(e){throw new Error('Could not read save states: '+(e?.message||e));}
+   records.sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+   if(romLoaded){const matching=records.find(item=>sameRomName(item.romName,currentName));if(matching){await restoreStateRecord(matching);return;}}
+   if(!records.length)throw new Error('No saved states yet. Load a game and click “save state” first.');
+   await restoreStateRecord(records[0]);
+ }
+ async function exportAllStates(){
+   const records=await dbOp('readonly',store=>store.getAll(),STATE_STORE);
+   if(!records.length)throw new Error('There are no save states to export yet.');
+   records.sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+   downloadJSON('chimiNES-save-state-log-'+new Date().toISOString().slice(0,10)+'.json',{format:'chimiNES-save-state-bundle',formatVersion:1,exportedAt:new Date().toISOString(),states:records.map(portableState)});
+   notice('Exported '+records.length+' save state'+(records.length===1?'':'s')+' to a JSON backup.');
+ }
+ async function importStateFile(file){
+   if(!file)return;
+   const parsed=JSON.parse(await file.text());
+   const incoming=parsed?.format==='chimiNES-save-state-bundle'&&Array.isArray(parsed.states)?parsed.states:(parsed?.state&&parsed?.romName?[parsed]:[]);
+   if(!incoming.length)throw new Error('This JSON file is not a chimiNES save-state or save-state bundle.');
+   // Validate the entire file before writing anything to avoid half-imported bundles.
+   const clean=incoming.map((item,index)=>{
+     if(!item||typeof item.romName!=='string'||!item.romName.trim()||!item.state||(typeof item.state!=='object'&&typeof item.state!=='string')||(typeof item.state==='object'&&Array.isArray(item.state)))throw new Error('Save entry '+(index+1)+' is missing a ROM name or valid state.');
+     let normalizedState=item.state;
+     if(typeof normalizedState==='string'){try{normalizedState=JSON.parse(normalizedState);}catch(_){throw new Error('Save entry '+(index+1)+' has invalid serialized state data.');}}
+     if(!normalizedState||typeof normalizedState!=='object'||Array.isArray(normalizedState))throw new Error('Save entry '+(index+1)+' has invalid emulator state data.');
+     const timestamp=typeof item.createdAt==='number'?item.createdAt:Date.parse(item.createdAt);
+     return {format:'chimiNES-save-state',formatVersion:1,romName:item.romName,createdAt:Number.isFinite(timestamp)?timestamp:Date.now(),state:normalizedState};
+   });
+   for(const record of clean)await dbOp('readwrite',store=>store.add(record),STATE_STORE);
+   await listSaveStates();notice('Imported '+clean.length+' save state'+(clean.length===1?'':'s')+'. Load the matching ROM if it is not already saved in this browser.');
+ }
+ function renderFrame(b){
+   if(!b||b.length<61440)return;
+   const d=frameImage.data;
+   // JSNES's framebuffer pixels are packed with red in the LOW byte
+   // (0xBBGGRR). Canvas ImageData expects R,G,B,A byte order, so unpack
+   // the channels explicitly instead of assuming a browser-native layout.
+   for(let i=0,j=0;i<61440;i++,j+=4){
+     const p=b[i]>>>0;
+     let r=p&255, g=(p>>>8)&255, bl=(p>>>16)&255;
+     // Apply color-vision assistance directly to pixels; SVG URL filters on canvas
+     // are inconsistently rendered by some browsers.
+     if(activeColorRendering==='protanopia'){
+       const nr=.567*r+.433*g, ng=.558*r+.442*g, nb=.242*g+.758*bl;
+       r=nr;g=ng;bl=nb;
+     }else if(activeColorRendering==='deuteranopia'){
+       const nr=.625*r+.375*g, ng=.7*r+.3*g, nb=.3*g+.7*bl;
+       r=nr;g=ng;bl=nb;
+     }else if(activeColorRendering==='tritanopia'){
+       const nr=.95*r+.05*g, ng=.433*g+.567*bl, nb=.475*g+.525*bl;
+       r=nr;g=ng;bl=nb;
+     }
+     d[j]=r; d[j+1]=g; d[j+2]=bl; d[j+3]=255;
+   }
+   ctx.putImageData(frameImage,0,0);
+  }
+ function init(){
+   if(!window.jsnes?.NES)throw Error('Emulator core did not load. Check internet access.');
+   // Web Audio usually must be resumed from a user gesture; the load/start controls call resumeAudio().
+   const audio=resumeAudio();
+   nes=new jsnes.NES({onFrame:renderFrame,onAudioSample:queueAudioSample,sampleRate:audio?.sampleRate||48000,emulateSound:true});
+ }
+ function loop(t){if(!nes||paused||!romLoaded)return;if(!lastTick)lastTick=t;const dt=Math.min(100,t-lastTick);lastTick=t;acc+=dt*60.0988*(Number($('speed').value)||1)/1000;let n=0;try{while(acc>=1&&n<6){nes.frame();acc--;n++;frameCounter++;}}catch(e){paused=true;status('Emulation stopped');notice(e.message);return;}if(fpsEnabled&&t-fpsWindowStart>=500){fpsOverlay.textContent='FPS: '+Math.round(frameCounter*1000/(t-fpsWindowStart));frameCounter=0;fpsWindowStart=t;}raf=requestAnimationFrame(loop);}
+ function run(){cancelAnimationFrame(raf);lastTick=0;acc=0;if(!paused&&romLoaded)raf=requestAnimationFrame(loop);}
+ async function listRoms(){const box=$('savedRoms');box.innerHTML='';let items=[];try{items=await dbOp('readonly',s=>s.getAll());}catch(e){box.textContent='Local ROM storage is unavailable.';return;}items.sort((a,b)=>b.savedAt-a.savedAt);if(!items.length){box.innerHTML='<div class="notice" style="padding:8px 10px">no saved roms yet. Import a .nes file to add it here.</div>';return;}items.forEach(item=>{const row=document.createElement('div');row.style.cssText='display:flex;gap:4px;align-items:center;margin:3px 0';const b=document.createElement('button');b.className='game';b.style.flex='1';b.innerHTML='<span class="controller-icon-wrap"><img class="controller-icon" src="controller.png" alt=""><span class="controller-icon-fallback">🎮</span></span>';const label=document.createElement('span');label.style.cssText='overflow:hidden;text-overflow:ellipsis;white-space:nowrap';label.textContent=item.name.replace(/\.nes$/i,'');b.append(label);b.onclick=()=>loadBytes(new Uint8Array(item.bytes),item.name,false);const del=document.createElement('button');del.className='secondary';del.textContent='×';del.title='Remove saved ROM';del.onclick=async()=>{if(confirm('Remove '+item.name+' from this browser?')){await dbOp('readwrite',s=>s.delete(item.name));listRoms();}};row.append(b,del);box.append(row);setupControllerIcons(row);});}
+ async function loadBytes(bytes,name,save){try{if(!nes)init();resumeAudio();clearAudioQueue();if(bytes.length<16)throw Error('File is too small to be a valid NES ROM.');let bin='';for(let i=0;i<bytes.length;i+=32768)bin+=String.fromCharCode(...bytes.subarray(i,Math.min(i+32768,bytes.length)));nes.loadROM(bin);romLoaded=true;currentName=name;paused=false;$('gameTitle').textContent=name.replace(/\.nes$/i,'');$('gameSub').textContent=Math.round(bytes.length/1024)+' KB · NES ROM';$('emptyState').classList.add('hidden');$('pauseBtn').textContent='Ⅱ Pause';status('Game running',true);notice(soundToggle.checked?'Loaded '+name+'. Game audio is enabled.':'Loaded '+name+'. Game audio is muted.');run();if(save)try{await dbOp('readwrite',s=>s.put({name,bytes:bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),savedAt:Date.now()}));await listRoms();}catch(e){notice('ROM loaded, but local saving failed: '+e.message);} }catch(e){status('Load failed');notice('Could not load ROM: '+e.message);}}
+ function loadFile(f){if(!f)return;if(!/\.nes$/i.test(f.name)){notice('Please choose a .nes ROM file.');return;}const r=new FileReader();r.onerror=()=>notice('Could not read file.');r.onload=()=>loadBytes(new Uint8Array(r.result),f.name,true);r.readAsArrayBuffer(f);}
+ $('romFile').onchange=e=>{loadFile(e.target.files[0]);e.target.value='';};['loadNav','loadMain'].forEach(id=>$(id).onclick=()=>{resumeAudio();$('romFile').click();});
+ $('loadBox').addEventListener('click',()=>resumeAudio());
+ const drop=$('dropZone');['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();$('loadBox').classList.add('drag');}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();$('loadBox').classList.remove('drag');}));drop.addEventListener('drop',e=>{resumeAudio();loadFile(e.dataTransfer.files[0]);});$('loadBox').addEventListener('dragover',e=>e.preventDefault());$('loadBox').addEventListener('drop',e=>{e.preventDefault();resumeAudio();loadFile(e.dataTransfer.files[0]);});
+ const DEFAULT_KEYBINDS={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',a:'z',b:'x',start:'Enter',select:'Shift',zapperFire:'Mouse1',zapperReload:'r'};
+ let keybinds={...DEFAULT_KEYBINDS};
+ try{const saved=JSON.parse(localStorage.getItem('chimiNES_keybinds')||'null');if(saved&&typeof saved==='object')for(const action of Object.keys(DEFAULT_KEYBINDS))if(typeof saved[action]==='string'&&saved[action])keybinds[action]=saved[action];}catch(_){}
+ const actionButtons={up:'BUTTON_UP',down:'BUTTON_DOWN',left:'BUTTON_LEFT',right:'BUTTON_RIGHT',a:'BUTTON_A',b:'BUTTON_B',start:'BUTTON_START',select:'BUTTON_SELECT'};
+ const prettyKey=k=>({ArrowUp:'↑ Up',ArrowDown:'↓ Down',ArrowLeft:'← Left',ArrowRight:'→ Right',Enter:'Enter',Shift:'Shift',' ':'Space',Escape:'Esc',Control:'Ctrl',Alt:'Alt',Backspace:'Backspace',Tab:'Tab',Mouse1:'Mouse 1',Mouse2:'Mouse 2'}[k]||(k.length===1?k.toUpperCase():k));
+ function renderKeybinds(){document.querySelectorAll('.keybind-button').forEach(button=>{button.textContent=prettyKey(keybinds[button.dataset.bind]);button.title='Click to change '+button.dataset.bind+' key';});}
+ function saveKeybinds(){try{localStorage.setItem('chimiNES_keybinds',JSON.stringify(keybinds));}catch(_){}renderKeybinds();}
+ let listeningFor=null;
+ document.querySelectorAll('.keybind-button').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));listeningFor=button.dataset.bind;button.classList.add('listening');$('keybindHelp').textContent='Press a key for '+listeningFor+'… (Esc cancels)';}));
+ $('resetKeybinds').addEventListener('click',()=>{keybinds={...DEFAULT_KEYBINDS};listeningFor=null;document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));saveKeybinds();$('keybindHelp').textContent='Default keybinds restored.';});
+ renderKeybinds();
+ function keyForEvent(key){return key.length===1?key.toLowerCase():key;}
+ function btn(k){const C=window.jsnes?.Controller;if(!C)return null;const normalized=keyForEvent(k);const action=Object.keys(keybinds).find(name=>!String(keybinds[name]).startsWith('Mouse')&&keyForEvent(keybinds[name])===normalized);return action?C[actionButtons[action]]:null;}
+ const zapperToggle=$('zapperToggle'),fpsToggle=$('fpsToggle'),fpsOverlay=$('fpsOverlay');
+ let zapperEnabled=false,fpsEnabled=false,frameCounter=0,fpsWindowStart=performance.now(),zapperMouseDown=false,zapperMouseDownPrev=false;
+ try{zapperToggle.checked=localStorage.getItem('chimiNES_zapper')==='1';fpsToggle.checked=localStorage.getItem('chimiNES_fps')==='1';}catch(_){}
+ function applyZapper(enabled){zapperEnabled=!!enabled;zapperToggle.checked=zapperEnabled;canvas.classList.toggle('zapper-active',zapperEnabled);try{localStorage.setItem('chimiNES_zapper',zapperEnabled?'1':'0');}catch(_){}notice(zapperEnabled?'Zapper enabled. Aim with the mouse and click to fire.':'Zapper disabled.');}
+ function applyFPS(enabled){fpsEnabled=!!enabled;fpsToggle.checked=fpsEnabled;fpsOverlay.hidden=!fpsEnabled;try{localStorage.setItem('chimiNES_fps',fpsEnabled?'1':'0');}catch(_){}if(!fpsEnabled)fpsOverlay.textContent='FPS: --';}
+ applyZapper(zapperToggle.checked);applyFPS(fpsToggle.checked);
+ zapperToggle.addEventListener('change',()=>applyZapper(zapperToggle.checked));
+ fpsToggle.addEventListener('change',()=>applyFPS(fpsToggle.checked));
+ function zapperPosition(e){const r=canvas.getBoundingClientRect();return {x:Math.max(0,Math.min(255,Math.floor((e.clientX-r.left)/r.width*256))),y:Math.max(0,Math.min(239,Math.floor((e.clientY-r.top)/r.height*240)))};}
+ function zapperInput(e,fire,offscreen=false){if(!zapperEnabled||!romLoaded||!nes)return;const pos=offscreen?{x:-1,y:-1}:zapperPosition(e);if(typeof nes.zapperMove==='function')nes.zapperMove(pos.x,pos.y);if(fire&&!zapperMouseDownPrev){if(typeof nes.zapperFireDown==='function')nes.zapperFireDown();}else if(!fire&&zapperMouseDownPrev){if(typeof nes.zapperFireUp==='function')nes.zapperFireUp();}zapperMouseDownPrev=!!fire;}
+ canvas.addEventListener('mousemove',e=>{if(zapperEnabled)zapperInput(e,zapperMouseDown);});
+ canvas.addEventListener('mousedown',e=>{if(zapperEnabled&&e.button===0){e.preventDefault();zapperMouseDown=true;zapperInput(e,true);}});
+ window.addEventListener('mouseup',e=>{if(e.button===0&&zapperMouseDown){zapperMouseDown=false;zapperInput(e,false);}});
+ canvas.addEventListener('contextmenu',e=>{if(zapperEnabled)e.preventDefault();});
+  const held=new Set();window.addEventListener('keydown',e=>{if(listeningFor){e.preventDefault();if(e.key==='Escape'){listeningFor=null;document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));$('keybindHelp').textContent='Key change cancelled.';return;}const action=listeningFor;const chosen=keyForEvent(e.key);const duplicate=Object.keys(keybinds).find(name=>name!==action&&keyForEvent(keybinds[name])===chosen);if(duplicate){$('keybindHelp').textContent='That key is already assigned to '+duplicate+'. Choose another key or change that binding first.';return;}keybinds[action]=e.key;listeningFor=null;document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));saveKeybinds();$('keybindHelp').textContent='Keybind saved.';return;}if(zapperEnabled&&keybinds.zapperFire!=='Mouse1'&&keyForEvent(e.key)===keyForEvent(keybinds.zapperFire)){e.preventDefault();zapperMouseDown=true;const r=canvas.getBoundingClientRect();zapperInput({clientX:r.left+r.width/2,clientY:r.top+r.height/2},true);return;}if(zapperEnabled&&keyForEvent(e.key)===keyForEvent(keybinds.zapperReload)){zapperMouseDown=false;zapperInput({clientX:canvas.getBoundingClientRect().left,clientY:canvas.getBoundingClientRect().top},false,true);return;}const b=btn(e.key);if(b!=null){e.preventDefault();const id=keyForEvent(e.key);if(nes&&romLoaded&&!held.has(id)){held.add(id);nes.buttonDown(1,b);}}if((e.key===' '||e.code==='Space')&&romLoaded&&e.target.tagName!=='BUTTON'){e.preventDefault();toggle();}});window.addEventListener('keyup',e=>{const id=keyForEvent(e.key);if(zapperEnabled&&keybinds.zapperFire!=='Mouse1'&&id===keyForEvent(keybinds.zapperFire)){zapperMouseDown=false;zapperInput({clientX:canvas.getBoundingClientRect().left+canvas.getBoundingClientRect().width/2,clientY:canvas.getBoundingClientRect().top+canvas.getBoundingClientRect().height/2},false);}const b=btn(e.key);if(b!=null){held.delete(id);if(nes&&romLoaded)nes.buttonUp(1,b);}});
+ // Reuse controller.png for every controller icon. If it is absent, show each icon's emoji fallback.
+ function setupControllerIcons(root=document){root.querySelectorAll('.controller-icon').forEach(img=>{
+   if(img.dataset.controllerChecked==='1')return;img.dataset.controllerChecked='1';
+   const wrap=img.closest('.controller-icon-wrap');
+   const fallback=wrap?.querySelector('.controller-icon-fallback');
+   img.onload=()=>{img.style.display='block';if(fallback)fallback.style.display='none';};
+   img.onerror=()=>{img.style.display='none';if(fallback)fallback.style.display='inline';};
+   img.src=new URL('controller.png',document.baseURI).href;
+ });}
+ setupControllerIcons();
+ // In the controller artwork panel, retain the drawn controller if the image is missing.
+ const controllerImage=$('controllerImage');if(controllerImage){controllerImage.onload=()=>{controllerImage.style.display='block';const drawing=controllerImage.parentElement.querySelector('.controller-drawing');if(drawing)drawing.style.display='none';};controllerImage.onerror=()=>{controllerImage.style.display='none';const drawing=controllerImage.parentElement.querySelector('.controller-drawing');if(drawing)drawing.style.display='flex';};controllerImage.src=new URL('controller.png',document.baseURI).href;}
+ function toggle(){resumeAudio();if(!romLoaded){$('romFile').click();return;}paused=!paused;$('pauseBtn').textContent=paused?'▶ Resume':'Ⅱ Pause';status(paused?'Paused':'Game running',true);if(paused){cancelAnimationFrame(raf);clearAudioQueue();}else run();}
+ $('pauseBtn').onclick=toggle;$('resetBtn').onclick=()=>{if(!nes||!romLoaded)return notice('Load a ROM first.');clearAudioQueue();nes.reset();paused=false;resumeAudio();run();};
+ const fullscreenBtn=$('fullscreenBtn');
+ function syncFullscreenButton(){const active=document.fullscreenElement===drop;if(fullscreenBtn){fullscreenBtn.textContent=active?'⤢ exit fullscreen':'⛶ fullscreen';fullscreenBtn.setAttribute('aria-pressed',String(active));}applyScreenScale(scaleSelect?.value||'3',false);}
+ if(fullscreenBtn)fullscreenBtn.onclick=async()=>{try{if(document.fullscreenElement===drop)await document.exitFullscreen();else await drop.requestFullscreen();}catch(e){notice('Fullscreen is unavailable in this browser or page context.');}};
+ document.addEventListener('fullscreenchange',syncFullscreenButton);
+ // Apply saved preferences and wire the controls explicitly.
+ const themeSelect=$('themeSelect');
+ function applyTheme(theme){const valid=['default','purple','forest','sunset','light','black','red','orange','pink','ocean','gold','teal','amber','matrix','lavender','slate','vantablack','ice','copper','ultraviolet','cream'];if(!valid.includes(theme))theme='default';if(theme==='default')document.body.removeAttribute('data-theme');else document.body.setAttribute('data-theme',theme);themeSelect.value=theme;try{localStorage.setItem('chimiNES_theme',theme);}catch(_){} }
+ try{applyTheme(localStorage.getItem('chimiNES_theme')||themeSelect.value||'default');}catch(_){applyTheme('default');}
+ themeSelect.addEventListener('change',()=>applyTheme(themeSelect.value));
+ const filterSelect=$('filter');
+ function applyFilter(value){canvas.style.imageRendering=value==='smooth'?'auto':'pixelated';canvas.style.setProperty('image-rendering',value==='smooth'?'auto':'pixelated');try{localStorage.setItem('chimiNES_filter',value);}catch(_){}}
+ try{filterSelect.value=localStorage.getItem('chimiNES_filter')||filterSelect.value;}catch(_){} applyFilter(filterSelect.value);
+ filterSelect.addEventListener('change',()=>applyFilter(filterSelect.value));
+ const colorRenderingSelect=$('colorRendering');
+ function applyColorRendering(value){
+   const effects={normal:'none',protanopia:'none',deuteranopia:'none',tritanopia:'none',monochrome:'grayscale(1)',sepia:'sepia(1) saturate(.8)',highcontrast:'contrast(1.7)',invert:'invert(1) hue-rotate(180deg)'};
+   if(!Object.prototype.hasOwnProperty.call(effects,value))value='normal';
+   activeColorRendering=value;
+   canvas.style.filter=effects[value];
+   colorRenderingSelect.value=value;
+   try{localStorage.setItem('chimiNES_colorRendering',value);}catch(_){}
+   if(romLoaded && nes && nes.ppu && nes.ppu.buffer) renderFrame(nes.ppu.buffer);
+  }
+  try{colorRenderingSelect.value=localStorage.getItem('chimiNES_colorRendering')||'normal';}catch(_){} applyColorRendering(colorRenderingSelect.value);
+ colorRenderingSelect.addEventListener('change',()=>applyColorRendering(colorRenderingSelect.value));
+ const crtToggle=$('crtMode');
+ function applyCRT(enabled){drop.classList.toggle('crt-mode',!!enabled);crtToggle.checked=!!enabled;try{localStorage.setItem('chimiNES_crt',enabled?'1':'0');}catch(_){}}
+ let savedCRT='0';try{savedCRT=localStorage.getItem('chimiNES_crt')||'0';}catch(_){} applyCRT(savedCRT==='1');
+ crtToggle.addEventListener('change',()=>applyCRT(crtToggle.checked));
+ $('aboutBtn').addEventListener('click',()=>{const box=$('aboutBox'),open=box.hidden;box.hidden=!open;$('aboutBtn').setAttribute('aria-expanded',String(open));$('aboutChevron').textContent=open?'−':'＋';});
+ // A relative favicon path works for both local folders and ordinary web hosting.
+ const favicon=$('siteFavicon');
+ const fallbackFavicon=favicon.href;
+ const candidate=new URL('favicon.png',document.baseURI).href;
+ const probe=new Image();probe.onload=()=>{favicon.href=candidate;};probe.onerror=()=>{favicon.href=fallbackFavicon;};probe.src=candidate;
+ $('speed').onchange=()=>notice('playback speed: '+$('speed').value+'×');
+ const scaleSelect=$('scale');
+ let desiredScreenScale=3;
+ function applyScreenScale(value,announce=true){
+   desiredScreenScale=Math.max(0.5,Math.min(8,Number(value)||3));
+   const full=document.fullscreenElement===drop;
+   const availableW=full?window.innerWidth:Math.max(120,drop.clientWidth-20);
+   const availableH=full?window.innerHeight:Infinity;
+   const cssWidth=Math.max(1,Math.min(256*desiredScreenScale,availableW,availableH*(256/240)));
+   canvas.style.width=cssWidth+'px';canvas.style.height=(cssWidth*240/256)+'px';canvas.style.maxWidth='100%';canvas.style.maxHeight=full?'100vh':'none';canvas.style.flex='0 0 auto';
+   scaleSelect.value=String(desiredScreenScale);
+   try{localStorage.setItem('chimiNES_scale',String(desiredScreenScale));}catch(_){}
+   if(announce)notice('Screen scale: '+desiredScreenScale+'×'+(cssWidth<256*desiredScreenScale?' (fit to viewport)':'' )+'.');
+ }
+ try{scaleSelect.value=localStorage.getItem('chimiNES_scale')||scaleSelect.value;}catch(_){} applyScreenScale(scaleSelect.value,false);
+ scaleSelect.addEventListener('change',()=>applyScreenScale(scaleSelect.value));
+ window.addEventListener('resize',()=>applyScreenScale(desiredScreenScale,false));
+ soundToggle.addEventListener('change',()=>{
+   const enabled=soundToggle.checked;
+   if(!enabled)clearAudioQueue();
+   try{localStorage.setItem('chimiNES_sound',enabled?'1':'0');}catch(_){}
+   if(enabled){const audio=resumeAudio();notice(audio?'Sound enabled. Start or resume a game to hear audio.':'Web Audio is unavailable in this browser; game audio cannot play here.');}
+   else notice('Sound disabled.');
+ });
+ $('saveBtn').onclick=async()=>{const button=$('saveBtn');button.disabled=true;try{await saveCurrentState();}catch(e){notice('Could not save state: '+(e?.message||e));}finally{button.disabled=false;}};
+ $('loadStateBtn').onclick=async()=>{const button=$('loadStateBtn');button.disabled=true;try{await loadLatestState();}catch(e){notice(e?.message||String(e));}finally{button.disabled=false;}};
+ $('exportStatesBtn').onclick=async()=>{const button=$('exportStatesBtn');button.disabled=true;try{await exportAllStates();}catch(e){notice('Could not export save states: '+(e?.message||e));}finally{button.disabled=false;}};
+ $('importStateBtn').onclick=()=>$('stateFile').click();
+ $('stateFile').addEventListener('change',async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{await importStateFile(file);}catch(err){notice('Could not import save state: '+(err?.message||err));}});
+
+ status('Waiting for ROM');listRoms();listSaveStates();if(!window.jsnes)notice('Emulator core loads from CDN; internet access is required.');
+})();
+</script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 chimiNES
 
+[PORTION OF THE UI IN THIS PROGRAM WAS CREATED WITH THE ASSISTANCE OF ARTIFICIAL INTELLIGENCE]
+
 chimiNES is a lightweight, browser-based NES emulator built with HTML, CSS, and JavaScript, using JSNES as its backend for NES emulation. its a customizable frontend with JavaScript-based emulation to bring classic NES gaming to the browser without requiring a traditional installation or build process.
 
 the frontend provides an interactive interface for loading ROMs, configuring controls, adjusting display settings, and managing experimental features. JSNES handles the core NES emulation, while chimiNES builds on top of it with additional interface customization, rendering options, and input functionality.

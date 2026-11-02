@@ -1,3 +1,6 @@
+ <img width="636" height="327" alt="B" src="https://github.com/user-attachments/assets/7600cfa7-ce19-410e-bf89-39bf3b8eb5cd" />
+
+
 chimiNES
 
 [PORTION OF THE UI IN THIS PROGRAM WAS CREATED WITH THE ASSISTANCE OF ARTIFICIAL INTELLIGENCE]

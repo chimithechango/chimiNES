@@ -20,7 +20,7 @@ main{display:grid;grid-template-columns:230px minmax(0,1fr) 275px;gap:16px;paddi
 .screen-empty{position:absolute;inset:0;display:grid;place-content:center;text-align:center;color:#7da9d4;gap:8px;padding:20px}.screen-empty strong{font-size:20px;color:#eaf6ff}.screen-empty .big{font-size:45px}.screen-empty small{max-width:330px}
 .game-info{display:flex;align-items:center;gap:12px;padding:12px 5px 0}.cover{height:58px;width:58px;border:1px solid #145b96;border-radius:9px;background:linear-gradient(135deg,#0a3561,#06101f);display:grid;place-items:center;font-size:28px}.game-title{font-weight:750}.sub{font-size:12px;color:var(--muted)}.status{margin-left:auto;font-size:12px;color:#8fbfff;display:flex;align-items:center;gap:8px}.dot{width:9px;height:9px;background:#66778a;border-radius:50%;display:inline-block}.dot.on{background:#16e59a;box-shadow:0 0 10px #16e59a}
 .right{display:flex;flex-direction:column;gap:15px}.section{padding:0 15px 15px}.padart{height:120px;border:1px solid #365575;border-radius:12px;background:linear-gradient(145deg,#101c2b,#040a12);display:flex;align-items:center;justify-content:space-evenly;margin:4px 0 13px;box-shadow:inset 0 0 20px #0009}
-.dpad{width:86px;height:86px;position:relative}.dpad i{position:absolute;background:#1b2d41;border:2px solid #70869d;border-radius:5px;box-shadow:inset 0 0 5px #000}.dpad .v{width:27px;height:86px;left:30px}.dpad .h{height:27px;width:86px;top:30px}.buttons{display:flex;gap:10px;transform:rotate(-18deg)}.ab{width:35px;height:35px;border-radius:50%;background:#e6293d;border:3px solid #8c1729;box-shadow:0 3px 0 #64101c}.mapping{display:grid;grid-template-columns:70px 1fr;gap:8px 10px;color:var(--muted);align-items:center}.key{display:inline-block;text-align:center;border:1px solid #315b85;border-radius:6px;padding:3px 7px;min-width:40px;color:#d6eaff;background:#09182a;box-shadow:0 2px 0 #102f50;font-weight:700}
+.dpad{width:86px;height:86px;position:relative}.dpad i{position:absolute;background:#1b2d41;border:2px solid #70869d;border-radius:5px;box-shadow:inset 0 0 5px #000}.dpad .v{width:27px;height:86px;left:30px}.dpad .h{height:27px;width:86px;top:30px}.buttons{display:flex;gap:10px;transform:rotate(-18deg)}.ab{width:35px;height:35px;border-radius:50%;background:#e6293d;border:3px solid #8c1729;box-shadow:0 3px 0 #64101c}.mapping{display:grid;grid-template-columns:70px 1fr;gap:8px 10px;color:var(--muted);align-items:center}.player-key-title{margin:17px 0 10px;padding-top:13px;border-top:1px solid var(--line);font-weight:750;color:var(--text)}.key{display:inline-block;text-align:center;border:1px solid #315b85;border-radius:6px;padding:3px 7px;min-width:40px;color:#d6eaff;background:#09182a;box-shadow:0 2px 0 #102f50;font-weight:700}
 .setting{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;margin:9px 0;color:#a8d2ff}.setting select{width:100%;padding:9px;border:1px solid #234c76;background:#061326;color:#eaf5ff;border-radius:8px;font:inherit;color-scheme:dark}.setting select option{background:#061326;color:#eaf5ff}.toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0;color:#a8d2ff}.toggle input{accent-color:var(--blue);width:18px;height:18px}
 .loadbox{padding:17px;border:1px solid #0879ff;border-radius:13px;background:linear-gradient(120deg,#0c2d61,#091b3b);text-align:center;cursor:pointer;color:#b7d7ff}.loadbox:hover,.loadbox.drag{background:#123e7c;box-shadow:0 0 24px #087bff32}.loadbox b{display:block;color:#fff;font-size:15px}.loadbox small{display:block;margin-top:3px}.loadicon{font-size:26px;color:#5aa6ff}.primary{border:1px solid var(--button-line);background:var(--button-bg);color:white;padding:9px 13px;border-radius:8px;cursor:pointer;font:inherit;font-weight:700}.primary:hover{filter:brightness(1.15)}.secondary{border:1px solid #294d70;background:#07182b;color:#a9d3ff;padding:8px 12px;border-radius:8px;cursor:pointer;font:inherit}.actionrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.footer{padding:0 20px 22px;text-align:center;color:#4f7eac;font-size:12px}.notice{font-size:12px;color:#8db5dd;margin-top:10px}.hidden{display:none!important}input[type=file]{display:none}
 .theme-control{display:flex;align-items:center;gap:8px;margin-left:8px}
@@ -329,6 +329,9 @@ body[data-theme="gold"]{--bg:#171105;--panel:rgba(43,32,8,.96);--line:#9a7620;--
 .panel-head .controller-icon-wrap{width:25px;height:25px}
 .screen-empty .controller-icon-wrap{width:56px;height:56px}
 .game .controller-icon-wrap{width:28px;height:28px;font-size:23px}
+.cartridge-icon-wrap{display:inline-flex;align-items:center;justify-content:center;flex:0 0 34px;width:34px;height:27px;overflow:hidden}
+.cartridge-icon{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+.cartridge-icon-fallback{display:none;font-size:22px;line-height:1}
 .keybind-button{font:inherit;cursor:pointer;padding:3px 7px;min-width:38px}
 .keybind-button.listening{outline:2px solid var(--cyan);outline-offset:2px;background:var(--accent-soft);animation:keyPulse .8s ease-in-out infinite alternate}
 .keybind-help{margin-top:10px;color:var(--muted);font-size:11px;line-height:1.45}
@@ -435,19 +438,227 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
   min-width:0!important; padding:0!important; margin:0!important;
   border:0!important; outline:0!important; background:transparent!important;
   box-shadow:none!important; border-radius:0!important; filter:none!important;
-  overflow:hidden!important; position:relative!important;
+  overflow:visible!important; position:relative!important;
 }
 .panel-head .ico.controller-icon-wrap { color:inherit!important; }
 .panel-head .controller-icon {
   display:block!important; width:100%!important; height:100%!important;
   padding:0!important; margin:0!important; border:0!important; outline:0!important;
   background:transparent!important; box-shadow:none!important; border-radius:0!important;
-  object-fit:contain!important;
-  /* The border is baked into controller.png, so crop its outer edge visually. */
-  transform:scale(1.35)!important; clip-path:inset(8% 8% 8% 8%)!important;
+  object-fit:contain!important; transform:none!important; clip-path:none!important;
 }
 .panel-head .controller-icon-fallback { border:0!important; background:transparent!important; box-shadow:none!important; }
 
+
+.cheat-tools,.gamepad-tools{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);color:var(--text)}
+.cheat-entry{display:flex;gap:6px;margin-top:7px}.cheat-entry input{min-width:0;flex:1;width:0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--control-bg,#07182b);color:var(--text);font:inherit;font-family:ui-monospace,monospace}
+.cheat-list{display:grid;gap:6px;margin-top:8px}.cheat-row{display:flex;gap:6px;align-items:center;font:12px ui-monospace,monospace;color:var(--muted)}.cheat-row span{flex:1;overflow-wrap:anywhere}.cheat-row button{padding:4px 7px;font-size:11px}
+
+
+/* Refined interface finish: consistent proportions, restrained depth, and clearer states. */
+:root {
+  --ui-control-radius: 10px;
+  --ui-control-shadow: 0 2px 0 rgba(0,0,0,.22), 0 5px 14px rgba(0,0,0,.12);
+}
+button, .key, .navbtn, select, input[type="checkbox"], .loadbox {
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+button, .key, .navbtn {
+  border-radius: var(--ui-control-radius);
+  font-weight: 650;
+  letter-spacing: .01em;
+}
+button:not(:disabled) { box-shadow: var(--ui-control-shadow); }
+button:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.07); }
+button:not(:disabled):active { transform: translateY(0); box-shadow: inset 0 2px 4px rgba(0,0,0,.22); }
+button:disabled { opacity: .48; cursor: not-allowed; }
+select, .theme-control select, .setting select {
+  border-radius: 10px;
+  min-height: 38px;
+  padding: 8px 34px 8px 11px;
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.12);
+}
+.panel { border-radius: 14px; }
+.panel-head { letter-spacing: .075em; }
+.setting, .toggle { padding-top: 9px; padding-bottom: 9px; }
+.loadbox { border-radius: 13px; }
+.appearance-group {
+  margin: 2px 0 13px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-soft, var(--panel));
+}
+.appearance-heading { color: var(--text); font-size: 13px; font-weight: 750; letter-spacing: .045em; text-transform: uppercase; }
+.appearance-description { margin: 5px 0 9px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.appearance-group .setting { padding: 0; }
+
+/* Solid Colors removes decorative gradients while preserving the selected theme palette. */
+body[data-ui-style="solid"] { --panel-grad: var(--panel); --glow: none; }
+body[data-ui-style="solid"] header,
+body[data-ui-style="solid"] .panel,
+body[data-ui-style="solid"] .center,
+body[data-ui-style="solid"] .screen-shell,
+body[data-ui-style="solid"] .loadbox,
+body[data-ui-style="solid"] .logo,
+body[data-ui-style="solid"] .cover,
+body[data-ui-style="solid"] .game.active,
+body[data-ui-style="solid"] .secondary,
+body[data-ui-style="solid"] .key,
+body[data-ui-style="solid"] .padart,
+body[data-ui-style="solid"] .appearance-group {
+  background-image: none !important;
+}
+body[data-ui-style="solid"] { background: var(--bg) !important; }
+body[data-ui-style="solid"] header { background-color: var(--header-bg) !important; backdrop-filter: none; }
+body[data-ui-style="solid"] .panel { background-color: var(--panel) !important; box-shadow: none; }
+body[data-ui-style="solid"] .game.active { background-color: var(--accent-soft) !important; }
+body[data-ui-style="solid"] .logo,
+body[data-ui-style="solid"] .cover,
+body[data-ui-style="solid"] .padart { background-color: var(--accent-soft) !important; }
+body[data-ui-style="solid"] button,
+body[data-ui-style="solid"] .key,
+body[data-ui-style="solid"] .loadbox { box-shadow: none; }
+body[data-ui-style="solid"] button:not(:disabled):hover { filter: brightness(1.12); }
+body[data-ui-style="solid"] .screen-shell { background-color: #000 !important; }
+body[data-ui-style="solid"] .dpad i { background-image: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  button, .key, .navbtn, select, .loadbox { transition: none; }
+}
+
+
+/* Follow-up polish: make every surface obey the selected UI style and theme. */
+:root {
+  --surface-raised: color-mix(in srgb, var(--panel) 72%, var(--text) 28%);
+  --surface-deep: color-mix(in srgb, var(--bg) 78%, #000 22%);
+  --line-soft: color-mix(in srgb, var(--line) 68%, var(--bg));
+  --control-bg: color-mix(in srgb, var(--panel) 78%, var(--bg));
+  --dropdown-bg: var(--control-bg);
+  --hover-bg: color-mix(in srgb, var(--accent-soft) 72%, var(--cyan) 28%);
+}
+/* Stronger tonal separation: recessed areas stay dark, interactive surfaces lift. */
+.panel { background: var(--panel-grad); }
+.center { background: color-mix(in srgb, var(--panel) 82%, var(--bg)); border-radius: 14px; }
+.panel-head { color: var(--text); }
+.setting, .toggle { color: var(--text); }
+.setting label, .toggle label { color: var(--muted); }
+.secondary, .key {
+  background: var(--control-bg) !important;
+  color: var(--text) !important;
+  border-color: var(--line) !important;
+}
+.primary { color: #fff !important; background: var(--button-bg) !important; border-color: var(--button-line) !important; }
+.game.active { background: linear-gradient(110deg, var(--button-bg), var(--accent-soft)); }
+.navbtn { color: var(--muted); }
+.navbtn:hover, .game:hover { background: var(--hover-bg); color: var(--text); }
+.padart { background: var(--surface-deep); border-color: var(--line); }
+.dpad i { background: color-mix(in srgb, var(--surface-raised) 78%, var(--bg)); border-color: var(--muted); }
+.key { box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 2px 0 color-mix(in srgb, var(--line) 58%, #000); }
+.appearance-group, .about-box, .state-entry { background: var(--surface-soft); }
+#dropZone.drag-active { outline: 2px dashed var(--cyan); outline-offset: 4px; }
+
+/* Full artwork, no clipping or forced zoom in the controls illustration. */
+.padart { min-height: 132px; height: 132px; overflow: visible; padding: 7px 12px; }
+#controllerImage.controller-image {
+  display: none; width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+  min-width: 0; object-fit: contain; object-position: center; padding: 3px;
+  transform: none !important; clip-path: none !important; border: 0; overflow: visible;
+}
+.panel-head .controller-icon { transform: none !important; clip-path: none !important; object-fit: contain !important; }
+
+/* Theme-matched custom checkboxes. */
+input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: 42px !important; height: 24px !important; min-width: 42px;
+  margin: 0; border: 1px solid var(--line) !important; border-radius: 999px;
+  background: var(--control-bg) !important; position: relative; cursor: pointer;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.28);
+  vertical-align: middle;
+}
+input[type="checkbox"]::before {
+  content: ""; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px;
+  border-radius: 50%; background: var(--muted); box-shadow: 0 1px 3px rgba(0,0,0,.35);
+  transition: transform .16s ease, background .16s ease;
+}
+input[type="checkbox"]:checked { background: var(--accent-soft) !important; border-color: var(--cyan) !important; }
+input[type="checkbox"]:checked::before { transform: translateX(18px); background: var(--cyan); }
+input[type="checkbox"]:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Solid Colors is genuinely flat across the whole interface, not just panels. */
+body[data-ui-style="solid"],
+body[data-ui-style="solid"] *:not(canvas):not(svg):not(path):not(use) { background-image: none !important; }
+body[data-ui-style="solid"] { background: var(--bg) !important; }
+body[data-ui-style="solid"] header { background: var(--header-bg) !important; backdrop-filter: none !important; }
+body[data-ui-style="solid"] .panel,
+body[data-ui-style="solid"] .center,
+body[data-ui-style="solid"] .appearance-group,
+body[data-ui-style="solid"] .about-box,
+body[data-ui-style="solid"] .state-entry { background: var(--panel) !important; box-shadow: none !important; }
+body[data-ui-style="solid"] .logo,
+body[data-ui-style="solid"] .cover,
+body[data-ui-style="solid"] .padart,
+body[data-ui-style="solid"] .key,
+body[data-ui-style="solid"] .secondary,
+body[data-ui-style="solid"] select,
+body[data-ui-style="solid"] input[type="checkbox"] { background-color: var(--control-bg) !important; }
+body[data-ui-style="solid"] .primary { background: var(--button-bg) !important; }
+body[data-ui-style="solid"] .game.active,
+body[data-ui-style="solid"] .navbtn:hover,
+body[data-ui-style="solid"] .game:hover { background: var(--accent-soft) !important; }
+body[data-ui-style="solid"] .screen-shell { background: #000 !important; }
+body[data-ui-style="solid"] .padart { box-shadow: none !important; }
+body[data-ui-style="solid"] button:not(:disabled):hover { filter: brightness(1.13); }
+body[data-ui-style="solid"] .game.active { box-shadow: inset 3px 0 0 var(--cyan) !important; }
+body[data-ui-style="solid"] .loadbox { background: var(--control-bg) !important; }
+body[data-ui-style="solid"] .dpad i { background: var(--surface-raised) !important; }
+
+/* Improve native select consistency, including the visible closed control. */
+select, .setting select, .theme-control select {
+  background-color: var(--control-bg) !important; color: var(--text) !important;
+  border-color: var(--line) !important; box-shadow: inset 0 1px 2px rgba(0,0,0,.16);
+}
+select option, select optgroup { background: var(--dropdown-bg) !important; color: var(--text) !important; }
+body[data-theme="light"] input[type="checkbox"] { box-shadow: inset 0 1px 2px rgba(25,43,60,.16); }
+
+
+/* Prevent the UI appearance selector from clipping its label or selected value. */
+.appearance-group { min-width: 0; }
+.appearance-group .setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 1.15fr);
+  gap: 10px;
+  min-width: 0;
+}
+.appearance-group .setting label { min-width: 0; overflow-wrap: anywhere; }
+.appearance-group .setting select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding-left: 10px !important;
+  padding-right: 32px !important;
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .appearance-group .setting {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .appearance-group .setting select { width: 100%; }
+}
+
+/* chimiNES wordmark: keep the NES lettering red in every theme. */
+header .brand span { color: #e32636 !important; }
+
+/* Settings relocated into the left sidebar */
+.left-settings { margin-top: 14px; min-width: 0; }
+.left-settings .section { padding-left: 12px; padding-right: 12px; }
+.left-settings .setting { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.left-settings .setting select { min-width: 0; width: 100%; }
+.left-settings .appearance-description { line-height: 1.45; }
+.left-settings .notice { overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -465,11 +676,11 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
   <div class="theme-control"><label for="themeSelect">hud theme</label><select id="themeSelect" aria-label="HUD theme">
     <option value="default">neon blue</option><option value="purple">purple haze</option><option value="forest">forest</option><option value="sunset">sunset</option><option value="light">light</option><option value="black">midnight black</option><option value="red">arcade red</option><option value="orange">electric orange</option><option value="pink">hot pink</option><option value="ocean">deep ocean</option><option value="gold">retro gold</option><option value="teal">neon teal</option><option value="amber">amber glow</option><option value="matrix">matrix green</option><option value="lavender">soft lavender</option><option value="slate">slate gray</option><option value="vantablack">vantablack (true black)</option><option value="ice">arctic ice</option><option value="copper">copper forge</option><option value="ultraviolet">ultraviolet</option><option value="cream">warm cream</option>
   </select></div>
-  <div class="version">browser edition · v1.0</div>
+  <div class="version">browser edition · experimental update</div>
 </header>
 <main>
   <aside class="panel">
-    <div class="panel-head"><span class="ico">▣</span> saved roms</div>
+    <div class="panel-head"><span class="ico">📂</span> saved roms</div>
     <div class="library" id="savedRoms"><div class="notice" style="padding:8px 10px">Your imported ROMs will appear here and stay saved in this browser.</div></div>
     <div class="sep"></div>
     <button class="navbtn" id="loadNav">📂　import rom (.nes)</button>
@@ -481,6 +692,26 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
       <a href="https://github.com/bfirsh/jsnes" target="_blank" rel="noopener noreferrer">JSNES project ↗</a>
     </div>
     <div class="notice" style="padding:0 12px 14px">roms are stored locally in this browser. clearing site data removes them.</div>
+
+    <section class="panel left-settings">
+      <div class="panel-head"><span class="ico">⚙</span> settings</div>
+      <div class="section">
+        <div class="appearance-group">
+          <div class="appearance-heading">UI appearance</div>
+          <p class="appearance-description">Choose the visual treatment for panels, buttons, menus, and controls.</p>
+          <div class="setting"><label for="uiStyle">interface style</label><select id="uiStyle"><option value="gradient">Gradient</option><option value="solid">Solid Colors</option></select></div>
+        </div>
+        <div class="setting"><label for="autosaveInterval">autosave interval</label><select id="autosaveInterval"><option value="1">1 second</option><option value="2">2 seconds</option><option value="5">5 seconds</option><option value="10">10 seconds</option><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="60">60 seconds</option></select></div>
+        <div class="setting"><label for="speed">playback speed</label><select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1× normal</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option><option value="2.5">2.5×</option><option value="3">3×</option><option value="4">4×</option></select></div>
+        <div class="setting"><label for="scale">screen scale</label><select id="scale"><option value="0.5">0.5×</option><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="2.5">2.5×</option><option value="3" selected>3×</option><option value="3.5">3.5×</option><option value="4">4×</option><option value="5">5×</option><option value="6">6×</option><option value="8">8×</option></select></div>
+        <div class="setting"><label for="filter">pixel filter</label><select id="filter"><option value="pixel" selected>pixel perfect</option><option value="smooth">smooth</option></select></div>
+        <div class="setting"><label for="colorRendering">color rendering</label><select id="colorRendering"><option value="normal" selected>normal colors</option><option value="protanopia">protanopia aid (red-weak)</option><option value="deuteranopia">deuteranopia aid (green-weak)</option><option value="tritanopia">tritanopia aid (blue-weak)</option><option value="monochrome">monochrome</option><option value="sepia">sepia</option><option value="highcontrast">high contrast</option><option value="invert">inverted colors</option></select></div>
+        <div class="toggle"><label for="crtMode">crt mode</label><input id="crtMode" type="checkbox"></div>
+        <div class="toggle"><label for="sound">sound enabled</label><input id="sound" type="checkbox" checked></div>
+        <div class="toggle"><label for="autostart">auto-start on load</label><input id="autostart" type="checkbox"></div>
+        <div class="notice">save states are stored in this browser. Use the save-state log to load, export, or import checkpoints.</div>
+      </div>
+    </section>
   </aside>
 
   <section class="panel center">
@@ -535,39 +766,52 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
           <span><button class="key keybind-button" data-bind="select" type="button">Shift</button></span><span>= Select</span>
         </div>
         <div class="keybind-help" id="keybindHelp">Click any key above, then press the key you want to use. Changes are saved in this browser.</div>
+        <div class="player-key-title">Player 2 keyboard controls</div>
+        <div class="mapping" id="player2KeyMapping">
+          <span><button class="key keybind-button" data-bind="p2Up" type="button">W</button> <button class="key keybind-button" data-bind="p2Down" type="button">S</button></span><span>= d-pad vertical</span>
+          <span><button class="key keybind-button" data-bind="p2Left" type="button">A</button> <button class="key keybind-button" data-bind="p2Right" type="button">D</button></span><span>= d-pad horizontal</span>
+          <span><button class="key keybind-button" data-bind="p2A" type="button">J</button></span><span>= A button</span>
+          <span><button class="key keybind-button" data-bind="p2B" type="button">K</button></span><span>= B button</span>
+          <span><button class="key keybind-button" data-bind="p2Start" type="button">U</button></span><span>= Start</span>
+          <span><button class="key keybind-button" data-bind="p2Select" type="button">I</button></span><span>= Select</span>
+        </div>
+        <div class="keybind-help">Player 1 and Player 2 can play together using separate keyboard keys or separate gamepads. Use the buttons above to remap either player's keys.</div>
+        <div class="player-key-title">NES Zapper</div>
+        <div class="toggle"><label for="zapperToggle">Enable Zapper (mouse aim + click)</label><input id="zapperToggle" type="checkbox"></div>
+        <div id="zapperBindings" class="mapping" style="margin-top:10px">
+          <span><button class="key keybind-button" data-bind="zapperFire" type="button">Mouse 1</button></span><span>= zapper fire</span>
+          <span><button class="key keybind-button" data-bind="zapperReload" type="button">R</button></span><span>= zapper reload/offscreen</span>
+        </div>
+        <div class="keybind-help" id="zapperHelp">Enable Zapper for mouse aiming and firing. Click a key to remap keyboard actions; mouse fire remains available.</div>
         <div class="actionrow keybind-actions"><button class="secondary" id="resetKeybinds" type="button">reset keybinds</button></div>
       </div>
     </section>
     <section class="panel">
       <div class="panel-head"><span class="ico">🧪</span> experimental</div>
       <div class="section">
-        <div class="toggle"><label for="zapperToggle">NES Zapper (mouse aim + click)</label><input id="zapperToggle" type="checkbox"></div>
         <div class="toggle"><label for="fpsToggle">show FPS counter</label><input id="fpsToggle" type="checkbox"></div>
-        <div id="zapperBindings" class="mapping" style="margin-top:10px">
-          <span><button class="key keybind-button" data-bind="zapperFire" type="button">Mouse 1</button></span><span>= zapper fire</span>
-          <span><button class="key keybind-button" data-bind="zapperReload" type="button">R</button></span><span>= zapper reload/offscreen</span>
+        <div class="toggle"><label for="autosaveToggle">automatic autosave</label><input id="autosaveToggle" type="checkbox"></div>
+        <div class="cheat-tools">
+          <label for="cheatInput"><strong>RAM cheat</strong> <span class="keybind-help">Format: address=value (hex), e.g. $0003=$09</span></label>
+          <div class="cheat-entry"><input id="cheatInput" type="text" maxlength="11" placeholder="$0003=$09" autocomplete="off" spellcheck="false"><button class="secondary" id="addCheatBtn" type="button">add</button></div>
+          <div class="keybind-help">RAM cheats write a byte to internal RAM while the game runs.</div>
+          <div id="cheatList" class="cheat-list" aria-live="polite"></div>
+          <div style="margin-top:12px"><label for="gameGenieInput"><strong>NES Game Genie code</strong> <span class="keybind-help">6 or 8 letters, e.g. SXIOPO</span></label>
+          <div class="cheat-entry"><input id="gameGenieInput" type="text" maxlength="8" placeholder="SXIOPO or XXXXXXXX" autocomplete="off" spellcheck="false"><button class="secondary" id="addGameGenieBtn" type="button">add code</button></div>
+          <div class="keybind-help">Game Genie codes intercept ROM reads at $8000–$FFFF. Eight-letter codes include a compare byte for better bank compatibility. Experimental: behavior depends on the game's mapper and memory mapping.</div>
+          <div id="gameGenieList" class="cheat-list" aria-live="polite"></div></div>
         </div>
-        <div class="keybind-help" id="zapperHelp">Enable Zapper for mouse aiming and firing. Click a key to remap keyboard actions; mouse fire remains available.</div>
+        <div class="gamepad-tools">
+          <strong>Controller support</strong>
+          <div id="gamepadStatus" class="keybind-help">Connect a controller, then press a button. Gamepad 1 controls Player 1; Gamepad 2 controls Player 2.</div>
+        </div>
       </div>
     </section>
-    <section class="panel">
-      <div class="panel-head"><span class="ico">⚙</span> settings</div>
-      <div class="section">
-        <div class="setting"><label for="speed">playback speed</label><select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1× normal</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option><option value="2.5">2.5×</option><option value="3">3×</option><option value="4">4×</option></select></div>
-        <div class="setting"><label for="scale">screen scale</label><select id="scale"><option value="0.5">0.5×</option><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="2.5">2.5×</option><option value="3" selected>3×</option><option value="3.5">3.5×</option><option value="4">4×</option><option value="5">5×</option><option value="6">6×</option><option value="8">8×</option></select></div>
-        <div class="setting"><label for="filter">pixel filter</label><select id="filter"><option value="pixel" selected>pixel perfect</option><option value="smooth">smooth</option></select></div>
-        <div class="setting"><label for="colorRendering">color rendering</label><select id="colorRendering"><option value="normal" selected>normal colors</option><option value="protanopia">protanopia aid (red-weak)</option><option value="deuteranopia">deuteranopia aid (green-weak)</option><option value="tritanopia">tritanopia aid (blue-weak)</option><option value="monochrome">monochrome</option><option value="sepia">sepia</option><option value="highcontrast">high contrast</option><option value="invert">inverted colors</option></select></div>
-        <div class="toggle"><label for="crtMode">crt mode</label><input id="crtMode" type="checkbox"></div>
-        <div class="toggle"><label for="sound">sound enabled</label><input id="sound" type="checkbox" checked></div>
-        <div class="toggle"><label for="autostart">auto-start on load</label><input id="autostart" type="checkbox"></div>
-        <div class="notice">save states are stored in this browser. Use the save-state log to load, export, or import checkpoints.</div>
-      </div>
-    </section>
-    <label class="loadbox" id="loadBox" for="romFile"><span class="loadicon">⇧</span><b>load rom</b><small>click or drag a .nes file here</small></label>
+
   </aside>
 </main>
 
-<div class="footer">chimiNES v1.0 · made for your browser · load roms you have the right to use.</div>
+<div class="footer">chimiNES · experimental update · made for your browser · load roms you have the right to use.</div>
 <input type="file" id="romFile" accept=".nes,application/octet-stream">
 <input type="file" id="stateFile" accept=".json,application/json">
 <!-- Compatibility workaround: JSNES 2.1.0 has a reported sprite-layer scrambling issue in SMB3/Kirby. Use the stable 1.2.1 core for this custom renderer. -->
@@ -577,15 +821,15 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
  const $=id=>document.getElementById(id), canvas=$('screen'),ctx=canvas.getContext('2d',{alpha:false});
  let nes=null,romLoaded=false,paused=true,raf=0,frameImage=ctx.createImageData(256,240),currentName='',lastTick=0,acc=0;
  let activeColorRendering='normal';
- let audioContext=null,audioProcessor=null,audioGain=null,audioRead=0,audioWrite=0,audioCount=0;
- const AUDIO_BUFFER_SIZE=32768;
+ let audioContext=null,audioProcessor=null,audioGain=null,audioRead=0,audioWrite=0,audioCount=0,audioLastLeft=0,audioLastRight=0;
+ const AUDIO_BUFFER_SIZE=65536;
  const audioLeft=new Float32Array(AUDIO_BUFFER_SIZE),audioRight=new Float32Array(AUDIO_BUFFER_SIZE);
  const soundToggle=$('sound');
  try{soundToggle.checked=localStorage.getItem('chimiNES_sound')!=='0';}catch(_){}
  const DB='chimiNES_ROM_DB',STORE='roms',STATE_STORE='states';ctx.fillStyle='#000';ctx.fillRect(0,0,256,240);
  const notice=m=>$('notice').textContent=m;
  function status(m,on=false){$('statusText').textContent=m;$('statusDot').classList.toggle('on',on);}
- function clearAudioQueue(){audioRead=audioWrite=audioCount=0;}
+ function clearAudioQueue(){audioRead=audioWrite=audioCount=0;audioLastLeft=audioLastRight=0;}
  function setupAudio(){
    if(audioContext)return audioContext;
    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
@@ -599,8 +843,8 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
        const left=e.outputBuffer.getChannelData(0),right=e.outputBuffer.getChannelData(1);
        if(!soundToggle.checked){left.fill(0);right.fill(0);clearAudioQueue();return;}
        for(let i=0;i<left.length;i++){
-         if(audioCount>0){left[i]=audioLeft[audioRead];right[i]=audioRight[audioRead];audioRead=(audioRead+1)%AUDIO_BUFFER_SIZE;audioCount--;}
-         else{left[i]=0;right[i]=0;}
+         if(audioCount>0){audioLastLeft=audioLeft[audioRead];audioLastRight=audioRight[audioRead];audioRead=(audioRead+1)%AUDIO_BUFFER_SIZE;audioCount--;left[i]=audioLastLeft;right[i]=audioLastRight;}
+         else{audioLastLeft*=0.995;audioLastRight*=0.995;left[i]=audioLastLeft;right[i]=audioLastRight;}
        }
      };
      audioProcessor.connect(audioGain);audioGain.connect(audioContext.destination);
@@ -616,6 +860,9 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
    if(audio&&audio.state==='suspended')audio.resume().catch(()=>{});
    return audio;
  }
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&soundToggle.checked&&romLoaded)resumeAudio();});
+ window.addEventListener('pointerdown',()=>{if(soundToggle.checked)resumeAudio();},{passive:true});
+ window.addEventListener('keydown',()=>{if(soundToggle.checked)resumeAudio();},{passive:true});
  function queueAudioSample(left,right){
    if(!soundToggle.checked||!audioContext||audioContext.state!=='running')return;
    // If rendering falls behind, discard the oldest samples rather than building latency.
@@ -634,13 +881,13 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
  async function listSaveStates(){
    const box=$('saveStateLog');if(!box)return;let records=[];
    try{records=await dbOp('readonly',store=>store.getAll(),STATE_STORE);}catch(e){box.replaceChildren();const msg=document.createElement('div');msg.className='state-empty';msg.textContent='Save-state storage is unavailable in this browser. Try opening the file in a browser window with site storage enabled.';box.append(msg);return;}
-   records.sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));box.replaceChildren();
+   records=records.filter(record=>!record.autosave);records.sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));box.replaceChildren();
    if(!records.length){const empty=document.createElement('div');empty.className='state-empty';empty.innerHTML='No checkpoints yet. Play a game and click <b>save state</b>.';box.append(empty);return;}
    const visible=records.slice(0,20);
    visible.forEach(record=>{
      const row=document.createElement('div');row.className='state-entry';
      const info=document.createElement('div');info.className='state-entry-info';
-     const title=document.createElement('div');title.className='state-entry-name';title.textContent=String(record.romName||'Unknown game');
+     const title=document.createElement('div');title.className='state-entry-name';title.textContent=record.autosave?'AutoSave #'+(Number(record.autosaveVersion)||1)+' · '+String(record.romName||'Unknown game'):String(record.romName||'Unknown game');
      if(romLoaded&&sameRomName(currentName,record.romName)){const tag=document.createElement('span');tag.className='state-entry-tag';tag.textContent='current game';title.append(tag);}
      const meta=document.createElement('div');meta.className='state-entry-meta';meta.textContent=formatStateDate(record.createdAt);info.append(title,meta);
      const actions=document.createElement('div');actions.className='state-entry-buttons';
@@ -651,7 +898,7 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
    });
    if(records.length>visible.length){const note=document.createElement('div');note.className='state-log-note';note.textContent='Showing the 20 most recent checkpoints of '+records.length+'. “Export all” includes the full log.';box.append(note);}
  }
- async function saveCurrentState(){
+ async function saveCurrentState(isAuto=false){
    if(!nes||!romLoaded)throw new Error('Load a ROM before saving a state.');
    if(typeof nes.toJSON!=='function')throw new Error('This emulator core does not support save states.');
    // JSON round-tripping makes a detached, exportable snapshot rather than retaining mutable emulator references.
@@ -660,9 +907,20 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
    // forms into a detached object before writing to IndexedDB or exporting.
    const state=typeof rawState==='string'?JSON.parse(rawState):JSON.parse(JSON.stringify(rawState));
    if(!state||typeof state!=='object'||Array.isArray(state))throw new Error('The emulator returned an invalid save state.');
-   const record={format:'chimiNES-save-state',formatVersion:1,romName:currentName,createdAt:Date.now(),state};
+   const record={format:'chimiNES-save-state',formatVersion:1,romName:currentName,createdAt:Date.now(),state,autosave:!!isAuto};
+   if(isAuto){
+     const old=await dbOp('readonly',store=>store.getAll(),STATE_STORE);
+     const matching=old.filter(item=>item.autosave&&sameRomName(item.romName,currentName));
+     record.autosaveName='AutoSave';record.autosaveVersion=matching.reduce((n,item)=>Math.max(n,Number(item.autosaveVersion)||0),0)+1;
+   }
    await dbOp('readwrite',store=>store.add(record),STATE_STORE);
-   await listSaveStates();notice('Saved a checkpoint for '+currentName+'. It will remain in this browser until deleted; use Export to back it up.');
+   if(isAuto){
+     const all=await dbOp('readonly',store=>store.getAll(),STATE_STORE);
+     const matching=all.filter(item=>item.autosave&&sameRomName(item.romName,currentName)).sort((a,b)=>(Number(b.autosaveVersion)||0)-(Number(a.autosaveVersion)||0));
+     for(const old of matching.slice(5))await dbOp('readwrite',store=>store.delete(old.id),STATE_STORE);
+     lastAutosaveWall=Date.now();
+   }
+   await listSaveStates();if(!isAuto)notice('Saved a checkpoint for '+currentName+'. It will remain in this browser until deleted; use Export to back it up.');
  }
  async function restoreStateRecord(record){
    if(!record||!record.state||(typeof record.state!=='object'&&typeof record.state!=='string'))throw new Error('This save-state file is missing its emulator data.');
@@ -673,7 +931,7 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
    if(!romLoaded||!sameRomName(currentName,record.romName)){
      let savedRom;try{savedRom=await dbOp('readonly',store=>store.get(record.romName));}catch(e){throw new Error('Could not read the saved ROM library. '+(e?.message||''));}
      if(!savedRom)throw new Error('This checkpoint belongs to '+record.romName+'. Load that ROM first (or import it into your saved ROM library), then load the checkpoint.');
-     await loadBytes(new Uint8Array(savedRom.bytes),savedRom.name,false);
+     await loadBytes(new Uint8Array(savedRom.bytes),savedRom.name,false,true);
      if(!romLoaded||!sameRomName(currentName,record.romName))throw new Error('Could not load the ROM linked to this checkpoint.');
    }
    if(!nes||typeof nes.fromJSON!=='function')throw new Error('This emulator core does not support loading save states.');
@@ -747,18 +1005,40 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
    const audio=resumeAudio();
    nes=new jsnes.NES({onFrame:renderFrame,onAudioSample:queueAudioSample,sampleRate:audio?.sampleRate||48000,emulateSound:true});
  }
- function loop(t){if(!nes||paused||!romLoaded)return;if(!lastTick)lastTick=t;const dt=Math.min(100,t-lastTick);lastTick=t;acc+=dt*60.0988*(Number($('speed').value)||1)/1000;let n=0;try{while(acc>=1&&n<6){nes.frame();acc--;n++;frameCounter++;}}catch(e){paused=true;status('Emulation stopped');notice(e.message);return;}if(fpsEnabled&&t-fpsWindowStart>=500){fpsOverlay.textContent='FPS: '+Math.round(frameCounter*1000/(t-fpsWindowStart));frameCounter=0;fpsWindowStart=t;}raf=requestAnimationFrame(loop);}
+ const activeCheats=new Map();
+ const gameGenieCheats=[];
+ function renderCheats(){const list=$('cheatList');if(!list)return;list.replaceChildren();if(!activeCheats.size){const empty=document.createElement('div');empty.className='keybind-help';empty.textContent='No RAM cheats added.';list.append(empty);return;}for(const [address,value] of activeCheats){const row=document.createElement('div');row.className='cheat-row';const label=document.createElement('span');label.textContent='$'+address.toString(16).toUpperCase().padStart(4,'0')+' = $'+value.toString(16).toUpperCase().padStart(2,'0');const remove=document.createElement('button');remove.className='secondary';remove.type='button';remove.textContent='remove';remove.addEventListener('click',()=>{activeCheats.delete(address);renderCheats();});row.append(label,remove);list.append(row);}}
+ function applyRamCheats(){if(!nes||!nes.cpu||!nes.cpu.mem)return;for(const [address,value] of activeCheats){if(address>=0&&address<=0x07ff){nes.cpu.mem[address]=value;for(let mirror=address+0x800;mirror<=0x1fff;mirror+=0x800)nes.cpu.mem[mirror]=value;}}}
+ function decodeGameGenie(raw){const code=raw.toUpperCase().replace(/[-\s]/g,'');if(!/^[APZLGITYEOXUKSVN]{6}([APZLGITYEOXUKSVN]{2})?$/.test(code))throw new Error('Enter a 6- or 8-letter NES Game Genie code using A P Z L G I T Y E O X U K S V N.');const alphabet='APZLGITYEOXUKSVN',n=[...code].map(c=>alphabet.indexOf(c));const address=0x8000|((n[3]&7)<<12)|((n[5]&7)<<8)|((n[4]&8)<<8)|((n[2]&7)<<4)|((n[1]&8)<<4)|(n[4]&7)|(n[3]&8);const value=((n[1]&7)<<4)|((n[0]&8)<<4)|(n[0]&7)|((n.length===8?n[7]:n[5])&8);const compare=n.length===8?(((n[7]&7)<<4)|((n[6]&8)<<4)|(n[6]&7)|(n[5]&8)):null;return {code,address,value,compare,lastInjected:null,lastOriginal:null};}
+ function renderGameGenie(){const list=$('gameGenieList');if(!list)return;list.replaceChildren();if(!gameGenieCheats.length){const empty=document.createElement('div');empty.className='keybind-help';empty.textContent='No Game Genie codes added.';list.append(empty);return;}for(const cheat of gameGenieCheats){const row=document.createElement('div');row.className='cheat-row';const label=document.createElement('span');label.textContent=cheat.code+' → $'+cheat.address.toString(16).toUpperCase()+' = $'+cheat.value.toString(16).toUpperCase().padStart(2,'0')+(cheat.compare==null?'':' if original = $'+cheat.compare.toString(16).toUpperCase().padStart(2,'0'));const remove=document.createElement('button');remove.className='secondary';remove.type='button';remove.textContent='remove';remove.addEventListener('click',()=>{restoreGameGenieByte(cheat);gameGenieCheats.splice(gameGenieCheats.indexOf(cheat),1);renderGameGenie();});row.append(label,remove);list.append(row);}}
+ function restoreGameGenieByte(cheat){const mem=nes?.cpu?.mem;if(mem&&cheat.lastInjected!==null&&mem[cheat.address]===cheat.lastInjected)mem[cheat.address]=cheat.lastOriginal;cheat.lastInjected=null;cheat.lastOriginal=null;}
+ function applyGameGenieCheats(){const mem=nes?.cpu?.mem;if(!mem)return;for(const cheat of gameGenieCheats){if(cheat.lastInjected!==null&&mem[cheat.address]===cheat.lastInjected)mem[cheat.address]=cheat.lastOriginal;const original=mem[cheat.address]&255;if(cheat.compare===null||original===cheat.compare){cheat.lastOriginal=original;cheat.lastInjected=cheat.value;mem[cheat.address]=cheat.value;}else{cheat.lastOriginal=null;cheat.lastInjected=null;}}}
+ $('addCheatBtn').addEventListener('click',()=>{const raw=$('cheatInput').value.trim().replace(/\s+/g,'');const match=/^\$?([0-9a-f]{1,4})=\$?([0-9a-f]{1,2})$/i.exec(raw);if(!match){notice('Enter a RAM cheat as address=value, for example $0003=$09.');return;}const address=parseInt(match[1],16),value=parseInt(match[2],16);if(address>0x07ff||value>0xff){notice('RAM cheats support addresses $0000–$07FF and byte values $00–$FF.');return;}activeCheats.set(address,value);$('cheatInput').value='';renderCheats();notice('RAM cheat added. It will be applied while the game runs.');});
+ $('cheatInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('addCheatBtn').click();});renderCheats();
+ $('addGameGenieBtn').addEventListener('click',()=>{try{const cheat=decodeGameGenie($('gameGenieInput').value.trim());if(gameGenieCheats.some(c=>c.code===cheat.code)){notice('That Game Genie code is already in the list.');return;}gameGenieCheats.push(cheat);$('gameGenieInput').value='';renderGameGenie();notice('Game Genie code added. It will be applied to the mapped CPU ROM address while the game runs.');}catch(e){notice(e.message||String(e));}});
+ $('gameGenieInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('addGameGenieBtn').click();});renderGameGenie();
+ let autosaveEnabled=true,lastAutosaveAt=0,autosaveBusy=false,lastAutosaveWall=0,autosaveIntervalMs=1000;
+ const autosaveToggle=$('autosaveToggle'),autosaveIntervalSelect=$('autosaveInterval');
+ function applyAutosave(enabled){autosaveEnabled=!!enabled;autosaveToggle.checked=autosaveEnabled;lastAutosaveAt=performance.now();try{localStorage.setItem('chimiNES_autosave',autosaveEnabled?'1':'0');}catch(_){}notice(autosaveEnabled?'Automatic AutoSave enabled. Checkpoints are saved every '+(autosaveIntervalMs/1000)+' second(s) while a game is running.':'Automatic AutoSave disabled.');}
+ try{const savedAutosave=localStorage.getItem('chimiNES_autosave');autosaveToggle.checked=savedAutosave===null?true:savedAutosave==='1';const savedInterval=Number(localStorage.getItem('chimiNES_autosave_interval')||1);autosaveIntervalMs=Math.max(1000,Math.min(60000,(Number.isFinite(savedInterval)?savedInterval:1)*1000));autosaveIntervalSelect.value=String(autosaveIntervalMs/1000);}catch(_){autosaveToggle.checked=true;autosaveIntervalSelect.value='1';}autosaveEnabled=autosaveToggle.checked;autosaveToggle.addEventListener('change',()=>applyAutosave(autosaveToggle.checked));autosaveIntervalSelect.addEventListener('change',()=>{autosaveIntervalMs=Math.max(1000,Math.min(60000,Number(autosaveIntervalSelect.value)*1000||1000));lastAutosaveAt=performance.now();try{localStorage.setItem('chimiNES_autosave_interval',String(autosaveIntervalMs/1000));}catch(_){}notice('AutoSave interval set to '+(autosaveIntervalMs/1000)+' second(s).');});
+ const gamepadPrevious=new Map();
+ const gamepadButtons=[['up',12],['down',13],['left',14],['right',15],['a',0],['b',1],['select',8],['start',9]];
+ function pollGamepads(){if(!navigator.getGamepads)return;const pads=navigator.getGamepads();let connected=0;for(let pi=0;pi<Math.min(2,pads.length);pi++){const pad=pads[pi];if(!pad)continue;connected++;const player=pi+1,prior=gamepadPrevious.get(pad.index)||new Set(),next=new Set();for(const [action,index] of gamepadButtons){let pressed=!!pad.buttons[index]?.pressed;if(action==='up')pressed=pressed||pad.axes[1]<-0.55;if(action==='down')pressed=pressed||pad.axes[1]>0.55;if(action==='left')pressed=pressed||pad.axes[0]<-0.55;if(action==='right')pressed=pressed||pad.axes[0]>0.55;if(pressed)next.add(action);const C=window.jsnes?.Controller,button=C?.[actionButtons[action]];if(button!=null&&nes&&romLoaded){if(pressed&&!prior.has(action))nes.buttonDown(player,button);else if(!pressed&&prior.has(action))nes.buttonUp(player,button);}}gamepadPrevious.set(pad.index,next);}const statusEl=$('gamepadStatus');if(statusEl)statusEl.textContent=connected?connected+' controller(s) detected. Gamepad 1 = Player 1; Gamepad 2 = Player 2.':'No gamepads detected. Connect one and press a button.';}
+ window.addEventListener('gamepadconnected',()=>{$('gamepadStatus').textContent='Controller connected. Press a button to begin input.';});window.addEventListener('gamepaddisconnected',()=>{gamepadPrevious.clear();});
+ function loop(t){if(!nes||paused||!romLoaded)return;if(!lastTick)lastTick=t;const dt=Math.min(100,t-lastTick);lastTick=t;acc+=dt*60.0988*(Number($('speed').value)||1)/1000;let n=0;try{while(acc>=1&&n<6){pollGamepads();applyRamCheats();applyGameGenieCheats();nes.frame();applyRamCheats();acc--;n++;frameCounter++;}}catch(e){paused=true;status('Emulation stopped');notice(e.message);return;}if(fpsEnabled&&t-fpsWindowStart>=500){fpsOverlay.textContent='FPS: '+Math.round(frameCounter*1000/(t-fpsWindowStart));frameCounter=0;fpsWindowStart=t;}if(autosaveEnabled&&t-lastAutosaveAt>=autosaveIntervalMs&&!autosaveBusy){lastAutosaveAt=t;autosaveBusy=true;saveCurrentState(true).catch(e=>notice('AutoSave failed: '+(e?.message||e))).finally(()=>{autosaveBusy=false;});}raf=requestAnimationFrame(loop);}
+ window.addEventListener('pagehide',()=>{if(!autosaveEnabled||!romLoaded||!nes)return;if(Date.now()-lastAutosaveWall<Math.min(700,autosaveIntervalMs/2))return;try{saveCurrentState(true).catch(()=>{});}catch(_){}});
  function run(){cancelAnimationFrame(raf);lastTick=0;acc=0;if(!paused&&romLoaded)raf=requestAnimationFrame(loop);}
- async function listRoms(){const box=$('savedRoms');box.innerHTML='';let items=[];try{items=await dbOp('readonly',s=>s.getAll());}catch(e){box.textContent='Local ROM storage is unavailable.';return;}items.sort((a,b)=>b.savedAt-a.savedAt);if(!items.length){box.innerHTML='<div class="notice" style="padding:8px 10px">no saved roms yet. Import a .nes file to add it here.</div>';return;}items.forEach(item=>{const row=document.createElement('div');row.style.cssText='display:flex;gap:4px;align-items:center;margin:3px 0';const b=document.createElement('button');b.className='game';b.style.flex='1';b.innerHTML='<span class="controller-icon-wrap"><img class="controller-icon" src="controller.png" alt=""><span class="controller-icon-fallback">🎮</span></span>';const label=document.createElement('span');label.style.cssText='overflow:hidden;text-overflow:ellipsis;white-space:nowrap';label.textContent=item.name.replace(/\.nes$/i,'');b.append(label);b.onclick=()=>loadBytes(new Uint8Array(item.bytes),item.name,false);const del=document.createElement('button');del.className='secondary';del.textContent='×';del.title='Remove saved ROM';del.onclick=async()=>{if(confirm('Remove '+item.name+' from this browser?')){await dbOp('readwrite',s=>s.delete(item.name));listRoms();}};row.append(b,del);box.append(row);setupControllerIcons(row);});}
- async function loadBytes(bytes,name,save){try{if(!nes)init();resumeAudio();clearAudioQueue();if(bytes.length<16)throw Error('File is too small to be a valid NES ROM.');let bin='';for(let i=0;i<bytes.length;i+=32768)bin+=String.fromCharCode(...bytes.subarray(i,Math.min(i+32768,bytes.length)));nes.loadROM(bin);romLoaded=true;currentName=name;paused=false;$('gameTitle').textContent=name.replace(/\.nes$/i,'');$('gameSub').textContent=Math.round(bytes.length/1024)+' KB · NES ROM';$('emptyState').classList.add('hidden');$('pauseBtn').textContent='Ⅱ Pause';status('Game running',true);notice(soundToggle.checked?'Loaded '+name+'. Game audio is enabled.':'Loaded '+name+'. Game audio is muted.');run();if(save)try{await dbOp('readwrite',s=>s.put({name,bytes:bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),savedAt:Date.now()}));await listRoms();}catch(e){notice('ROM loaded, but local saving failed: '+e.message);} }catch(e){status('Load failed');notice('Could not load ROM: '+e.message);}}
+ async function listRoms(){const box=$('savedRoms');box.innerHTML='';let items=[];try{items=await dbOp('readonly',s=>s.getAll());}catch(e){box.textContent='Local ROM storage is unavailable.';return;}items.sort((a,b)=>b.savedAt-a.savedAt);if(!items.length){box.innerHTML='<div class="notice" style="padding:8px 10px">no saved roms yet. Import a .nes file to add it here.</div>';return;}items.forEach(item=>{const row=document.createElement('div');row.style.cssText='display:flex;gap:4px;align-items:center;margin:3px 0';const b=document.createElement('button');b.className='game';b.style.flex='1';b.innerHTML='<span class="cartridge-icon-wrap"><img class="cartridge-icon" src="cartridge.png" alt=""><span class="cartridge-icon-fallback">🎮</span></span>';const cartridgeImg=b.querySelector('.cartridge-icon');const cartridgeFallback=b.querySelector('.cartridge-icon-fallback');cartridgeImg.onload=()=>{cartridgeImg.style.display='block';cartridgeFallback.style.display='none';};cartridgeImg.onerror=()=>{cartridgeImg.style.display='none';cartridgeFallback.style.display='inline';};const label=document.createElement('span');label.style.cssText='overflow:hidden;text-overflow:ellipsis;white-space:nowrap';label.textContent=item.name.replace(/\.nes$/i,'');b.append(label);b.onclick=()=>loadBytes(new Uint8Array(item.bytes),item.name,false);const del=document.createElement('button');del.className='secondary';del.textContent='×';del.title='Remove saved ROM';del.onclick=async()=>{if(confirm('Remove '+item.name+' from this browser?')){await dbOp('readwrite',s=>s.delete(item.name));listRoms();}};row.append(b,del);box.append(row);setupControllerIcons(row);});}
+ async function loadBytes(bytes,name,save,skipAutoRestore=false){try{if(!nes)init();resumeAudio();clearAudioQueue();if(bytes.length<16)throw Error('File is too small to be a valid NES ROM.');let bin='';for(let i=0;i<bytes.length;i+=32768)bin+=String.fromCharCode(...bytes.subarray(i,Math.min(i+32768,bytes.length)));nes.loadROM(bin);romLoaded=true;currentName=name;gamepadPrevious.clear();paused=false;$('gameTitle').textContent=name.replace(/\.nes$/i,'');$('gameSub').textContent=Math.round(bytes.length/1024)+' KB · NES ROM';$('emptyState').classList.add('hidden');$('pauseBtn').textContent='Ⅱ Pause';status('Game running',true);notice(soundToggle.checked?'Loaded '+name+'. Game audio is enabled.':'Loaded '+name+'. Game audio is muted.');run();if(save)try{await dbOp('readwrite',s=>s.put({name,bytes:bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),savedAt:Date.now()}));await listRoms();}catch(e){notice('ROM loaded, but local saving failed: '+e.message);}if(!skipAutoRestore)await restoreLatestAutoSaveForCurrentRom(); }catch(e){status('Load failed');notice('Could not load ROM: '+e.message);}}
+ async function restoreLatestAutoSaveForCurrentRom(){if(!romLoaded||!currentName)return;try{const records=await dbOp('readonly',store=>store.getAll(),STATE_STORE);const latest=records.filter(item=>item.autosave&&sameRomName(item.romName,currentName)).sort((a,b)=>(Number(b.autosaveVersion)||0)-(Number(a.autosaveVersion)||0))[0];if(latest){await restoreStateRecord(latest);notice('Recovered '+currentName+' from AutoSave #'+(Number(latest.autosaveVersion)||1)+'.');}}catch(e){notice('Could not recover AutoSave: '+(e?.message||e));}}
  function loadFile(f){if(!f)return;if(!/\.nes$/i.test(f.name)){notice('Please choose a .nes ROM file.');return;}const r=new FileReader();r.onerror=()=>notice('Could not read file.');r.onload=()=>loadBytes(new Uint8Array(r.result),f.name,true);r.readAsArrayBuffer(f);}
  $('romFile').onchange=e=>{loadFile(e.target.files[0]);e.target.value='';};['loadNav','loadMain'].forEach(id=>$(id).onclick=()=>{resumeAudio();$('romFile').click();});
- $('loadBox').addEventListener('click',()=>resumeAudio());
- const drop=$('dropZone');['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();$('loadBox').classList.add('drag');}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();$('loadBox').classList.remove('drag');}));drop.addEventListener('drop',e=>{resumeAudio();loadFile(e.dataTransfer.files[0]);});$('loadBox').addEventListener('dragover',e=>e.preventDefault());$('loadBox').addEventListener('drop',e=>{e.preventDefault();resumeAudio();loadFile(e.dataTransfer.files[0]);});
- const DEFAULT_KEYBINDS={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',a:'z',b:'x',start:'Enter',select:'Shift',zapperFire:'Mouse1',zapperReload:'r'};
+ const drop=$('dropZone');['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag-active');}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag-active');}));drop.addEventListener('drop',e=>{resumeAudio();loadFile(e.dataTransfer.files[0]);});
+ const DEFAULT_KEYBINDS={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',a:'z',b:'x',start:'Enter',select:'Shift',p2Up:'w',p2Down:'s',p2Left:'a',p2Right:'d',p2A:'j',p2B:'k',p2Start:'u',p2Select:'i',zapperFire:'Mouse1',zapperReload:'r'};
  let keybinds={...DEFAULT_KEYBINDS};
  try{const saved=JSON.parse(localStorage.getItem('chimiNES_keybinds')||'null');if(saved&&typeof saved==='object')for(const action of Object.keys(DEFAULT_KEYBINDS))if(typeof saved[action]==='string'&&saved[action])keybinds[action]=saved[action];}catch(_){}
- const actionButtons={up:'BUTTON_UP',down:'BUTTON_DOWN',left:'BUTTON_LEFT',right:'BUTTON_RIGHT',a:'BUTTON_A',b:'BUTTON_B',start:'BUTTON_START',select:'BUTTON_SELECT'};
+ const actionButtons={up:'BUTTON_UP',down:'BUTTON_DOWN',left:'BUTTON_LEFT',right:'BUTTON_RIGHT',a:'BUTTON_A',b:'BUTTON_B',start:'BUTTON_START',select:'BUTTON_SELECT',p2Up:'BUTTON_UP',p2Down:'BUTTON_DOWN',p2Left:'BUTTON_LEFT',p2Right:'BUTTON_RIGHT',p2A:'BUTTON_A',p2B:'BUTTON_B',p2Start:'BUTTON_START',p2Select:'BUTTON_SELECT'};
+ const actionPlayers={up:1,down:1,left:1,right:1,a:1,b:1,start:1,select:1,p2Up:2,p2Down:2,p2Left:2,p2Right:2,p2A:2,p2B:2,p2Start:2,p2Select:2};
  const prettyKey=k=>({ArrowUp:'↑ Up',ArrowDown:'↓ Down',ArrowLeft:'← Left',ArrowRight:'→ Right',Enter:'Enter',Shift:'Shift',' ':'Space',Escape:'Esc',Control:'Ctrl',Alt:'Alt',Backspace:'Backspace',Tab:'Tab',Mouse1:'Mouse 1',Mouse2:'Mouse 2'}[k]||(k.length===1?k.toUpperCase():k));
  function renderKeybinds(){document.querySelectorAll('.keybind-button').forEach(button=>{button.textContent=prettyKey(keybinds[button.dataset.bind]);button.title='Click to change '+button.dataset.bind+' key';});}
  function saveKeybinds(){try{localStorage.setItem('chimiNES_keybinds',JSON.stringify(keybinds));}catch(_){}renderKeybinds();}
@@ -767,7 +1047,7 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
  $('resetKeybinds').addEventListener('click',()=>{keybinds={...DEFAULT_KEYBINDS};listeningFor=null;document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));saveKeybinds();$('keybindHelp').textContent='Default keybinds restored.';});
  renderKeybinds();
  function keyForEvent(key){return key.length===1?key.toLowerCase():key;}
- function btn(k){const C=window.jsnes?.Controller;if(!C)return null;const normalized=keyForEvent(k);const action=Object.keys(keybinds).find(name=>!String(keybinds[name]).startsWith('Mouse')&&keyForEvent(keybinds[name])===normalized);return action?C[actionButtons[action]]:null;}
+ function keyBindingFor(k){const C=window.jsnes?.Controller;if(!C)return null;const normalized=keyForEvent(k);const action=Object.keys(actionButtons).find(name=>keyForEvent(keybinds[name])===normalized);if(!action)return null;const button=C[actionButtons[action]];return button==null?null:{action,button,player:actionPlayers[action]||1};}
  const zapperToggle=$('zapperToggle'),fpsToggle=$('fpsToggle'),fpsOverlay=$('fpsOverlay');
  let zapperEnabled=false,fpsEnabled=false,frameCounter=0,fpsWindowStart=performance.now(),zapperMouseDown=false,zapperMouseDownPrev=false;
  try{zapperToggle.checked=localStorage.getItem('chimiNES_zapper')==='1';fpsToggle.checked=localStorage.getItem('chimiNES_fps')==='1';}catch(_){}
@@ -782,7 +1062,7 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
  canvas.addEventListener('mousedown',e=>{if(zapperEnabled&&e.button===0){e.preventDefault();zapperMouseDown=true;zapperInput(e,true);}});
  window.addEventListener('mouseup',e=>{if(e.button===0&&zapperMouseDown){zapperMouseDown=false;zapperInput(e,false);}});
  canvas.addEventListener('contextmenu',e=>{if(zapperEnabled)e.preventDefault();});
-  const held=new Set();window.addEventListener('keydown',e=>{if(listeningFor){e.preventDefault();if(e.key==='Escape'){listeningFor=null;document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));$('keybindHelp').textContent='Key change cancelled.';return;}const action=listeningFor;const chosen=keyForEvent(e.key);const duplicate=Object.keys(keybinds).find(name=>name!==action&&keyForEvent(keybinds[name])===chosen);if(duplicate){$('keybindHelp').textContent='That key is already assigned to '+duplicate+'. Choose another key or change that binding first.';return;}keybinds[action]=e.key;listeningFor=null;document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));saveKeybinds();$('keybindHelp').textContent='Keybind saved.';return;}if(zapperEnabled&&keybinds.zapperFire!=='Mouse1'&&keyForEvent(e.key)===keyForEvent(keybinds.zapperFire)){e.preventDefault();zapperMouseDown=true;const r=canvas.getBoundingClientRect();zapperInput({clientX:r.left+r.width/2,clientY:r.top+r.height/2},true);return;}if(zapperEnabled&&keyForEvent(e.key)===keyForEvent(keybinds.zapperReload)){zapperMouseDown=false;zapperInput({clientX:canvas.getBoundingClientRect().left,clientY:canvas.getBoundingClientRect().top},false,true);return;}const b=btn(e.key);if(b!=null){e.preventDefault();const id=keyForEvent(e.key);if(nes&&romLoaded&&!held.has(id)){held.add(id);nes.buttonDown(1,b);}}if((e.key===' '||e.code==='Space')&&romLoaded&&e.target.tagName!=='BUTTON'){e.preventDefault();toggle();}});window.addEventListener('keyup',e=>{const id=keyForEvent(e.key);if(zapperEnabled&&keybinds.zapperFire!=='Mouse1'&&id===keyForEvent(keybinds.zapperFire)){zapperMouseDown=false;zapperInput({clientX:canvas.getBoundingClientRect().left+canvas.getBoundingClientRect().width/2,clientY:canvas.getBoundingClientRect().top+canvas.getBoundingClientRect().height/2},false);}const b=btn(e.key);if(b!=null){held.delete(id);if(nes&&romLoaded)nes.buttonUp(1,b);}});
+  const held=new Set();window.addEventListener('keydown',e=>{if(listeningFor){e.preventDefault();if(e.key==='Escape'){listeningFor=null;document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));$('keybindHelp').textContent='Key change cancelled.';return;}const action=listeningFor;const chosen=keyForEvent(e.key);const duplicate=Object.keys(keybinds).find(name=>name!==action&&keyForEvent(keybinds[name])===chosen);if(duplicate){$('keybindHelp').textContent='That key is already assigned to '+duplicate+'. Choose another key or change that binding first.';return;}keybinds[action]=e.key;listeningFor=null;document.querySelectorAll('.keybind-button').forEach(b=>b.classList.remove('listening'));saveKeybinds();$('keybindHelp').textContent='Keybind saved.';return;}if(zapperEnabled&&keybinds.zapperFire!=='Mouse1'&&keyForEvent(e.key)===keyForEvent(keybinds.zapperFire)){e.preventDefault();zapperMouseDown=true;const r=canvas.getBoundingClientRect();zapperInput({clientX:r.left+r.width/2,clientY:r.top+r.height/2},true);return;}if(zapperEnabled&&keyForEvent(e.key)===keyForEvent(keybinds.zapperReload)){zapperMouseDown=false;zapperInput({clientX:canvas.getBoundingClientRect().left,clientY:canvas.getBoundingClientRect().top},false,true);return;}const binding=keyBindingFor(e.key);if(binding){e.preventDefault();const id=keyForEvent(e.key);if(nes&&romLoaded&&!held.has(id)){held.add(id);nes.buttonDown(binding.player,binding.button);}}if((e.key===' '||e.code==='Space')&&romLoaded&&e.target.tagName!=='BUTTON'){e.preventDefault();toggle();}});window.addEventListener('keyup',e=>{const id=keyForEvent(e.key);if(zapperEnabled&&keybinds.zapperFire!=='Mouse1'&&id===keyForEvent(keybinds.zapperFire)){zapperMouseDown=false;zapperInput({clientX:canvas.getBoundingClientRect().left+canvas.getBoundingClientRect().width/2,clientY:canvas.getBoundingClientRect().top+canvas.getBoundingClientRect().height/2},false);}const binding=keyBindingFor(e.key);if(binding){held.delete(id);if(nes&&romLoaded)nes.buttonUp(binding.player,binding.button);}});
  // Reuse controller.png for every controller icon. If it is absent, show each icon's emoji fallback.
  function setupControllerIcons(root=document){root.querySelectorAll('.controller-icon').forEach(img=>{
    if(img.dataset.controllerChecked==='1')return;img.dataset.controllerChecked='1';
@@ -806,6 +1086,15 @@ body[data-theme="cream"]{--bg:#19170f;--panel:rgba(43,40,28,.97);--line:#9c9163;
  function applyTheme(theme){const valid=['default','purple','forest','sunset','light','black','red','orange','pink','ocean','gold','teal','amber','matrix','lavender','slate','vantablack','ice','copper','ultraviolet','cream'];if(!valid.includes(theme))theme='default';if(theme==='default')document.body.removeAttribute('data-theme');else document.body.setAttribute('data-theme',theme);themeSelect.value=theme;try{localStorage.setItem('chimiNES_theme',theme);}catch(_){} }
  try{applyTheme(localStorage.getItem('chimiNES_theme')||themeSelect.value||'default');}catch(_){applyTheme('default');}
  themeSelect.addEventListener('change',()=>applyTheme(themeSelect.value));
+ const uiStyleSelect=$('uiStyle');
+ function applyUiStyle(value){
+   if(value!=='solid')value='gradient';
+   document.body.setAttribute('data-ui-style',value);
+   uiStyleSelect.value=value;
+   try{localStorage.setItem('chimiNES_uiStyle',value);}catch(_){}
+ }
+ try{applyUiStyle(localStorage.getItem('chimiNES_uiStyle')||'gradient');}catch(_){applyUiStyle('gradient');}
+ uiStyleSelect.addEventListener('change',()=>applyUiStyle(uiStyleSelect.value));
  const filterSelect=$('filter');
  function applyFilter(value){canvas.style.imageRendering=value==='smooth'?'auto':'pixelated';canvas.style.setProperty('image-rendering',value==='smooth'?'auto':'pixelated');try{localStorage.setItem('chimiNES_filter',value);}catch(_){}}
  try{filterSelect.value=localStorage.getItem('chimiNES_filter')||filterSelect.value;}catch(_){} applyFilter(filterSelect.value);

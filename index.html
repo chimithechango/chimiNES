@@ -52,6 +52,23 @@ body[data-theme="light"] .screen-shell{background:#000;border-color:var(--screen
 .about-box p{margin:8px 0;color:var(--muted)}.about-box a{color:var(--cyan)}
 .about-box[hidden]{display:none}
 
+
+/* translucent mobile controls stay in the lower corners to keep the center of the game visible */
+.touch-controls{display:none;position:absolute;inset:0;z-index:4;pointer-events:none;user-select:none;-webkit-user-select:none;touch-action:none}
+.touch-key{pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent;display:grid;place-items:center;border:1px solid rgba(220,240,255,.48);color:#fff;background:rgba(10,24,42,.58);backdrop-filter:blur(5px);box-shadow:0 2px 8px #0006,inset 0 1px 0 #ffffff20;font:700 15px/1 system-ui,sans-serif;text-shadow:0 1px 3px #000;border-radius:12px;padding:0;min-width:0;min-height:0}
+.touch-key.is-pressed{background:color-mix(in srgb,var(--blue) 72%,rgba(10,24,42,.65));border-color:var(--cyan);transform:scale(.94);box-shadow:0 0 15px color-mix(in srgb,var(--cyan) 45%,transparent)}
+.touch-dpad{position:absolute;left:clamp(10px,4vw,28px);bottom:clamp(10px,4vw,26px);width:clamp(112px,24vw,154px);height:clamp(112px,24vw,154px);pointer-events:none}
+.touch-dpad .touch-key{position:absolute;width:34%;height:34%;border-radius:10px;font-size:clamp(15px,3vw,21px)}
+.touch-up{left:33%;top:0}.touch-down{left:33%;bottom:0}.touch-left{left:0;top:33%}.touch-right{right:0;top:33%}
+.touch-system{position:absolute;left:50%;bottom:clamp(12px,4vw,28px);transform:translateX(-50%);display:flex;gap:9px;align-items:center}
+.touch-system .touch-key{height:clamp(25px,5vw,34px);min-width:clamp(52px,10vw,72px);padding:0 9px;border-radius:999px;font-size:clamp(9px,1.8vw,11px);text-transform:lowercase}
+.touch-actions{position:absolute;right:clamp(10px,4vw,28px);bottom:clamp(12px,4vw,28px);display:flex;align-items:center;gap:clamp(9px,2.5vw,18px);transform:rotate(-12deg)}
+.touch-actions .touch-key{width:clamp(48px,11vw,68px);height:clamp(48px,11vw,68px);border-radius:50%;font-size:clamp(18px,4vw,24px);background:rgba(164,25,48,.68);border-color:rgba(255,190,200,.62)}
+.touch-actions .touch-b{transform:translateY(-10px)}
+.touch-controls.enabled{display:block}
+@media (max-width:420px){.touch-dpad{width:112px;height:112px}.touch-actions .touch-key{width:48px;height:48px}.touch-system{bottom:8px}}
+@media (orientation:landscape) and (max-height:500px){.touch-dpad{width:94px;height:94px;left:10px;bottom:8px}.touch-actions{right:12px;bottom:9px}.touch-actions .touch-key{width:44px;height:44px}.touch-system{bottom:9px}}
+
 @media(max-width:1050px){main{grid-template-columns:200px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.loadbox{grid-column:1/-1}}
 @media(max-width:700px){header{padding:12px}.tagline,.version{display:none}main{display:flex;flex-direction:column;padding:10px}.library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.library .panel-head,.library .sep,.library .navbtn{grid-column:1/-1}.right{display:flex}.game{padding:8px}.center{padding:9px}.status{font-size:0}.status .dot{font-size:12px}}
 
@@ -680,7 +697,7 @@ header .brand span { color: #e32636 !important; }
 </header>
 <main>
   <aside class="panel">
-    <div class="panel-head"><span class="ico">📂</span> saved roms</div>
+    <div class="panel-head"><span class="ico">▣</span> saved roms</div>
     <div class="library" id="savedRoms"><div class="notice" style="padding:8px 10px">Your imported ROMs will appear here and stay saved in this browser.</div></div>
     <div class="sep"></div>
     <button class="navbtn" id="loadNav">📂　import rom (.nes)</button>
@@ -717,6 +734,16 @@ header .brand span { color: #e32636 !important; }
   <section class="panel center">
     <div class="screen-shell" id="dropZone">
       <canvas id="screen" width="256" height="240" aria-label="NES game screen"></canvas>
+      <div class="touch-controls" id="touchControls" aria-label="touch game controls">
+        <div class="touch-dpad" aria-label="directional pad">
+          <button type="button" class="touch-key touch-up" data-touch="up" aria-label="up">▲</button>
+          <button type="button" class="touch-key touch-left" data-touch="left" aria-label="left">◀</button>
+          <button type="button" class="touch-key touch-right" data-touch="right" aria-label="right">▶</button>
+          <button type="button" class="touch-key touch-down" data-touch="down" aria-label="down">▼</button>
+        </div>
+        <div class="touch-system"><button type="button" class="touch-key touch-select" data-touch="select">select</button><button type="button" class="touch-key touch-start" data-touch="start">start</button></div>
+        <div class="touch-actions" aria-label="action buttons"><button type="button" class="touch-key touch-b" data-touch="b" aria-label="b">b</button><button type="button" class="touch-key touch-a" data-touch="a" aria-label="a">a</button></div>
+      </div>
       <div id="fpsOverlay" aria-live="off" hidden>FPS: --</div>
       <div class="screen-empty" id="emptyState">
         <div class="big"><span class="controller-icon-wrap"><img class="controller-icon" src="controller.png" alt=""><span class="controller-icon-fallback">🎮</span></span></div><strong>ready when you are.</strong>
@@ -766,6 +793,9 @@ header .brand span { color: #e32636 !important; }
           <span><button class="key keybind-button" data-bind="select" type="button">Shift</button></span><span>= Select</span>
         </div>
         <div class="keybind-help" id="keybindHelp">Click any key above, then press the key you want to use. Changes are saved in this browser.</div>
+        <div class="player-key-title">mobile touch controls</div>
+        <div class="toggle"><label for="touchControlsToggle">enable on-screen touch controls</label><input id="touchControlsToggle" type="checkbox"></div>
+        <div class="keybind-help">Shows a directional pad, A/B buttons, and start/select over the game screen. You can enable it on phones or touch-screen computers.</div>
         <div class="player-key-title">Player 2 keyboard controls</div>
         <div class="mapping" id="player2KeyMapping">
           <span><button class="key keybind-button" data-bind="p2Up" type="button">W</button> <button class="key keybind-button" data-bind="p2Down" type="button">S</button></span><span>= d-pad vertical</span>
@@ -1048,6 +1078,38 @@ header .brand span { color: #e32636 !important; }
  renderKeybinds();
  function keyForEvent(key){return key.length===1?key.toLowerCase():key;}
  function keyBindingFor(k){const C=window.jsnes?.Controller;if(!C)return null;const normalized=keyForEvent(k);const action=Object.keys(actionButtons).find(name=>keyForEvent(keybinds[name])===normalized);if(!action)return null;const button=C[actionButtons[action]];return button==null?null:{action,button,player:actionPlayers[action]||1};}
+
+ // Virtual on-screen controls use the same jsnes button API as physical keys.
+ const touchControls=$('touchControls');
+ const touchButtonNames={up:'BUTTON_UP',down:'BUTTON_DOWN',left:'BUTTON_LEFT',right:'BUTTON_RIGHT',a:'BUTTON_A',b:'BUTTON_B',start:'BUTTON_START',select:'BUTTON_SELECT'};
+ const activeTouchButtons=new Map();
+ const touchControlsToggle=$('touchControlsToggle');
+ function applyTouchControls(enabled){
+   enabled=!!enabled;
+   touchControls.classList.toggle('enabled',enabled);
+   touchControlsToggle.checked=enabled;
+   try{localStorage.setItem('chimiNES_touchControls',enabled?'1':'0');}catch(_){}
+   if(!enabled){
+     for(const [pointerId,entry] of activeTouchButtons){
+       try{entry.element.releasePointerCapture(pointerId);}catch(_){}
+       if(nes&&romLoaded)nes.buttonUp(1,entry.value);
+       entry.element.classList.remove('is-pressed');
+     }
+     activeTouchButtons.clear();
+   }
+ }
+ let savedTouchControls='0';try{savedTouchControls=localStorage.getItem('chimiNES_touchControls')||'0';}catch(_){}
+ applyTouchControls(savedTouchControls==='1');
+ touchControlsToggle.addEventListener('change',()=>applyTouchControls(touchControlsToggle.checked));
+ if(touchControls){
+   touchControls.querySelectorAll('[data-touch]').forEach(element=>{
+     const name=element.dataset.touch;
+     const heldPointers=new Set();
+     const down=e=>{e.preventDefault();if(!romLoaded||!nes)return;const C=window.jsnes?.Controller;const value=C?.[touchButtonNames[name]];if(value==null||heldPointers.has(e.pointerId))return;heldPointers.add(e.pointerId);activeTouchButtons.set(e.pointerId,{element,value});try{element.setPointerCapture(e.pointerId);}catch(_){}element.classList.add('is-pressed');nes.buttonDown(1,value);};
+     const up=e=>{e.preventDefault();if(!heldPointers.delete(e.pointerId))return;activeTouchButtons.delete(e.pointerId);const C=window.jsnes?.Controller;const value=C?.[touchButtonNames[name]];if(value!=null&&nes&&romLoaded)nes.buttonUp(1,value);if(!heldPointers.size)element.classList.remove('is-pressed');};
+     element.addEventListener('pointerdown',down,{passive:false});element.addEventListener('pointerup',up,{passive:false});element.addEventListener('pointercancel',up,{passive:false});element.addEventListener('lostpointercapture',up,{passive:false});element.addEventListener('contextmenu',e=>e.preventDefault());
+   });
+ }
  const zapperToggle=$('zapperToggle'),fpsToggle=$('fpsToggle'),fpsOverlay=$('fpsOverlay');
  let zapperEnabled=false,fpsEnabled=false,frameCounter=0,fpsWindowStart=performance.now(),zapperMouseDown=false,zapperMouseDownPrev=false;
  try{zapperToggle.checked=localStorage.getItem('chimiNES_zapper')==='1';fpsToggle.checked=localStorage.getItem('chimiNES_fps')==='1';}catch(_){}
@@ -1156,3 +1218,4 @@ header .brand span { color: #e32636 !important; }
 </script>
 </body>
 </html>
+

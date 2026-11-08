@@ -353,6 +353,11 @@ body[data-theme="gold"]{--bg:#171105;--panel:rgba(43,32,8,.96);--line:#9a7620;--
 .keybind-button.listening{outline:2px solid var(--cyan);outline-offset:2px;background:var(--accent-soft);animation:keyPulse .8s ease-in-out infinite alternate}
 .keybind-help{margin-top:10px;color:var(--muted);font-size:11px;line-height:1.45}
 .keybind-actions{margin-top:8px}
+.pad-mapping{grid-template-columns:minmax(104px,auto) 1fr}
+.padbind-button{font:inherit;font-size:12px;cursor:pointer;padding:4px 8px;min-width:104px;white-space:nowrap}
+.padbind-button.listening{outline:2px solid var(--cyan);outline-offset:2px;background:var(--accent-soft);animation:keyPulse .8s ease-in-out infinite alternate}
+.pad-player-label{margin:12px 0 7px;font-size:11px;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+@media(prefers-reduced-motion:reduce){.padbind-button.listening{animation:none}}
 @keyframes keyPulse{to{box-shadow:0 0 0 4px var(--focus-ring)}}
 @media(prefers-reduced-motion:reduce){.keybind-button.listening{animation:none}}
 
@@ -806,6 +811,17 @@ header .brand span { color: #e32636 !important; }
           <span><button class="key keybind-button" data-bind="p2Select" type="button">I</button></span><span>= Select</span>
         </div>
         <div class="keybind-help">Player 1 and Player 2 can play together using separate keyboard keys or separate gamepads. Use the buttons above to remap either player's keys.</div>
+        <div class="player-key-title">Gamepad controls</div>
+        <div id="gamepadStatus" class="keybind-help" aria-live="polite">Connect a controller, then press a button so the browser can detect it.</div>
+        <div class="setting"><label for="padSelectP1">Player 1 controller</label><select id="padSelectP1" data-pad-slot="0"></select></div>
+        <div class="setting"><label for="padSelectP2">Player 2 controller</label><select id="padSelectP2" data-pad-slot="1"></select></div>
+        <div class="toggle"><label for="padStickToggle">left stick also moves the d-pad</label><input id="padStickToggle" type="checkbox"></div>
+        <div class="pad-player-label">Player 1 gamepad</div>
+        <div class="mapping pad-mapping" id="padMappingP1"></div>
+        <div class="pad-player-label">Player 2 gamepad</div>
+        <div class="mapping pad-mapping" id="padMappingP2"></div>
+        <div class="keybind-help" id="padbindHelp">Click a binding, then press a controller button or push a stick. Changes are saved in this browser.</div>
+        <div class="actionrow keybind-actions"><button class="secondary" id="resetPadbinds" type="button">reset controller binds</button></div>
         <div class="player-key-title">NES Zapper</div>
         <div class="toggle"><label for="zapperToggle">Enable Zapper (mouse aim + click)</label><input id="zapperToggle" type="checkbox"></div>
         <div id="zapperBindings" class="mapping" style="margin-top:10px">
@@ -830,10 +846,6 @@ header .brand span { color: #e32636 !important; }
           <div class="cheat-entry"><input id="gameGenieInput" type="text" maxlength="8" placeholder="SXIOPO or XXXXXXXX" autocomplete="off" spellcheck="false"><button class="secondary" id="addGameGenieBtn" type="button">add code</button></div>
           <div class="keybind-help">Game Genie codes intercept ROM reads at $8000–$FFFF. Eight-letter codes include a compare byte for better bank compatibility. Experimental: behavior depends on the game's mapper and memory mapping.</div>
           <div id="gameGenieList" class="cheat-list" aria-live="polite"></div></div>
-        </div>
-        <div class="gamepad-tools">
-          <strong>Controller support</strong>
-          <div id="gamepadStatus" class="keybind-help">Connect a controller, then press a button. Gamepad 1 controls Player 1; Gamepad 2 controls Player 2.</div>
         </div>
       </div>
     </section>
@@ -1051,10 +1063,55 @@ header .brand span { color: #e32636 !important; }
  const autosaveToggle=$('autosaveToggle'),autosaveIntervalSelect=$('autosaveInterval');
  function applyAutosave(enabled){autosaveEnabled=!!enabled;autosaveToggle.checked=autosaveEnabled;lastAutosaveAt=performance.now();try{localStorage.setItem('chimiNES_autosave',autosaveEnabled?'1':'0');}catch(_){}notice(autosaveEnabled?'Automatic AutoSave enabled. Checkpoints are saved every '+(autosaveIntervalMs/1000)+' second(s) while a game is running.':'Automatic AutoSave disabled.');}
  try{const savedAutosave=localStorage.getItem('chimiNES_autosave');autosaveToggle.checked=savedAutosave===null?true:savedAutosave==='1';const savedInterval=Number(localStorage.getItem('chimiNES_autosave_interval')||1);autosaveIntervalMs=Math.max(1000,Math.min(60000,(Number.isFinite(savedInterval)?savedInterval:1)*1000));autosaveIntervalSelect.value=String(autosaveIntervalMs/1000);}catch(_){autosaveToggle.checked=true;autosaveIntervalSelect.value='1';}autosaveEnabled=autosaveToggle.checked;autosaveToggle.addEventListener('change',()=>applyAutosave(autosaveToggle.checked));autosaveIntervalSelect.addEventListener('change',()=>{autosaveIntervalMs=Math.max(1000,Math.min(60000,Number(autosaveIntervalSelect.value)*1000||1000));lastAutosaveAt=performance.now();try{localStorage.setItem('chimiNES_autosave_interval',String(autosaveIntervalMs/1000));}catch(_){}notice('AutoSave interval set to '+(autosaveIntervalMs/1000)+' second(s).');});
+ // ---- Bindable gamepad support ----
+ // A binding token is "b<index>" for a button or "a<index>+" / "a<index>-" for an axis direction.
  const gamepadPrevious=new Map();
- const gamepadButtons=[['up',12],['down',13],['left',14],['right',15],['a',0],['b',1],['select',8],['start',9]];
- function pollGamepads(){if(!navigator.getGamepads)return;const pads=navigator.getGamepads();let connected=0;for(let pi=0;pi<Math.min(2,pads.length);pi++){const pad=pads[pi];if(!pad)continue;connected++;const player=pi+1,prior=gamepadPrevious.get(pad.index)||new Set(),next=new Set();for(const [action,index] of gamepadButtons){let pressed=!!pad.buttons[index]?.pressed;if(action==='up')pressed=pressed||pad.axes[1]<-0.55;if(action==='down')pressed=pressed||pad.axes[1]>0.55;if(action==='left')pressed=pressed||pad.axes[0]<-0.55;if(action==='right')pressed=pressed||pad.axes[0]>0.55;if(pressed)next.add(action);const C=window.jsnes?.Controller,button=C?.[actionButtons[action]];if(button!=null&&nes&&romLoaded){if(pressed&&!prior.has(action))nes.buttonDown(player,button);else if(!pressed&&prior.has(action))nes.buttonUp(player,button);}}gamepadPrevious.set(pad.index,next);}const statusEl=$('gamepadStatus');if(statusEl)statusEl.textContent=connected?connected+' controller(s) detected. Gamepad 1 = Player 1; Gamepad 2 = Player 2.':'No gamepads detected. Connect one and press a button.';}
- window.addEventListener('gamepadconnected',()=>{$('gamepadStatus').textContent='Controller connected. Press a button to begin input.';});window.addEventListener('gamepaddisconnected',()=>{gamepadPrevious.clear();});
+ const PAD_ACTIONS=['up','down','left','right','a','b','select','start'];
+ const PAD_ACTION_LABELS={up:'Up',down:'Down',left:'Left',right:'Right',a:'A button',b:'B button',select:'Select',start:'Start'};
+ const PAD_DEFAULT_MAP={up:'b12',down:'b13',left:'b14',right:'b15',a:'b0',b:'b1',select:'b8',start:'b9'};
+ const padDefaults=()=>({p1:{...PAD_DEFAULT_MAP},p2:{...PAD_DEFAULT_MAP},stick:true,pads:[0,1]});
+ let padbinds=padDefaults();
+ try{const s=JSON.parse(localStorage.getItem('chimiNES_padbinds')||'null');if(s&&typeof s==='object'){for(const p of ['p1','p2'])if(s[p]&&typeof s[p]==='object')for(const a of PAD_ACTIONS)if(typeof s[p][a]==='string'&&/^(b\d+|a\d+[+-])$/.test(s[p][a]))padbinds[p][a]=s[p][a];if(typeof s.stick==='boolean')padbinds.stick=s.stick;if(Array.isArray(s.pads))for(let i=0;i<2;i++){const v=Number(s.pads[i]);if(Number.isInteger(v)&&v>=-1&&v<=3)padbinds.pads[i]=v;}}}catch(_){}
+ const PAD_BUTTON_NAMES=['A / Cross','B / Circle','X / Square','Y / Triangle','LB / L1','RB / R1','LT / L2','RT / R2','Back / Select','Start','L3','R3','D-pad ↑','D-pad ↓','D-pad ←','D-pad →','Home'];
+ const PAD_AXIS_NAMES={'a0-':'L-stick ←','a0+':'L-stick →','a1-':'L-stick ↑','a1+':'L-stick ↓','a2-':'R-stick ←','a2+':'R-stick →','a3-':'R-stick ↑','a3+':'R-stick ↓'};
+ function prettyPad(t){if(!t)return '—';if(t[0]==='b'){const i=Number(t.slice(1));return PAD_BUTTON_NAMES[i]||('Button '+i);}return PAD_AXIS_NAMES[t]||('Axis '+t.slice(1,-1)+(t.endsWith('+')?' +':' −'));}
+ const padButtonOn=b=>!!b&&(b.pressed||b.value>0.5);
+ function padInputActive(pad,t){if(!t)return false;if(t[0]==='b')return padButtonOn(pad.buttons[Number(t.slice(1))]);const v=pad.axes[parseInt(t.slice(1),10)];if(typeof v!=='number')return false;return t.endsWith('+')?v>0.55:v<-0.55;}
+ function savePadbinds(){try{localStorage.setItem('chimiNES_padbinds',JSON.stringify(padbinds));}catch(_){}renderPadbinds();}
+ function releasePadInputs(){const C=window.jsnes?.Controller;if(nes&&romLoaded&&C)for(const [key,set] of gamepadPrevious){const player=key==='p2'?2:1;for(const action of set){const b=C[actionButtons[action]];if(b!=null)nes.buttonUp(player,b);}}gamepadPrevious.clear();}
+ // getGamepads() can throw (e.g. SecurityError when embedded without gamepad permission); never let that stop emulation.
+ let padApiError=null;const padEventCache=[];
+ // Event snapshots are only used for the status display (in Chrome they don't update, so they must not drive input).
+ function getPads(includeEventCache=false){let list=[];try{if(navigator.getGamepads){list=Array.from(navigator.getGamepads()||[]);padApiError=null;}}catch(e){padApiError=e;list=[];}if(includeEventCache)for(let i=0;i<4;i++)if(!list[i]&&padEventCache[i]&&padEventCache[i].connected)list[i]=padEventCache[i];return list;}
+ // If a player's chosen gamepad slot is empty, fall back to the next connected pad the other player isn't using.
+ function effectivePadIndices(pads){const live=i=>i>=0&&pads[i]&&pads[i].connected!==false;const chosen=padbinds.pads.slice(0,2);const out=[-1,-1];for(let s=0;s<2;s++)if(live(chosen[s]))out[s]=chosen[s];for(let s=0;s<2;s++){if(out[s]>=0||chosen[s]<0)continue;for(let i=0;i<pads.length;i++)if(live(i)&&!out.includes(i)){out[s]=i;break;}}return out;}
+ function pollGamepads(){const pads=getPads();const eff=effectivePadIndices(pads);const C=window.jsnes?.Controller;for(let pi=0;pi<2;pi++){const key='p'+(pi+1),player=pi+1,idx=eff[pi];const pad=idx>=0?pads[idx]:null;const prior=gamepadPrevious.get(key)||new Set(),next=new Set();if(pad&&pad.connected&&!listeningPad){const map=padbinds[key];for(const action of PAD_ACTIONS){let pressed=padInputActive(pad,map[action]);if(padbinds.stick&&!pressed){if(action==='up')pressed=pad.axes[1]<-0.55;else if(action==='down')pressed=pad.axes[1]>0.55;else if(action==='left')pressed=pad.axes[0]<-0.55;else if(action==='right')pressed=pad.axes[0]>0.55;}if(pressed)next.add(action);}}if(nes&&romLoaded&&C)for(const action of PAD_ACTIONS){const button=C[actionButtons[action]];if(button==null)continue;if(next.has(action)&&!prior.has(action))nes.buttonDown(player,button);else if(!next.has(action)&&prior.has(action))nes.buttonUp(player,button);}gamepadPrevious.set(key,next);}}
+
+ // Binding UI
+ let listeningPad=null,padBaseline=[],padListenRaf=0;
+ const padHelp=msg=>{$('padbindHelp').textContent=msg;};
+ function renderPadbinds(){for(const [key,id] of [['p1','padMappingP1'],['p2','padMappingP2']]){const box=$(id);if(!box)continue;if(!box.childElementCount){for(const action of PAD_ACTIONS){const cell=document.createElement('span');const btn=document.createElement('button');btn.type='button';btn.className='key padbind-button';btn.dataset.padPlayer=key;btn.dataset.padBind=action;btn.addEventListener('click',()=>startPadListen(btn));cell.append(btn);const label=document.createElement('span');label.textContent='= '+PAD_ACTION_LABELS[action];box.append(cell,label);}}box.querySelectorAll('.padbind-button').forEach(btn=>{btn.textContent=prettyPad(padbinds[key][btn.dataset.padBind]);btn.title='Click to change Player '+key.slice(1)+' '+PAD_ACTION_LABELS[btn.dataset.padBind]+' controller binding';});}$('padStickToggle').checked=padbinds.stick;refreshPadSelects();}
+ function snapshotPads(){const out=[];for(const pad of getPads()){if(pad)out[pad.index]={buttons:pad.buttons.map(padButtonOn),axes:[...pad.axes]};}return out;}
+ function stopPadListen(){listeningPad=null;cancelAnimationFrame(padListenRaf);document.querySelectorAll('.padbind-button.listening').forEach(b=>b.classList.remove('listening'));}
+ function startPadListen(btn){stopPadListen();if(!('getGamepads' in navigator)){padHelp('This browser does not support the Gamepad API.');return;}releasePadInputs();listeningPad={key:btn.dataset.padPlayer,action:btn.dataset.padBind};btn.classList.add('listening');padBaseline=snapshotPads();padHelp('Press a controller button or push a stick for Player '+listeningPad.key.slice(1)+' '+PAD_ACTION_LABELS[listeningPad.action]+'… (Esc cancels)');padListenRaf=requestAnimationFrame(padListenTick);}
+ function padListenTick(){if(!listeningPad)return;for(const pad of getPads()){if(!pad)continue;const base=padBaseline[pad.index];if(!base){padBaseline[pad.index]={buttons:pad.buttons.map(padButtonOn),axes:[...pad.axes]};continue;}for(let i=0;i<pad.buttons.length;i++){const on=padButtonOn(pad.buttons[i]);if(on&&!base.buttons[i]){assignPad('b'+i,pad.index);return;}if(!on)base.buttons[i]=false;}for(let i=0;i<pad.axes.length;i++){const v=pad.axes[i],rest=base.axes[i]??0;if(Math.abs(v)>0.6&&Math.abs(v-rest)>0.6){assignPad('a'+i+(v>0?'+':'-'),pad.index);return;}}}padListenRaf=requestAnimationFrame(padListenTick);}
+ function assignPad(token,padIndex){const {key,action}=listeningPad;const map=padbinds[key];const previous=map[action];const clash=PAD_ACTIONS.find(a=>a!==action&&map[a]===token);map[action]=token;if(clash)map[clash]=previous;const slot=key==='p2'?1:0;let extra='';if(padbinds.pads[slot]!==padIndex&&padbinds.pads[1-slot]!==padIndex){padbinds.pads[slot]=padIndex;extra=' Player '+(slot+1)+' now uses Gamepad '+(padIndex+1)+'.';}stopPadListen();savePadbinds();padHelp(PAD_ACTION_LABELS[action]+' → '+prettyPad(token)+'.'+(clash?' Swapped with '+PAD_ACTION_LABELS[clash]+' ('+prettyPad(previous)+').':'')+extra);}
+ window.addEventListener('keydown',e=>{if(listeningPad&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();stopPadListen();padHelp('Controller binding cancelled.');}},true);
+ function padStatusText(connected){
+   if(!('getGamepads' in navigator))return 'This browser does not expose the Gamepad API. Use a current Chrome, Edge or Firefox.';
+   if(padApiError)return 'The browser blocked controller access ('+(padApiError.name||'error')+'). This happens when the page runs inside another site or an embedded preview. Open the .html file directly in Chrome or Edge.';
+   if(window.isSecureContext===false)return 'Controller access needs a secure page. Open the .html file directly (file://) or from https:// or http://localhost.';
+   if(!connected.length)return 'No gamepads detected yet. Click anywhere on this page, then press A / ✕ on the controller (browsers hide controllers until a button is pressed while the page is focused). If Steam is open, close it or turn off Steam Input, which can hide Xbox/PlayStation pads from the browser.';
+   return connected.length+' controller(s) detected: '+connected.map(p=>{const held=p.buttons.map((b,i)=>padButtonOn(b)?prettyPad('b'+i):null).filter(Boolean);return 'Gamepad '+(p.index+1)+(p.mapping==='standard'?'':' (non-standard layout)')+(held.length?' — holding '+held.join(', '):'');}).join('; ')+'. '+effectivePadIndices(getPads()).map((i,s)=>'Player '+(s+1)+' → '+(i>=0?'Gamepad '+(i+1):'none')).join(', ')+'.';
+ }
+ function refreshPadSelects(){const pads=getPads(true);document.querySelectorAll('select[data-pad-slot]').forEach(sel=>{const slot=Number(sel.dataset.padSlot);const opts=[['-1','None']];for(let i=0;i<4;i++){const p=pads[i];opts.push([String(i),'Gamepad '+(i+1)+(p?' — '+(p.id.length>30?p.id.slice(0,30)+'…':p.id):' (not connected)')]);}if(sel.options.length!==opts.length)sel.replaceChildren(...opts.map(([v,t])=>new Option(t,v)));else opts.forEach(([v,t],i)=>{if(sel.options[i].text!==t)sel.options[i].text=t;});sel.value=String(padbinds.pads[slot]);});const connected=pads.filter(p=>p&&p.connected!==false);const statusEl=$('gamepadStatus');if(statusEl){const txt=padStatusText(connected);if(statusEl.textContent!==txt)statusEl.textContent=txt;}}
+ document.querySelectorAll('select[data-pad-slot]').forEach(sel=>sel.addEventListener('change',()=>{releasePadInputs();const slot=Number(sel.dataset.padSlot),v=Number(sel.value);if(v>=0&&padbinds.pads[1-slot]===v)padbinds.pads[1-slot]=padbinds.pads[slot];padbinds.pads[slot]=v;savePadbinds();}));
+ $('padStickToggle').addEventListener('change',()=>{releasePadInputs();padbinds.stick=$('padStickToggle').checked;savePadbinds();});
+ $('resetPadbinds').addEventListener('click',()=>{stopPadListen();releasePadInputs();padbinds=padDefaults();savePadbinds();padHelp('Default controller binds restored.');});
+ window.addEventListener('gamepadconnected',e=>{if(e.gamepad)padEventCache[e.gamepad.index]=e.gamepad;refreshPadSelects();});
+ window.addEventListener('gamepaddisconnected',e=>{if(e.gamepad)delete padEventCache[e.gamepad.index];releasePadInputs();refreshPadSelects();});
+ setInterval(()=>{try{refreshPadSelects();}catch(_){}},250);
+ renderPadbinds();
  function loop(t){if(!nes||paused||!romLoaded)return;if(!lastTick)lastTick=t;const dt=Math.min(100,t-lastTick);lastTick=t;acc+=dt*60.0988*(Number($('speed').value)||1)/1000;let n=0;try{while(acc>=1&&n<6){pollGamepads();applyRamCheats();applyGameGenieCheats();nes.frame();applyRamCheats();acc--;n++;frameCounter++;}}catch(e){paused=true;status('Emulation stopped');notice(e.message);return;}if(fpsEnabled&&t-fpsWindowStart>=500){fpsOverlay.textContent='FPS: '+Math.round(frameCounter*1000/(t-fpsWindowStart));frameCounter=0;fpsWindowStart=t;}if(autosaveEnabled&&t-lastAutosaveAt>=autosaveIntervalMs&&!autosaveBusy){lastAutosaveAt=t;autosaveBusy=true;saveCurrentState(true).catch(e=>notice('AutoSave failed: '+(e?.message||e))).finally(()=>{autosaveBusy=false;});}raf=requestAnimationFrame(loop);}
  window.addEventListener('pagehide',()=>{if(!autosaveEnabled||!romLoaded||!nes)return;if(Date.now()-lastAutosaveWall<Math.min(700,autosaveIntervalMs/2))return;try{saveCurrentState(true).catch(()=>{});}catch(_){}});
  function run(){cancelAnimationFrame(raf);lastTick=0;acc=0;if(!paused&&romLoaded)raf=requestAnimationFrame(loop);}
@@ -1218,4 +1275,3 @@ header .brand span { color: #e32636 !important; }
 </script>
 </body>
 </html>
-

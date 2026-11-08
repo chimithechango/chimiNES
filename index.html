@@ -353,6 +353,10 @@ body[data-theme="gold"]{--bg:#171105;--panel:rgba(43,32,8,.96);--line:#9a7620;--
 .keybind-button.listening{outline:2px solid var(--cyan);outline-offset:2px;background:var(--accent-soft);animation:keyPulse .8s ease-in-out infinite alternate}
 .keybind-help{margin-top:10px;color:var(--muted);font-size:11px;line-height:1.45}
 .keybind-actions{margin-top:8px}
+.volume-control{display:grid;grid-template-columns:auto minmax(0,1fr) 42px;align-items:center;gap:10px;margin:12px 0;color:var(--muted)}
+.volume-control input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer;margin:0}
+.volume-control output{text-align:right;font-variant-numeric:tabular-nums;color:var(--text);font-size:12px}
+.volume-control.muted input[type=range],.volume-control.muted output{opacity:.45}
 .pad-mapping{grid-template-columns:minmax(104px,auto) 1fr}
 .padbind-button{font:inherit;font-size:12px;cursor:pointer;padding:4px 8px;min-width:104px;white-space:nowrap}
 .padbind-button.listening{outline:2px solid var(--cyan);outline-offset:2px;background:var(--accent-soft);animation:keyPulse .8s ease-in-out infinite alternate}
@@ -730,6 +734,7 @@ header .brand span { color: #e32636 !important; }
         <div class="setting"><label for="colorRendering">color rendering</label><select id="colorRendering"><option value="normal" selected>normal colors</option><option value="protanopia">protanopia aid (red-weak)</option><option value="deuteranopia">deuteranopia aid (green-weak)</option><option value="tritanopia">tritanopia aid (blue-weak)</option><option value="monochrome">monochrome</option><option value="sepia">sepia</option><option value="highcontrast">high contrast</option><option value="invert">inverted colors</option></select></div>
         <div class="toggle"><label for="crtMode">crt mode</label><input id="crtMode" type="checkbox"></div>
         <div class="toggle"><label for="sound">sound enabled</label><input id="sound" type="checkbox" checked></div>
+        <div class="volume-control"><label for="volume">volume</label><input id="volume" type="range" min="0" max="100" step="1" value="78" aria-describedby="volumeValue"><output id="volumeValue" for="volume">78%</output></div>
         <div class="toggle"><label for="autostart">auto-start on load</label><input id="autostart" type="checkbox"></div>
         <div class="notice">save states are stored in this browser. Use the save-state log to load, export, or import checkpoints.</div>
       </div>
@@ -868,6 +873,14 @@ header .brand span { color: #e32636 !important; }
  const audioLeft=new Float32Array(AUDIO_BUFFER_SIZE),audioRight=new Float32Array(AUDIO_BUFFER_SIZE);
  const soundToggle=$('sound');
  try{soundToggle.checked=localStorage.getItem('chimiNES_sound')!=='0';}catch(_){}
+ // Volume slider: 0–100% maps directly to the output gain node; saved per browser.
+ const volumeSlider=$('volume'),volumeValue=$('volumeValue');
+ let volumeLevel=0.78;
+ try{const v=Number(localStorage.getItem('chimiNES_volume'));if(localStorage.getItem('chimiNES_volume')!==null&&Number.isFinite(v))volumeLevel=Math.max(0,Math.min(1,v/100));}catch(_){}
+ function applyVolume(save){const pct=Math.round(volumeLevel*100);volumeSlider.value=String(pct);volumeValue.textContent=pct+'%';volumeSlider.closest('.volume-control').classList.toggle('muted',!soundToggle.checked);if(audioGain&&audioContext){audioGain.gain.cancelScheduledValues(audioContext.currentTime);audioGain.gain.setTargetAtTime(volumeLevel,audioContext.currentTime,0.015);}if(save)try{localStorage.setItem('chimiNES_volume',String(pct));}catch(_){}}
+ volumeSlider.addEventListener('input',()=>{volumeLevel=Math.max(0,Math.min(1,Number(volumeSlider.value)/100));applyVolume(true);});
+ soundToggle.addEventListener('change',()=>applyVolume(false));
+ applyVolume(false);
  const DB='chimiNES_ROM_DB',STORE='roms',STATE_STORE='states';ctx.fillStyle='#000';ctx.fillRect(0,0,256,240);
  const notice=m=>$('notice').textContent=m;
  function status(m,on=false){$('statusText').textContent=m;$('statusDot').classList.toggle('on',on);}
@@ -880,7 +893,7 @@ header .brand span { color: #e32636 !important; }
      audioContext=new AudioContextClass({latencyHint:'interactive'});
      audioProcessor=audioContext.createScriptProcessor(2048,0,2);
      audioGain=audioContext.createGain();
-     audioGain.gain.value=0.78;
+     audioGain.gain.value=volumeLevel;
      audioProcessor.onaudioprocess=e=>{
        const left=e.outputBuffer.getChannelData(0),right=e.outputBuffer.getChannelData(1);
        if(!soundToggle.checked){left.fill(0);right.fill(0);clearAudioQueue();return;}

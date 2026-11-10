@@ -685,6 +685,79 @@ header .brand span { color: #e32636 !important; }
 .left-settings .setting select { min-width: 0; width: 100%; }
 .left-settings .appearance-description { line-height: 1.45; }
 .left-settings .notice { overflow-wrap: anywhere; }
+
+/* ================================================================
+   Responsive layout + scaling fixes
+   - side columns scale with the window instead of fixed widths
+   - key/gamepad binding rows keep their keys on one line
+   - phones: game screen first, controls next, library/settings last
+   ================================================================ */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { overflow-x: hidden; }
+main { grid-template-columns: clamp(200px, 17vw, 250px) minmax(0, 1fr) clamp(255px, 20vw, 300px); }
+main > *, .right > * { min-width: 0; }
+.mapping { grid-template-columns: max-content minmax(0, 1fr); gap: 8px 10px; }
+.mapping > span:nth-child(odd) { display: flex; flex-wrap: wrap; gap: 6px; }
+.mapping > span:nth-child(even) { min-width: 0; overflow-wrap: anywhere; }
+.mapping .key { white-space: nowrap; }
+.game-info > div:nth-child(2) { min-width: 0; }
+.screen-shell { min-height: 0; }
+#gamepadStatus { overflow-wrap: anywhere; }
+
+/* Tablet / narrow laptop: two columns, controls + experimental side by side below. */
+@media (max-width: 1050px) and (min-width: 701px) {
+  main { grid-template-columns: clamp(190px, 24vw, 230px) minmax(0, 1fr); }
+  .right { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+
+/* Phones */
+@media (max-width: 700px) {
+  header { padding: 8px 12px; gap: 10px; padding-top: calc(8px + env(safe-area-inset-top)); }
+  .logo { width: 42px !important; height: 42px !important; flex-basis: 42px !important; }
+  .logo .controller-icon-wrap { width: 42px !important; height: 42px !important; }
+  .brand { font-size: 24px; letter-spacing: -1px; }
+  .theme-control select { max-width: 132px; min-height: 36px; }
+
+  main { display: flex; flex-direction: column; gap: 12px; padding: 10px 10px calc(18px + env(safe-area-inset-bottom)); }
+  main > .center { order: 1; }
+  main > .right { order: 2; }
+  main > aside.panel { order: 3; }
+
+  .center { padding: 8px; }
+  .screen-shell { padding: 0; border-radius: 10px; }
+  .game-info { padding: 10px 2px 0; gap: 10px; }
+  .cover { width: 44px; height: 44px; }
+  .cover .controller-icon-wrap { width: 30px; height: 30px; }
+  .status { font-size: 12px; white-space: nowrap; }
+
+  .center > .actionrow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .center > .actionrow > button { min-height: 44px; width: 100%; }
+  .center > .actionrow > #pauseBtn { grid-column: 1 / -1; }
+
+  .panel-head { padding: 13px 14px 8px; }
+  .section { padding: 0 13px 14px; }
+  .library { display: block; }
+  .setting { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .setting select { width: 100%; }
+  select, input[type="text"] { font-size: 16px; min-height: 44px; } /* 16px stops iOS from zooming on focus */
+  .theme-control select { font-size: 14px; }
+  .toggle { min-height: 44px; }
+  .volume-control { min-height: 44px; }
+  .volume-control input[type=range] { height: 32px; }
+  .key, .keybind-button, .padbind-button { min-height: 36px; }
+  .navbtn { min-height: 44px; }
+  .state-log { max-height: none; }
+  .footer { padding: 0 14px 18px; }
+}
+@media (max-width: 380px) {
+  .brand { font-size: 21px; }
+  .theme-control select { max-width: 112px; }
+  .status #statusText { display: none; }
+}
+/* Phone held sideways: keep the whole screen in view. */
+@media (orientation: landscape) and (max-height: 500px) {
+  header { position: static; }
+}
 </style>
 </head>
 <body>
@@ -1259,8 +1332,15 @@ header .brand span { color: #e32636 !important; }
  function applyScreenScale(value,announce=true){
    desiredScreenScale=Math.max(0.5,Math.min(8,Number(value)||3));
    const full=document.fullscreenElement===drop;
-   const availableW=full?window.innerWidth:Math.max(120,drop.clientWidth-20);
-   const availableH=full?window.innerHeight:Infinity;
+   // Fit inside the shell's content box, and (outside fullscreen) inside the visible viewport below the sticky header,
+   // so a large scale never pushes the screen past the bottom of the window.
+   const cs=getComputedStyle(drop);
+   const padX=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0);
+   const viewH=window.visualViewport?.height||window.innerHeight;
+   const header=document.querySelector('header');
+   const headerH=header&&getComputedStyle(header).position==='sticky'?header.offsetHeight:0;
+   const availableW=full?window.innerWidth:Math.max(120,drop.clientWidth-padX);
+   const availableH=full?viewH:Math.max(180,viewH-headerH-48);
    const cssWidth=Math.max(1,Math.min(256*desiredScreenScale,availableW,availableH*(256/240)));
    canvas.style.width=cssWidth+'px';canvas.style.height=(cssWidth*240/256)+'px';canvas.style.maxWidth='100%';canvas.style.maxHeight=full?'100vh':'none';canvas.style.flex='0 0 auto';
    scaleSelect.value=String(desiredScreenScale);
@@ -1270,6 +1350,10 @@ header .brand span { color: #e32636 !important; }
  try{scaleSelect.value=localStorage.getItem('chimiNES_scale')||scaleSelect.value;}catch(_){} applyScreenScale(scaleSelect.value,false);
  scaleSelect.addEventListener('change',()=>applyScreenScale(scaleSelect.value));
  window.addEventListener('resize',()=>applyScreenScale(desiredScreenScale,false));
+ window.visualViewport?.addEventListener('resize',()=>applyScreenScale(desiredScreenScale,false));
+ window.addEventListener('orientationchange',()=>setTimeout(()=>applyScreenScale(desiredScreenScale,false),250));
+ // The center column can change width without a window resize (scrollbars, layout breakpoints, fonts loading).
+ if(window.ResizeObserver){let lastCenterW=0;new ResizeObserver(entries=>{const w=Math.round(entries[0].contentRect.width);if(w!==lastCenterW){lastCenterW=w;applyScreenScale(desiredScreenScale,false);}}).observe(drop.parentElement);}
  soundToggle.addEventListener('change',()=>{
    const enabled=soundToggle.checked;
    if(!enabled)clearAudioQueue();

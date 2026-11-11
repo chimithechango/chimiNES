@@ -754,6 +754,56 @@ main > *, .right > * { min-width: 0; }
   .theme-control select { max-width: 112px; }
   .status #statusText { display: none; }
 }
+/* ================================================================
+   Fullscreen (native, webkit-prefixed, and the CSS fallback used on iPhone)
+   ================================================================ */
+#dropZone:-webkit-full-screen { width: 100vw; height: 100vh; padding: 0; border: 0; border-radius: 0; background: #000; display: flex; align-items: center; justify-content: center; }
+#dropZone.pseudo-fullscreen {
+  position: fixed !important; inset: 0; z-index: 1000; margin: 0;
+  width: 100vw; height: 100vh; height: 100dvh; min-height: 0;
+  border: 0; border-radius: 0; background: #000 !important;
+  display: flex; align-items: center; justify-content: center;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+html.pseudo-fullscreen-lock, html.pseudo-fullscreen-lock body { overflow: hidden; overscroll-behavior: none; }
+#dropZone.is-fullscreen #screen { box-shadow: none; }
+#dropZone.is-fullscreen:after { display: none; }
+.fs-exit {
+  display: none; position: absolute; z-index: 6; top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right));
+  width: 40px; height: 40px; padding: 0; place-items: center; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.55) !important; color: #fff !important;
+  font: 700 17px/1 system-ui, sans-serif; opacity: .55; box-shadow: none !important;
+}
+.fs-exit:hover, .fs-exit:focus-visible { opacity: 1; }
+#dropZone.is-fullscreen .fs-exit { display: grid; }
+
+/* ================================================================
+   Touch controls v2 — sized from the space they actually have (container query units)
+   - landscape / desktop: translucent overlay in the corners of the screen area
+   - portrait: a handheld-style control deck below the picture, never covering the game
+   ================================================================ */
+#touchControls.enabled { display: block; container-type: size; }
+#touchControls .touch-key { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(10,24,42,.45); } /* backdrop blur over a 60fps canvas is very expensive on phones */
+#touchControls .touch-dpad { pointer-events: auto; touch-action: none; left: max(10px, 3cqw); top: auto; bottom: max(10px, 5cqh); transform: none; width: clamp(92px, min(36cqh, 24cqw), 190px); height: auto; aspect-ratio: 1; }
+#touchControls .touch-dpad .touch-key { pointer-events: none; }
+#touchControls .touch-actions { right: max(10px, 3cqw); bottom: max(14px, 6cqh); gap: clamp(8px, 2.4cqw, 22px); }
+#touchControls .touch-actions .touch-key { width: clamp(44px, min(16cqh, 10cqw), 86px); height: auto; aspect-ratio: 1; }
+#touchControls .touch-system { bottom: max(8px, 3cqh); gap: clamp(6px, 2cqw, 14px); }
+#touchControls .touch-system .touch-key { height: clamp(26px, 6.5cqh, 40px); min-width: clamp(54px, 12cqw, 88px); }
+
+@media (orientation: portrait) {
+  #dropZone.touch-on { flex-direction: column; justify-content: flex-start; align-items: center; }
+  #dropZone.touch-on.is-fullscreen { justify-content: center; }
+  #dropZone.touch-on #touchControls.enabled { position: relative; inset: auto; flex: 0 0 auto; width: 100%; height: clamp(170px, 52vw, 260px); margin-top: 6px; }
+  #dropZone.touch-on.is-fullscreen #touchControls.enabled { height: clamp(190px, 40vh, 340px); max-width: 600px; }
+  #dropZone.touch-on #touchControls .touch-key { background: rgba(255,255,255,.07); border-color: rgba(220,240,255,.32); }
+  #dropZone.touch-on #touchControls .touch-dpad { left: 5cqw; top: 43%; bottom: auto; transform: translateY(-50%); width: min(40cqw, 70cqh); }
+  #dropZone.touch-on #touchControls .touch-actions { right: 5cqw; top: 44%; bottom: auto; transform: translateY(-50%) rotate(-14deg); gap: 5cqw; }
+  #dropZone.touch-on #touchControls .touch-actions .touch-key { width: min(19cqw, 36cqh); }
+  #dropZone.touch-on #touchControls .touch-system { bottom: 5cqh; }
+  #dropZone.touch-on #touchControls .touch-system .touch-key { height: clamp(28px, 13cqh, 38px); min-width: clamp(60px, 17cqw, 90px); }
+}
+
 /* Phone held sideways: keep the whole screen in view. */
 @media (orientation: landscape) and (max-height: 500px) {
   header { position: static; }
@@ -800,7 +850,7 @@ main > *, .right > * { min-width: 0; }
           <p class="appearance-description">Choose the visual treatment for panels, buttons, menus, and controls.</p>
           <div class="setting"><label for="uiStyle">interface style</label><select id="uiStyle"><option value="gradient">Gradient</option><option value="solid">Solid Colors</option></select></div>
         </div>
-        <div class="setting"><label for="autosaveInterval">autosave interval</label><select id="autosaveInterval"><option value="1">1 second</option><option value="2">2 seconds</option><option value="5">5 seconds</option><option value="10">10 seconds</option><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="60">60 seconds</option></select></div>
+        <div class="setting"><label for="autosaveInterval">autosave interval</label><select id="autosaveInterval"><option value="1">1 second</option><option value="2">2 seconds</option><option value="5" selected>5 seconds</option><option value="10">10 seconds</option><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="60">60 seconds</option></select></div>
         <div class="setting"><label for="speed">playback speed</label><select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1× normal</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option><option value="2.5">2.5×</option><option value="3">3×</option><option value="4">4×</option></select></div>
         <div class="setting"><label for="scale">screen scale</label><select id="scale"><option value="0.5">0.5×</option><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="2.5">2.5×</option><option value="3" selected>3×</option><option value="3.5">3.5×</option><option value="4">4×</option><option value="5">5×</option><option value="6">6×</option><option value="8">8×</option></select></div>
         <div class="setting"><label for="filter">pixel filter</label><select id="filter"><option value="pixel" selected>pixel perfect</option><option value="smooth">smooth</option></select></div>
@@ -828,6 +878,7 @@ main > *, .right > * { min-width: 0; }
         <div class="touch-actions" aria-label="action buttons"><button type="button" class="touch-key touch-b" data-touch="b" aria-label="b">b</button><button type="button" class="touch-key touch-a" data-touch="a" aria-label="a">a</button></div>
       </div>
       <div id="fpsOverlay" aria-live="off" hidden>FPS: --</div>
+      <button type="button" class="fs-exit" id="fsExitBtn" aria-label="Exit fullscreen" title="Exit fullscreen">✕</button>
       <div class="screen-empty" id="emptyState">
         <div class="big"><span class="controller-icon-wrap"><img class="controller-icon" src="controller.png" alt=""><span class="controller-icon-fallback">🎮</span></span></div><strong>ready when you are.</strong>
         <small>import a .nes rom to play. imported roms are saved in this browser for next time.</small>
@@ -950,36 +1001,82 @@ main > *, .right > * { min-width: 0; }
  const volumeSlider=$('volume'),volumeValue=$('volumeValue');
  let volumeLevel=0.78;
  try{const v=Number(localStorage.getItem('chimiNES_volume'));if(localStorage.getItem('chimiNES_volume')!==null&&Number.isFinite(v))volumeLevel=Math.max(0,Math.min(1,v/100));}catch(_){}
- function applyVolume(save){const pct=Math.round(volumeLevel*100);volumeSlider.value=String(pct);volumeValue.textContent=pct+'%';volumeSlider.closest('.volume-control').classList.toggle('muted',!soundToggle.checked);if(audioGain&&audioContext){audioGain.gain.cancelScheduledValues(audioContext.currentTime);audioGain.gain.setTargetAtTime(volumeLevel,audioContext.currentTime,0.015);}if(save)try{localStorage.setItem('chimiNES_volume',String(pct));}catch(_){}}
+ function applyVolume(save){const pct=Math.round(volumeLevel*100);volumeSlider.value=String(pct);volumeValue.textContent=pct+'%';volumeSlider.closest('.volume-control').classList.toggle('muted',!soundToggle.checked);if(audioGain&&audioContext){audioGain.gain.cancelScheduledValues(audioContext.currentTime);audioGain.gain.setTargetAtTime(soundToggle.checked?volumeLevel:0,audioContext.currentTime,0.015);}if(save)try{localStorage.setItem('chimiNES_volume',String(pct));}catch(_){}}
  volumeSlider.addEventListener('input',()=>{volumeLevel=Math.max(0,Math.min(1,Number(volumeSlider.value)/100));applyVolume(true);});
  soundToggle.addEventListener('change',()=>applyVolume(false));
  applyVolume(false);
  const DB='chimiNES_ROM_DB',STORE='roms',STATE_STORE='states';ctx.fillStyle='#000';ctx.fillRect(0,0,256,240);
  const notice=m=>$('notice').textContent=m;
  function status(m,on=false){$('statusText').textContent=m;$('statusDot').classList.toggle('on',on);}
- function clearAudioQueue(){audioRead=audioWrite=audioCount=0;audioLastLeft=audioLastRight=0;}
+ // ---- Audio output ----
+ // Preferred path: an AudioWorklet (runs on the audio thread, so a busy main thread can't cause crackles).
+ // Fallback: ScriptProcessor on the main thread. Both use dynamic rate control: playback speed is nudged
+ // by up to ±0.5% depending on how full the buffer is, so audio stays smooth while video is locked to the
+ // display's refresh rate (no doubled or dropped video frames).
+ const AUDIO_MASK=AUDIO_BUFFER_SIZE-1;
+ let audioNode=null,audioPos=0,audioPrimed=false;
+ let chunkL=new Float32Array(4096),chunkR=new Float32Array(4096),chunkN=0;
+ const WORKLET_SRC=`class ChimiOut extends AudioWorkletProcessor{
+  constructor(){super();this.size=65536;this.mask=65535;this.L=new Float32Array(65536);this.R=new Float32Array(65536);this.r=0;this.w=0;this.n=0;this.pos=0;this.target=Math.round(sampleRate*0.05);this.primed=false;this.lastL=0;this.lastR=0;
+   this.port.onmessage=e=>{const d=e.data;if(d==='clear'){this.r=this.w=this.n=0;this.pos=0;this.primed=false;return;}const l=d.l,r=d.r,len=l.length;for(let i=0;i<len;i++){if(this.n>=this.size-2){this.r=(this.r+1)&this.mask;this.n--;}this.L[this.w]=l[i];this.R[this.w]=r[i];this.w=(this.w+1)&this.mask;this.n++;}
+    if(this.n>sampleRate*0.2){const drop=this.n-this.target;this.r=(this.r+drop)&this.mask;this.n-=drop;}};}
+  process(inputs,outputs){const out=outputs[0],oL=out[0],oR=out[1]||out[0],len=oL.length;
+   if(!this.primed&&this.n>=this.target)this.primed=true;
+   const ratio=Math.min(1.005,Math.max(0.995,1+0.005*(this.n-this.target)/this.target));
+   for(let i=0;i<len;i++){
+    if(!this.primed||this.n<2){this.primed=false;this.lastL*=0.995;this.lastR*=0.995;oL[i]=this.lastL;oR[i]=this.lastR;continue;}
+    const a=this.r,b=(a+1)&this.mask,f=this.pos;const l=this.L[a]+(this.L[b]-this.L[a])*f,r=this.R[a]+(this.R[b]-this.R[a])*f;
+    oL[i]=l;oR[i]=r;this.lastL=l;this.lastR=r;this.pos+=ratio;while(this.pos>=1&&this.n>1){this.pos-=1;this.r=(this.r+1)&this.mask;this.n--;}}
+   return true;}}
+ registerProcessor('chimi-out',ChimiOut);`;
+ function clearAudioQueue(){audioRead=audioWrite=audioCount=0;audioLastLeft=audioLastRight=0;audioPos=0;audioPrimed=false;chunkN=0;if(audioNode)audioNode.port.postMessage('clear');}
+ function flushAudio(){
+   if(!chunkN)return;
+   if(audioNode){const l=chunkL.slice(0,chunkN),r=chunkR.slice(0,chunkN);audioNode.port.postMessage({l,r},[l.buffer,r.buffer]);}
+   chunkN=0;
+ }
+ function startScriptProcessorFallback(){
+   const target=4096;
+   audioProcessor=audioContext.createScriptProcessor(2048,0,2);
+   audioProcessor.onaudioprocess=e=>{
+     const left=e.outputBuffer.getChannelData(0),right=e.outputBuffer.getChannelData(1);
+     if(!soundToggle.checked){left.fill(0);right.fill(0);clearAudioQueue();return;}
+     if(!audioPrimed&&audioCount>=target)audioPrimed=true;
+     const ratio=Math.min(1.005,Math.max(0.995,1+0.005*(audioCount-target)/target));
+     for(let i=0;i<left.length;i++){
+       if(!audioPrimed||audioCount<2){audioPrimed=false;audioLastLeft*=0.995;audioLastRight*=0.995;left[i]=audioLastLeft;right[i]=audioLastRight;continue;}
+       const a=audioRead,b=(a+1)&AUDIO_MASK,f=audioPos;
+       audioLastLeft=audioLeft[a]+(audioLeft[b]-audioLeft[a])*f;audioLastRight=audioRight[a]+(audioRight[b]-audioRight[a])*f;
+       left[i]=audioLastLeft;right[i]=audioLastRight;
+       audioPos+=ratio;while(audioPos>=1&&audioCount>1){audioPos-=1;audioRead=(audioRead+1)&AUDIO_MASK;audioCount--;}
+     }
+   };
+   audioProcessor.connect(audioGain);
+ }
  function setupAudio(){
    if(audioContext)return audioContext;
    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
    if(!AudioContextClass)return null;
    try{
      audioContext=new AudioContextClass({latencyHint:'interactive'});
-     audioProcessor=audioContext.createScriptProcessor(2048,0,2);
      audioGain=audioContext.createGain();
-     audioGain.gain.value=volumeLevel;
-     audioProcessor.onaudioprocess=e=>{
-       const left=e.outputBuffer.getChannelData(0),right=e.outputBuffer.getChannelData(1);
-       if(!soundToggle.checked){left.fill(0);right.fill(0);clearAudioQueue();return;}
-       for(let i=0;i<left.length;i++){
-         if(audioCount>0){audioLastLeft=audioLeft[audioRead];audioLastRight=audioRight[audioRead];audioRead=(audioRead+1)%AUDIO_BUFFER_SIZE;audioCount--;left[i]=audioLastLeft;right[i]=audioLastRight;}
-         else{audioLastLeft*=0.995;audioLastRight*=0.995;left[i]=audioLastLeft;right[i]=audioLastRight;}
-       }
-     };
-     audioProcessor.connect(audioGain);audioGain.connect(audioContext.destination);
+     audioGain.gain.value=soundToggle.checked?volumeLevel:0;
+     audioGain.connect(audioContext.destination);
+     startScriptProcessorFallback();
+     // Upgrade to the AudioWorklet once its module has loaded; keep the fallback if that fails.
+     if(audioContext.audioWorklet&&window.AudioWorkletNode){
+       const url=URL.createObjectURL(new Blob([WORKLET_SRC],{type:'application/javascript'}));
+       audioContext.audioWorklet.addModule(url).then(()=>{
+         const node=new AudioWorkletNode(audioContext,'chimi-out',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2]});
+         node.connect(audioGain);
+         if(audioProcessor){audioProcessor.onaudioprocess=null;audioProcessor.disconnect();audioProcessor=null;}
+         audioNode=node;clearAudioQueue();
+       }).catch(()=>{}).finally(()=>URL.revokeObjectURL(url));
+     }
      return audioContext;
    }catch(e){
      try{audioProcessor?.disconnect();audioGain?.disconnect();audioContext?.close();}catch(_){}
-     audioContext=null;audioProcessor=null;audioGain=null;
+     audioContext=null;audioProcessor=null;audioGain=null;audioNode=null;
      return null;
    }
  }
@@ -993,16 +1090,35 @@ main > *, .right > * { min-width: 0; }
  window.addEventListener('keydown',()=>{if(soundToggle.checked)resumeAudio();},{passive:true});
  function queueAudioSample(left,right){
    if(!soundToggle.checked||!audioContext||audioContext.state!=='running')return;
-   // If rendering falls behind, discard the oldest samples rather than building latency.
-   if(audioCount>=AUDIO_BUFFER_SIZE){audioRead=(audioRead+1)%AUDIO_BUFFER_SIZE;audioCount--;}
-   audioLeft[audioWrite]=Number.isFinite(left)?left:0;
-   audioRight[audioWrite]=Number.isFinite(right)?right:0;
-   audioWrite=(audioWrite+1)%AUDIO_BUFFER_SIZE;audioCount++;
+   if(left!==left)left=0;if(right!==right)right=0; // NaN guard (cheaper than Number.isFinite per sample)
+   if(audioNode){chunkL[chunkN]=left;chunkR[chunkN]=right;if(++chunkN>=chunkL.length){if(chunkL.buffer.byteLength===0){chunkL=new Float32Array(4096);chunkR=new Float32Array(4096);}flushAudio();}return;}
+   // Fallback ring buffer: if output falls behind, discard the oldest samples rather than building latency.
+   if(audioCount>=AUDIO_BUFFER_SIZE-2){audioRead=(audioRead+1)&AUDIO_MASK;audioCount--;}
+   audioLeft[audioWrite]=left;audioRight[audioWrite]=right;
+   audioWrite=(audioWrite+1)&AUDIO_MASK;audioCount++;
+   if(audioCount>(audioContext.sampleRate*0.25)){const drop=audioCount-4096;audioRead=(audioRead+drop)&AUDIO_MASK;audioCount-=drop;}
  }
- function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,2);r.onupgradeneeded=()=>{const d=r.result; if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'name'}); let states;if(!d.objectStoreNames.contains(STATE_STORE))states=d.createObjectStore(STATE_STORE,{keyPath:'id',autoIncrement:true});else states=r.transaction.objectStore(STATE_STORE);if(!states.indexNames.contains('romName'))states.createIndex('romName','romName',{unique:false});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
- async function dbOp(mode,fn,storeName=STORE){const d=await openDB();return new Promise((res,rej)=>{let t;try{t=d.transaction(storeName,mode);const s=t.objectStore(storeName),r=fn(s);r.onsuccess=()=>res(r.result);r.onerror=()=>{d.close();rej(r.error||new Error('Storage request failed.'));};t.oncomplete=()=>d.close();t.onerror=()=>{const err=t.error||new Error('Storage transaction failed.');d.close();rej(err);};t.onabort=()=>{const err=t.error||new Error('Storage transaction was aborted.');d.close();rej(err);};}catch(e){d.close();rej(e);}});}
+ // Keep one IndexedDB connection open instead of reopening the database for every request.
+ let dbPromise=null,dbHandle=null;
+ function openDB(){if(!dbPromise){dbPromise=openDBFresh().then(d=>{dbHandle=d;d.onversionchange=()=>{d.close();dbPromise=null;dbHandle=null;};d.onclose=()=>{dbPromise=null;dbHandle=null;};return d;},e=>{dbPromise=null;dbHandle=null;throw e;});}return dbPromise;}
+ function openDBFresh(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,2);r.onupgradeneeded=()=>{const d=r.result; if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'name'}); let states;if(!d.objectStoreNames.contains(STATE_STORE))states=d.createObjectStore(STATE_STORE,{keyPath:'id',autoIncrement:true});else states=r.transaction.objectStore(STATE_STORE);if(!states.indexNames.contains('romName'))states.createIndex('romName','romName',{unique:false});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+ async function dbOp(mode,fn,storeName=STORE){const d=await openDB();return new Promise((res,rej)=>{let t;try{t=d.transaction(storeName,mode);const s=t.objectStore(storeName),r=fn(s);r.onsuccess=()=>res(r.result);r.onerror=()=>{rej(r.error||new Error('Storage request failed.'));};t.onerror=()=>{rej(t.error||new Error('Storage transaction failed.'));};t.onabort=()=>{rej(t.error||new Error('Storage transaction was aborted.'));};}catch(e){dbPromise=null;dbHandle=null;rej(e);}});}
+ // AutoSave fast path: one transaction that adds the new checkpoint and prunes old ones for this ROM,
+ // using the romName index instead of reading every save state in the database.
+ const autosaveIndexCache=new Map(); // romName -> [{id,version}] sorted newest first
+ async function writeAutosave(record){
+   const d=await openDB(); // record.state is an immutable JSON string, so awaiting here is safe
+   let known=autosaveIndexCache.get(record.romName);
+   if(!known){
+     const existing=await new Promise((res,rej)=>{const t=d.transaction(STATE_STORE,'readonly');const st=t.objectStore(STATE_STORE);const req=st.indexNames.contains('romName')?st.index('romName').getAll(record.romName):st.getAll();req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);});
+     known=existing.filter(item=>item.autosave&&sameRomName(item.romName,record.romName)).map(item=>({id:item.id,version:Number(item.autosaveVersion)||0})).sort((a,b)=>b.version-a.version);
+     autosaveIndexCache.set(record.romName,known);
+   }
+   record.autosaveName='AutoSave';record.autosaveVersion=(known[0]?.version||0)+1;
+   await new Promise((res,rej)=>{const t=d.transaction(STATE_STORE,'readwrite');const st=t.objectStore(STATE_STORE);const req=st.add(record);req.onsuccess=()=>{known.unshift({id:req.result,version:record.autosaveVersion});for(const old of known.splice(5))st.delete(old.id);};t.oncomplete=()=>res();t.onerror=()=>rej(t.error||new Error('AutoSave failed.'));t.onabort=()=>rej(t.error||new Error('AutoSave was aborted.'));});
+ }
  function stateFileBase(name){return String(name||'game').replace(/\.nes$/i,'').replace(/[^a-z0-9._-]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,64)||'game';}
- function portableState(record){return {format:'chimiNES-save-state',formatVersion:1,romName:record.romName,createdAt:record.createdAt,state:record.state};}
+ function portableState(record){return {format:'chimiNES-save-state',formatVersion:1,romName:record.romName,createdAt:record.createdAt,state:typeof record.state==='string'?JSON.parse(record.state):record.state};}
  function downloadJSON(filename,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);}
  function sameRomName(a,b){return String(a||'').toLocaleLowerCase()===String(b||'').toLocaleLowerCase();}
  function formatStateDate(value){const date=new Date(value);return Number.isNaN(date.getTime())?'date unavailable':date.toLocaleString();}
@@ -1033,6 +1149,15 @@ main > *, .right > * { min-width: 0; }
    const rawState=nes.toJSON();
    // JSNES builds can return either a plain object or a JSON string. Normalize both
    // forms into a detached object before writing to IndexedDB or exporting.
+   // AutoSave stores the state as a JSON string: stringify once (~7 ms) and IndexedDB copies a flat string
+   // cheaply. Parsing it back to an object and letting IndexedDB clone that object costs ~5x more.
+   // restoreStateRecord / import / export already accept string states.
+   if(isAuto){
+     const text=typeof rawState==='string'?rawState:JSON.stringify(rawState);
+     if(!text||text[0]!=='{')throw new Error('The emulator returned an invalid save state.');
+     await writeAutosave({format:'chimiNES-save-state',formatVersion:1,romName:currentName,createdAt:Date.now(),state:text,autosave:true});
+     lastAutosaveWall=Date.now();return;
+   }
    const state=typeof rawState==='string'?JSON.parse(rawState):JSON.parse(JSON.stringify(rawState));
    if(!state||typeof state!=='object'||Array.isArray(state))throw new Error('The emulator returned an invalid save state.');
    const record={format:'chimiNES-save-state',formatVersion:1,romName:currentName,createdAt:Date.now(),state,autosave:!!isAuto};
@@ -1102,8 +1227,31 @@ main > *, .right > * { min-width: 0; }
    for(const record of clean)await dbOp('readwrite',store=>store.add(record),STATE_STORE);
    await listSaveStates();notice('Imported '+clean.length+' save state'+(clean.length===1?'':'s')+'. Load the matching ROM if it is not already saved in this browser.');
  }
- function renderFrame(b){
-   if(!b||b.length<61440)return;
+ // Performance: jsnes calls onFrame once per emulated frame, but only the last frame of each
+ // animation tick is ever visible. Remember the buffer and blit once per tick (blitFrame).
+ // The blit writes whole 32-bit pixels instead of four bytes each, and colour-vision
+ // transforms are cached per NES colour (a frame only uses a few dozen distinct colours).
+ const LITTLE_ENDIAN=new Uint8Array(new Uint32Array([1]).buffer)[0]===1;
+ const frame32=new Uint32Array(frameImage.data.buffer);
+ const colorCaches={protanopia:new Map(),deuteranopia:new Map(),tritanopia:new Map()};
+ let pendingFrame=null;
+ function renderFrame(b){if(b&&b.length>=61440)pendingFrame=b;}
+ function transformColor(p,mode){
+   let r=p&255,g=(p>>>8)&255,bl=(p>>>16)&255,nr,ng,nb;
+   if(mode==='protanopia'){nr=.567*r+.433*g;ng=.558*r+.442*g;nb=.242*g+.758*bl;}
+   else if(mode==='deuteranopia'){nr=.625*r+.375*g;ng=.7*r+.3*g;nb=.3*g+.7*bl;}
+   else{nr=.95*r+.05*g;ng=.433*g+.567*bl;nb=.475*g+.525*bl;}
+   return (0xFF000000|((nb&255)<<16)|((ng&255)<<8)|(nr&255))>>>0;
+ }
+ function blitFrame(){
+   const b=pendingFrame;if(!b)return;pendingFrame=null;
+   if(!LITTLE_ENDIAN){renderFrameSlow(b);return;}
+   const cache=colorCaches[activeColorRendering];
+   if(!cache){for(let i=0;i<61440;i++)frame32[i]=0xFF000000|(b[i]&0xFFFFFF);}
+   else{let lastIn=-1,lastOut=0;for(let i=0;i<61440;i++){const p=b[i]&0xFFFFFF;if(p!==lastIn){lastIn=p;lastOut=cache.get(p);if(lastOut===undefined){lastOut=transformColor(p,activeColorRendering);cache.set(p,lastOut);}}frame32[i]=lastOut;}}
+   ctx.putImageData(frameImage,0,0);
+ }
+ function renderFrameSlow(b){
    const d=frameImage.data;
    // JSNES's framebuffer pixels are packed with red in the LOW byte
    // (0xBBGGRR). Canvas ImageData expects R,G,B,A byte order, so unpack
@@ -1145,10 +1293,10 @@ main > *, .right > * { min-width: 0; }
  $('cheatInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('addCheatBtn').click();});renderCheats();
  $('addGameGenieBtn').addEventListener('click',()=>{try{const cheat=decodeGameGenie($('gameGenieInput').value.trim());if(gameGenieCheats.some(c=>c.code===cheat.code)){notice('That Game Genie code is already in the list.');return;}gameGenieCheats.push(cheat);$('gameGenieInput').value='';renderGameGenie();notice('Game Genie code added. It will be applied to the mapped CPU ROM address while the game runs.');}catch(e){notice(e.message||String(e));}});
  $('gameGenieInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('addGameGenieBtn').click();});renderGameGenie();
- let autosaveEnabled=true,lastAutosaveAt=0,autosaveBusy=false,lastAutosaveWall=0,autosaveIntervalMs=1000;
+ let autosaveEnabled=true,lastAutosaveAt=0,autosaveBusy=false,lastAutosaveWall=0,autosaveIntervalMs=5000;
  const autosaveToggle=$('autosaveToggle'),autosaveIntervalSelect=$('autosaveInterval');
  function applyAutosave(enabled){autosaveEnabled=!!enabled;autosaveToggle.checked=autosaveEnabled;lastAutosaveAt=performance.now();try{localStorage.setItem('chimiNES_autosave',autosaveEnabled?'1':'0');}catch(_){}notice(autosaveEnabled?'Automatic AutoSave enabled. Checkpoints are saved every '+(autosaveIntervalMs/1000)+' second(s) while a game is running.':'Automatic AutoSave disabled.');}
- try{const savedAutosave=localStorage.getItem('chimiNES_autosave');autosaveToggle.checked=savedAutosave===null?true:savedAutosave==='1';const savedInterval=Number(localStorage.getItem('chimiNES_autosave_interval')||1);autosaveIntervalMs=Math.max(1000,Math.min(60000,(Number.isFinite(savedInterval)?savedInterval:1)*1000));autosaveIntervalSelect.value=String(autosaveIntervalMs/1000);}catch(_){autosaveToggle.checked=true;autosaveIntervalSelect.value='1';}autosaveEnabled=autosaveToggle.checked;autosaveToggle.addEventListener('change',()=>applyAutosave(autosaveToggle.checked));autosaveIntervalSelect.addEventListener('change',()=>{autosaveIntervalMs=Math.max(1000,Math.min(60000,Number(autosaveIntervalSelect.value)*1000||1000));lastAutosaveAt=performance.now();try{localStorage.setItem('chimiNES_autosave_interval',String(autosaveIntervalMs/1000));}catch(_){}notice('AutoSave interval set to '+(autosaveIntervalMs/1000)+' second(s).');});
+ try{const savedAutosave=localStorage.getItem('chimiNES_autosave');autosaveToggle.checked=savedAutosave===null?true:savedAutosave==='1';const savedInterval=Number(localStorage.getItem('chimiNES_autosave_interval')||5);autosaveIntervalMs=Math.max(1000,Math.min(60000,(Number.isFinite(savedInterval)?savedInterval:1)*1000));autosaveIntervalSelect.value=String(autosaveIntervalMs/1000);}catch(_){autosaveToggle.checked=true;autosaveIntervalSelect.value='5';}autosaveEnabled=autosaveToggle.checked;autosaveToggle.addEventListener('change',()=>applyAutosave(autosaveToggle.checked));autosaveIntervalSelect.addEventListener('change',()=>{autosaveIntervalMs=Math.max(1000,Math.min(60000,Number(autosaveIntervalSelect.value)*1000||1000));lastAutosaveAt=performance.now();try{localStorage.setItem('chimiNES_autosave_interval',String(autosaveIntervalMs/1000));}catch(_){}notice('AutoSave interval set to '+(autosaveIntervalMs/1000)+' second(s).');});
  // ---- Bindable gamepad support ----
  // A binding token is "b<index>" for a button or "a<index>+" / "a<index>-" for an axis direction.
  const gamepadPrevious=new Map();
@@ -1188,7 +1336,7 @@ main > *, .right > * { min-width: 0; }
    if(padApiError)return 'The browser blocked controller access ('+(padApiError.name||'error')+'). This happens when the page runs inside another site or an embedded preview. Open the .html file directly in Chrome or Edge.';
    if(window.isSecureContext===false)return 'Controller access needs a secure page. Open the .html file directly (file://) or from https:// or http://localhost.';
    if(!connected.length)return 'No gamepads detected yet. Click anywhere on this page, then press A / ✕ on the controller (browsers hide controllers until a button is pressed while the page is focused). If Steam is open, close it or turn off Steam Input, which can hide Xbox/PlayStation pads from the browser.';
-   return connected.length+' controller(s) detected: '+connected.map(p=>{const held=p.buttons.map((b,i)=>padButtonOn(b)?prettyPad('b'+i):null).filter(Boolean);return 'Gamepad '+(p.index+1)+(p.mapping==='standard'?'':' (non-standard layout)')+(held.length?' — holding '+held.join(', '):'');}).join('; ')+'. '+effectivePadIndices(getPads()).map((i,s)=>'Player '+(s+1)+' → '+(i>=0?'Gamepad '+(i+1):'none')).join(', ')+'.';
+   return connected.length+' controller(s) detected: '+connected.map(p=>{const held=(romLoaded&&!paused)?[]:p.buttons.map((b,i)=>padButtonOn(b)?prettyPad('b'+i):null).filter(Boolean);/* live button readout only while not playing, to avoid DOM work during gameplay */return 'Gamepad '+(p.index+1)+(p.mapping==='standard'?'':' (non-standard layout)')+(held.length?' — holding '+held.join(', '):'');}).join('; ')+'. '+effectivePadIndices(getPads()).map((i,s)=>'Player '+(s+1)+' → '+(i>=0?'Gamepad '+(i+1):'none')).join(', ')+'.';
  }
  function refreshPadSelects(){const pads=getPads(true);document.querySelectorAll('select[data-pad-slot]').forEach(sel=>{const slot=Number(sel.dataset.padSlot);const opts=[['-1','None']];for(let i=0;i<4;i++){const p=pads[i];opts.push([String(i),'Gamepad '+(i+1)+(p?' — '+(p.id.length>30?p.id.slice(0,30)+'…':p.id):' (not connected)')]);}if(sel.options.length!==opts.length)sel.replaceChildren(...opts.map(([v,t])=>new Option(t,v)));else opts.forEach(([v,t],i)=>{if(sel.options[i].text!==t)sel.options[i].text=t;});sel.value=String(padbinds.pads[slot]);});const connected=pads.filter(p=>p&&p.connected!==false);const statusEl=$('gamepadStatus');if(statusEl){const txt=padStatusText(connected);if(statusEl.textContent!==txt)statusEl.textContent=txt;}}
  document.querySelectorAll('select[data-pad-slot]').forEach(sel=>sel.addEventListener('change',()=>{releasePadInputs();const slot=Number(sel.dataset.padSlot),v=Number(sel.value);if(v>=0&&padbinds.pads[1-slot]===v)padbinds.pads[1-slot]=padbinds.pads[slot];padbinds.pads[slot]=v;savePadbinds();}));
@@ -1198,7 +1346,14 @@ main > *, .right > * { min-width: 0; }
  window.addEventListener('gamepaddisconnected',e=>{if(e.gamepad)delete padEventCache[e.gamepad.index];releasePadInputs();refreshPadSelects();});
  setInterval(()=>{try{refreshPadSelects();}catch(_){}},250);
  renderPadbinds();
- function loop(t){if(!nes||paused||!romLoaded)return;if(!lastTick)lastTick=t;const dt=Math.min(100,t-lastTick);lastTick=t;acc+=dt*60.0988*(Number($('speed').value)||1)/1000;let n=0;try{while(acc>=1&&n<6){pollGamepads();applyRamCheats();applyGameGenieCheats();nes.frame();applyRamCheats();acc--;n++;frameCounter++;}}catch(e){paused=true;status('Emulation stopped');notice(e.message);return;}if(fpsEnabled&&t-fpsWindowStart>=500){fpsOverlay.textContent='FPS: '+Math.round(frameCounter*1000/(t-fpsWindowStart));frameCounter=0;fpsWindowStart=t;}if(autosaveEnabled&&t-lastAutosaveAt>=autosaveIntervalMs&&!autosaveBusy){lastAutosaveAt=t;autosaveBusy=true;saveCurrentState(true).catch(e=>notice('AutoSave failed: '+(e?.message||e))).finally(()=>{autosaveBusy=false;});}raf=requestAnimationFrame(loop);}
+ // Frame pacing: on displays running at ~60 Hz every animation tick runs exactly one NES frame
+ // (the tiny 60 vs 60.0988 Hz difference is absorbed by the audio rate control), which removes the
+ // periodic doubled/skipped frames that made scrolling stutter. Other refresh rates (120/144 Hz, or
+ // slow devices) use an accumulator, and a backlog is dropped instead of snowballing.
+ const NES_FRAME_MS=1000/60.0988;
+ let speedFactor=Number($('speed').value)||1;
+ $('speed').addEventListener('change',()=>{speedFactor=Number($('speed').value)||1;});
+ function loop(t){if(!nes||paused||!romLoaded)return;raf=requestAnimationFrame(loop);if(!lastTick)lastTick=t;let dt=t-lastTick;lastTick=t;if(dt>250)dt=NES_FRAME_MS;if(Math.abs(dt-16.667)<2)dt=NES_FRAME_MS;acc+=dt/NES_FRAME_MS*speedFactor;const maxFrames=Math.max(3,Math.ceil(speedFactor*3));if(acc>maxFrames)acc=maxFrames;pollGamepads();const cheats=activeCheats.size>0,genie=gameGenieCheats.length>0;try{while(acc>=1){if(cheats)applyRamCheats();if(genie)applyGameGenieCheats();nes.frame();if(cheats)applyRamCheats();acc-=1;frameCounter++;}}catch(e){cancelAnimationFrame(raf);paused=true;status('Emulation stopped');notice(e.message);return;}blitFrame();flushAudio();if(fpsEnabled&&t-fpsWindowStart>=500){fpsOverlay.textContent='FPS: '+Math.round(frameCounter*1000/(t-fpsWindowStart));frameCounter=0;fpsWindowStart=t;}if(autosaveEnabled&&t-lastAutosaveAt>=autosaveIntervalMs&&!autosaveBusy){lastAutosaveAt=t;autosaveBusy=true;saveCurrentState(true).catch(e=>notice('AutoSave failed: '+(e?.message||e))).finally(()=>{autosaveBusy=false;});}}
  window.addEventListener('pagehide',()=>{if(!autosaveEnabled||!romLoaded||!nes)return;if(Date.now()-lastAutosaveWall<Math.min(700,autosaveIntervalMs/2))return;try{saveCurrentState(true).catch(()=>{});}catch(_){}});
  function run(){cancelAnimationFrame(raf);lastTick=0;acc=0;if(!paused&&romLoaded)raf=requestAnimationFrame(loop);}
  async function listRoms(){const box=$('savedRoms');box.innerHTML='';let items=[];try{items=await dbOp('readonly',s=>s.getAll());}catch(e){box.textContent='Local ROM storage is unavailable.';return;}items.sort((a,b)=>b.savedAt-a.savedAt);if(!items.length){box.innerHTML='<div class="notice" style="padding:8px 10px">no saved roms yet. Import a .nes file to add it here.</div>';return;}items.forEach(item=>{const row=document.createElement('div');row.style.cssText='display:flex;gap:4px;align-items:center;margin:3px 0';const b=document.createElement('button');b.className='game';b.style.flex='1';b.innerHTML='<span class="cartridge-icon-wrap"><img class="cartridge-icon" src="cartridge.png" alt=""><span class="cartridge-icon-fallback">🎮</span></span>';const cartridgeImg=b.querySelector('.cartridge-icon');const cartridgeFallback=b.querySelector('.cartridge-icon-fallback');cartridgeImg.onload=()=>{cartridgeImg.style.display='block';cartridgeFallback.style.display='none';};cartridgeImg.onerror=()=>{cartridgeImg.style.display='none';cartridgeFallback.style.display='inline';};const label=document.createElement('span');label.style.cssText='overflow:hidden;text-overflow:ellipsis;white-space:nowrap';label.textContent=item.name.replace(/\.nes$/i,'');b.append(label);b.onclick=()=>loadBytes(new Uint8Array(item.bytes),item.name,false);const del=document.createElement('button');del.className='secondary';del.textContent='×';del.title='Remove saved ROM';del.onclick=async()=>{if(confirm('Remove '+item.name+' from this browser?')){await dbOp('readwrite',s=>s.delete(item.name));listRoms();}};row.append(b,del);box.append(row);setupControllerIcons(row);});}
@@ -1227,12 +1382,22 @@ main > *, .right > * { min-width: 0; }
  const touchButtonNames={up:'BUTTON_UP',down:'BUTTON_DOWN',left:'BUTTON_LEFT',right:'BUTTON_RIGHT',a:'BUTTON_A',b:'BUTTON_B',start:'BUTTON_START',select:'BUTTON_SELECT'};
  const activeTouchButtons=new Map();
  const touchControlsToggle=$('touchControlsToggle');
+ // D-pad is one touch zone: direction comes from where the thumb is relative to the centre, so you can
+ // roll between directions (and diagonals) without lifting your thumb.
+ const dpadEl=touchControls?.querySelector('.touch-dpad');
+ const dpadPointers=new Map();
+ let dpadHeld=new Set();
+ function dpadDirs(e){const r=dpadEl.getBoundingClientRect();const dx=(e.clientX-(r.left+r.width/2))/(r.width/2),dy=(e.clientY-(r.top+r.height/2))/(r.height/2);const s=new Set();if(Math.hypot(dx,dy)<0.2)return s;if(Math.abs(dx)>0.414*Math.abs(dy))s.add(dx>0?'right':'left');if(Math.abs(dy)>0.414*Math.abs(dx))s.add(dy>0?'down':'up');return s;}
+ function syncDpad(){const C=window.jsnes?.Controller;const next=new Set();for(const s of dpadPointers.values())for(const d of s)next.add(d);for(const d of ['up','down','left','right']){const was=dpadHeld.has(d),is=next.has(d);if(was===is)continue;const v=C?.[touchButtonNames[d]];if(v!=null&&nes&&romLoaded){if(is)nes.buttonDown(1,v);else nes.buttonUp(1,v);}dpadEl?.querySelector('.touch-'+d)?.classList.toggle('is-pressed',is);}dpadHeld=next;}
  function applyTouchControls(enabled){
    enabled=!!enabled;
    touchControls.classList.toggle('enabled',enabled);
+   $('dropZone').classList.toggle('touch-on',enabled);
    touchControlsToggle.checked=enabled;
    try{localStorage.setItem('chimiNES_touchControls',enabled?'1':'0');}catch(_){}
+   requestAnimationFrame(()=>{try{applyScreenScale(desiredScreenScale,false);}catch(_){}});
    if(!enabled){
+     dpadPointers.clear();syncDpad();
      for(const [pointerId,entry] of activeTouchButtons){
        try{entry.element.releasePointerCapture(pointerId);}catch(_){}
        if(nes&&romLoaded)nes.buttonUp(1,entry.value);
@@ -1241,11 +1406,21 @@ main > *, .right > * { min-width: 0; }
      activeTouchButtons.clear();
    }
  }
- let savedTouchControls='0';try{savedTouchControls=localStorage.getItem('chimiNES_touchControls')||'0';}catch(_){}
+ // No saved preference yet: turn touch controls on automatically for phones/tablets (touch-only devices).
+ let savedTouchControls=null;try{savedTouchControls=localStorage.getItem('chimiNES_touchControls');}catch(_){}
+ if(savedTouchControls===null)savedTouchControls=(window.matchMedia&&matchMedia('(pointer: coarse)').matches&&!matchMedia('(any-pointer: fine)').matches)?'1':'0';
  applyTouchControls(savedTouchControls==='1');
  touchControlsToggle.addEventListener('change',()=>applyTouchControls(touchControlsToggle.checked));
+ if(dpadEl){
+   dpadEl.addEventListener('pointerdown',e=>{e.preventDefault();if(!romLoaded||!nes)return;try{dpadEl.setPointerCapture(e.pointerId);}catch(_){}dpadPointers.set(e.pointerId,dpadDirs(e));syncDpad();},{passive:false});
+   dpadEl.addEventListener('pointermove',e=>{if(!dpadPointers.has(e.pointerId))return;e.preventDefault();dpadPointers.set(e.pointerId,dpadDirs(e));syncDpad();},{passive:false});
+   const dpadRelease=e=>{if(dpadPointers.delete(e.pointerId))syncDpad();};
+   ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>dpadEl.addEventListener(ev,dpadRelease));
+   dpadEl.addEventListener('contextmenu',e=>e.preventDefault());
+ }
  if(touchControls){
    touchControls.querySelectorAll('[data-touch]').forEach(element=>{
+     if(element.closest('.touch-dpad'))return; // handled by the D-pad zone above
      const name=element.dataset.touch;
      const heldPointers=new Set();
      const down=e=>{e.preventDefault();if(!romLoaded||!nes)return;const C=window.jsnes?.Controller;const value=C?.[touchButtonNames[name]];if(value==null||heldPointers.has(e.pointerId))return;heldPointers.add(e.pointerId);activeTouchButtons.set(e.pointerId,{element,value});try{element.setPointerCapture(e.pointerId);}catch(_){}element.classList.add('is-pressed');nes.buttonDown(1,value);};
@@ -1283,9 +1458,32 @@ main > *, .right > * { min-width: 0; }
  function toggle(){resumeAudio();if(!romLoaded){$('romFile').click();return;}paused=!paused;$('pauseBtn').textContent=paused?'▶ Resume':'Ⅱ Pause';status(paused?'Paused':'Game running',true);if(paused){cancelAnimationFrame(raf);clearAudioQueue();}else run();}
  $('pauseBtn').onclick=toggle;$('resetBtn').onclick=()=>{if(!nes||!romLoaded)return notice('Load a ROM first.');clearAudioQueue();nes.reset();paused=false;resumeAudio();run();};
  const fullscreenBtn=$('fullscreenBtn');
- function syncFullscreenButton(){const active=document.fullscreenElement===drop;if(fullscreenBtn){fullscreenBtn.textContent=active?'⤢ exit fullscreen':'⛶ fullscreen';fullscreenBtn.setAttribute('aria-pressed',String(active));}applyScreenScale(scaleSelect?.value||'3',false);}
- if(fullscreenBtn)fullscreenBtn.onclick=async()=>{try{if(document.fullscreenElement===drop)await document.exitFullscreen();else await drop.requestFullscreen();}catch(e){notice('Fullscreen is unavailable in this browser or page context.');}};
+ // Fullscreen: standard API, then the webkit-prefixed one (Safari), then a CSS "fill the window" mode for
+ // browsers that refuse element fullscreen (iPhone Safari, some embedded views and in-app browsers).
+ const fsElement=()=>document.fullscreenElement||document.webkitFullscreenElement||null;
+ let pseudoFull=false;
+ function isFull(){return fsElement()===drop||pseudoFull;}
+ function setPseudoFull(on){pseudoFull=!!on;drop.classList.toggle('pseudo-fullscreen',pseudoFull);document.documentElement.classList.toggle('pseudo-fullscreen-lock',pseudoFull);syncFullscreenButton();}
+ function syncFullscreenButton(){const active=isFull();drop.classList.toggle('is-fullscreen',active);if(fullscreenBtn){fullscreenBtn.textContent=active?'⤢ exit fullscreen':'⛶ fullscreen';fullscreenBtn.setAttribute('aria-pressed',String(active));}applyScreenScale(desiredScreenScale,false);requestAnimationFrame(()=>applyScreenScale(desiredScreenScale,false));setTimeout(()=>applyScreenScale(desiredScreenScale,false),300);}
+ async function enterFullscreen(){
+   const req=drop.requestFullscreen||drop.webkitRequestFullscreen;
+   if(req&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
+     try{const r=req.call(drop,{navigationUI:'hide'});if(r&&typeof r.then==='function')await r;}catch(_){}
+     await new Promise(r=>setTimeout(r,250));
+     if(fsElement()===drop)return;
+   }
+   setPseudoFull(true);
+ }
+ async function exitFullscreen(){
+   if(pseudoFull){setPseudoFull(false);return;}
+   try{const exit=document.exitFullscreen||document.webkitExitFullscreen;const r=exit&&exit.call(document);if(r&&typeof r.then==='function')await r;}catch(_){}
+ }
+ if(fullscreenBtn)fullscreenBtn.onclick=()=>{resumeAudio();(isFull()?exitFullscreen():enterFullscreen()).catch(()=>notice('Fullscreen is unavailable in this browser.'));};
+ $('fsExitBtn').addEventListener('click',e=>{e.stopPropagation();exitFullscreen();});
+ canvas.addEventListener('dblclick',()=>{if(!zapperEnabled)(isFull()?exitFullscreen():enterFullscreen());});
+ window.addEventListener('keydown',e=>{if(pseudoFull&&e.key==='Escape'){e.preventDefault();setPseudoFull(false);}});
  document.addEventListener('fullscreenchange',syncFullscreenButton);
+ document.addEventListener('webkitfullscreenchange',syncFullscreenButton);
  // Apply saved preferences and wire the controls explicitly.
  const themeSelect=$('themeSelect');
  function applyTheme(theme){const valid=['default','purple','forest','sunset','light','black','red','orange','pink','ocean','gold','teal','amber','matrix','lavender','slate','vantablack','ice','copper','ultraviolet','cream'];if(!valid.includes(theme))theme='default';if(theme==='default')document.body.removeAttribute('data-theme');else document.body.setAttribute('data-theme',theme);themeSelect.value=theme;try{localStorage.setItem('chimiNES_theme',theme);}catch(_){} }
@@ -1331,7 +1529,10 @@ main > *, .right > * { min-width: 0; }
  let desiredScreenScale=3;
  function applyScreenScale(value,announce=true){
    desiredScreenScale=Math.max(0.5,Math.min(8,Number(value)||3));
-   const full=document.fullscreenElement===drop;
+   const full=isFull();
+   // When touch controls sit below the picture (portrait), leave room for them.
+   const tc=$('touchControls');
+   const ctrlH=tc&&tc.classList.contains('enabled')&&getComputedStyle(tc).position==='relative'?tc.offsetHeight+6:0;
    // Fit inside the shell's content box, and (outside fullscreen) inside the visible viewport below the sticky header,
    // so a large scale never pushes the screen past the bottom of the window.
    const cs=getComputedStyle(drop);
@@ -1339,9 +1540,10 @@ main > *, .right > * { min-width: 0; }
    const viewH=window.visualViewport?.height||window.innerHeight;
    const header=document.querySelector('header');
    const headerH=header&&getComputedStyle(header).position==='sticky'?header.offsetHeight:0;
-   const availableW=full?window.innerWidth:Math.max(120,drop.clientWidth-padX);
-   const availableH=full?viewH:Math.max(180,viewH-headerH-48);
-   const cssWidth=Math.max(1,Math.min(256*desiredScreenScale,availableW,availableH*(256/240)));
+   const availableW=full?drop.clientWidth-padX:Math.max(120,drop.clientWidth-padX);
+   const availableH=Math.max(160,(full?drop.clientHeight-(parseFloat(cs.paddingTop)||0)-(parseFloat(cs.paddingBottom)||0):viewH-headerH-48)-ctrlH);
+   // In fullscreen the picture fills the screen (keeping the 256:240 shape) regardless of the scale setting.
+   const cssWidth=Math.max(1,Math.min(full?Infinity:256*desiredScreenScale,availableW,availableH*(256/240)));
    canvas.style.width=cssWidth+'px';canvas.style.height=(cssWidth*240/256)+'px';canvas.style.maxWidth='100%';canvas.style.maxHeight=full?'100vh':'none';canvas.style.flex='0 0 auto';
    scaleSelect.value=String(desiredScreenScale);
    try{localStorage.setItem('chimiNES_scale',String(desiredScreenScale));}catch(_){}

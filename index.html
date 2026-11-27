@@ -98,153 +98,136 @@ input[type=file]{display:none}
 .empty-list .i{width:28px;height:28px;color:var(--faint)}
 
 /* ============================================================
-   App shell: sidebar + main (launcher layout)
+   Console shell — PS5 home row + Switch tiles/dock + RetroArch XMB
    ============================================================ */
-.app{display:grid;grid-template-columns:268px minmax(0,1fr);min-height:100vh}
-.sidebar{
-  position:sticky;top:0;height:100vh;z-index:40;
-  display:flex;flex-direction:column;gap:14px;padding:18px 12px 14px;
-  background:var(--side);border-right:1px solid var(--panel-border);
-  box-shadow:var(--glow);
+.xmb-bg{position:fixed;inset:0;z-index:-2;width:100vw;height:100vh;display:block;pointer-events:none}
+.scene{position:fixed;inset:0;z-index:-3;pointer-events:none;overflow:hidden}
+.scene-layer{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transition:opacity .8s ease}
+.scene-layer.on{opacity:var(--scene-o,.6)}
+.scene-layer.blur{filter:blur(26px) saturate(1.35);transform:scale(1.12)}
+.scene-layer.gen{background:radial-gradient(90% 70% at 70% 20%,hsl(var(--h) 70% 38%),transparent 70%),radial-gradient(70% 60% at 10% 90%,hsl(calc(var(--h) + 60) 70% 22%),transparent 70%)}
+.scene::after{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--bg) 55%,transparent) 0,transparent 26%,color-mix(in srgb,var(--bg) 55%,transparent) 58%,var(--bg) 96%),
+    linear-gradient(90deg,color-mix(in srgb,var(--bg) 75%,transparent),transparent 75%);
 }
-.brand{display:flex;align-items:center;gap:10px;padding:0 8px 6px}
-.brand-logo{width:48px;height:30px;object-fit:contain;filter:drop-shadow(0 2px 8px color-mix(in srgb,var(--accent) 30%,transparent))}
-.wordmark{font-weight:900;font-size:23px;letter-spacing:-.04em}
+body[data-view="play"] .scene,body[data-view="saves"] .scene{--scene-o:.22}
+:root[data-light] .scene{--scene-o:.35}
+
+.app{min-height:100vh;display:flex;flex-direction:column}
+.statusbar{
+  position:sticky;top:0;z-index:30;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;
+  height:76px;padding:0 clamp(16px,4vw,56px);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 70%,transparent),transparent);
+}
+.sb-left{display:flex;align-items:center;gap:12px;min-width:0}
+.avatar{
+  width:46px;height:46px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;
+  background:var(--panel-bg);border:2px solid var(--accent-2);
+  box-shadow:0 0 18px color-mix(in srgb,var(--accent-2) 40%,transparent);
+}
+.avatar img{width:32px;height:22px;object-fit:contain}
+.wordmark{font-weight:900;font-size:22px;letter-spacing:-.04em;white-space:nowrap}
 .wordmark b{color:#e8323f;font-weight:900}
-.nav{display:grid;gap:2px}
-.nav button{
-  display:flex;align-items:center;gap:12px;height:42px;padding:0 12px;border:0;border-radius:10px;
-  background:transparent;color:var(--muted);font-weight:650;font-size:14px;text-align:left;
-  transition:background .15s,color .15s,box-shadow .15s;
+.cats{display:flex;gap:4px;padding:5px;border-radius:99px;background:color-mix(in srgb,var(--panel) 55%,transparent);border:1px solid var(--border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.cats button{position:relative;height:38px;padding:0 20px;border:0;border-radius:99px;background:transparent;color:var(--muted);font-weight:750;font-size:14px;white-space:nowrap;transition:background .2s,color .2s}
+.cats button:hover{color:var(--text)}
+.cats button[aria-current="page"]{background:var(--text);color:var(--bg)}
+.cats button.live::after{content:"";position:absolute;top:8px;right:9px;width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.sb-right{display:flex;justify-content:flex-end;align-items:center;gap:14px;color:var(--muted);font-weight:650;font-size:13px}
+.clock{font:750 18px/1 var(--font);color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.sb-ico{display:inline-flex;align-items:center;gap:5px}
+.sb-ico .i{width:20px;height:20px}
+.round{width:42px;height:42px;padding:0;border-radius:50%;display:inline-grid;place-items:center;border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--text);box-shadow:var(--glow);transition:transform .15s,box-shadow .15s,border-color .15s}
+.round:hover,.round:focus-visible{border-color:var(--accent-2);box-shadow:0 0 0 2px var(--accent-2),0 0 18px color-mix(in srgb,var(--accent-2) 50%,transparent);outline:0}
+.round .i{width:20px;height:20px}
+.view{width:100%;flex:1}
+
+/* Home (PS5 row + Switch tiles) */
+.home{display:flex;flex-direction:column;min-height:calc(100vh - 76px)}
+.home-search{margin:8px clamp(16px,4vw,56px) 0;max-width:420px}
+.tiles{
+  --tile:clamp(112px,10.5vw,168px);
+  display:flex;align-items:center;gap:clamp(12px,1.3vw,20px);overflow-x:auto;overflow-y:visible;
+  padding:64px clamp(16px,4vw,56px) 30px;scroll-padding:0 clamp(16px,4vw,56px);scrollbar-width:none;
 }
-.nav button:hover{background:var(--surface-2);color:var(--text)}
-.nav button[aria-current="page"]{background:var(--accent-soft);color:var(--text);box-shadow:inset 3px 0 0 var(--accent-2)}
-.nav button[aria-current="page"] .i{color:var(--accent-2)}
-.nav .count{margin-left:auto}
+.tiles::-webkit-scrollbar{display:none}
+.tile{
+  position:relative;flex:0 0 auto;width:var(--tile);aspect-ratio:1;padding:0;border:0;border-radius:18px;background:transparent;
+  transition:transform .25s cubic-bezier(.2,.8,.2,1),margin .25s cubic-bezier(.2,.8,.2,1);
+}
+.tile .cover{position:absolute;inset:0;border-radius:inherit;box-shadow:0 16px 30px -16px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.08)}
+.tile .cover.gen::after{font-size:7px;padding:5px 0}
+.tile .cover-initials{font-size:clamp(26px,3vw,40px)}
+.tile.sel{transform:scale(1.2);margin:0 calc(var(--tile) * .1);z-index:2}
+.tile.sel::after{
+  content:"";position:absolute;inset:-6px;border-radius:22px;pointer-events:none;
+  border:3px solid var(--accent-2);box-shadow:0 0 0 2px var(--bg),0 0 22px var(--accent-2);
+  animation:ring 1.5s ease-in-out infinite;
+}
+@keyframes ring{50%{border-color:color-mix(in srgb,var(--accent-2) 40%,#fff);box-shadow:0 0 0 2px var(--bg),0 0 36px var(--accent-2)}}
+.tile-name{
+  position:absolute;left:50%;bottom:calc(100% + 14px);transform:translateX(-50%) scale(.84);transform-origin:bottom center;
+  max-width:200%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-weight:750;font-size:14px;color:var(--accent-2);text-shadow:0 1px 8px rgba(0,0,0,.6);opacity:0;transition:opacity .2s;pointer-events:none;
+}
+.tile.sel .tile-name{opacity:1}
+.tile-badge{position:absolute;left:8px;bottom:8px;z-index:1;padding:3px 7px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font:800 8.5px/1.3 var(--font);letter-spacing:.08em;text-transform:uppercase}
+.tile-fav{position:absolute;top:6px;right:8px;z-index:1;color:#ffc83d;font-size:13px;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.tile.add .cover{display:grid;place-items:center;background:color-mix(in srgb,var(--panel) 60%,transparent);border:2px dashed var(--border-2);box-shadow:none;color:var(--muted);backdrop-filter:blur(8px)}
+.tile.add .cover .i{width:38px;height:38px;stroke-width:1.6}
+.tile.drop-target .cover{outline:3px dashed var(--accent-2);outline-offset:3px}
+
+.home-info{padding:10px clamp(16px,4vw,56px) 0;max-width:860px}
+.home-eyebrow{color:var(--accent-2);font:800 12px/1 var(--font);letter-spacing:.14em;text-transform:uppercase}
+.home-info h2{margin:10px 0 14px;font-size:clamp(32px,4.8vw,62px);line-height:1;letter-spacing:-.045em;font-weight:900;text-shadow:0 3px 26px rgba(0,0,0,.45);overflow-wrap:anywhere}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:99px;background:color-mix(in srgb,var(--panel) 55%,transparent);border:1px solid var(--border);color:var(--text);font-size:12.5px;font-weight:650;backdrop-filter:blur(8px)}
+.home-desc{margin:0 0 4px;max-width:640px;color:var(--muted);font-size:15px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.home-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:22px}
+.pill{height:54px;padding:0 38px;border-radius:99px;font-size:16.5px;font-weight:800;letter-spacing:.01em}
+.pill .i{width:20px;height:20px}
+.home-actions .round{width:54px;height:54px}
+
+.home-dock{margin-top:auto;display:flex;justify-content:center;flex-wrap:wrap;gap:clamp(14px,2.6vw,34px);padding:30px 16px 34px}
+.orb{display:grid;justify-items:center;gap:9px;padding:0;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.02em}
+.orb-c{
+  width:62px;height:62px;border-radius:50%;display:grid;place-items:center;color:var(--text);
+  background:var(--panel-bg);border:1px solid var(--panel-border);box-shadow:var(--glow),0 10px 24px -14px rgba(0,0,0,.8);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;
+}
+.orb-c .i{width:24px;height:24px}
+.orb:hover,.orb:focus-visible{color:var(--text);outline:0}
+.orb:hover .orb-c,.orb:focus-visible .orb-c{transform:translateY(-3px);border-color:var(--accent-2);box-shadow:0 0 0 3px var(--accent-2),0 0 24px color-mix(in srgb,var(--accent-2) 55%,transparent)}
+.orb.accent .orb-c{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 60%,var(--accent-2)));color:var(--accent-ink);border-color:transparent}
+.tile:focus-visible{outline:0}
+
+/* Covers (shared) */
 .count{display:inline-grid;place-items:center;min-width:20px;height:18px;padding:0 6px;border-radius:99px;background:var(--surface-3);color:var(--muted);font:700 10.5px/1 var(--mono)}
-.side-head{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 0;color:var(--faint);font:800 11px/1 var(--font);letter-spacing:.1em;text-transform:uppercase}
-.search{position:relative}
-.search .i{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);pointer-events:none}
-.search input{
-  width:100%;height:36px;padding:0 10px 0 34px;border-radius:9px;border:1px solid var(--border);
-  background:color-mix(in srgb,var(--bg) 60%,var(--panel));font-size:13px;
-}
-.search input:focus{border-color:var(--accent-line);outline:0;box-shadow:0 0 0 3px var(--accent-soft)}
-.side-games{flex:1;min-height:0;overflow:auto;display:grid;align-content:start;gap:1px;margin:0 -4px;padding:0 4px}
-.sg{
-  display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:8px;border:0;background:transparent;
-  color:var(--muted);font-size:13px;font-weight:550;text-align:left;width:100%;
-}
-.sg:hover{background:var(--surface-2);color:var(--text)}
-.sg.current{color:var(--text);background:var(--accent-soft)}
-.sg .mini{width:26px;height:26px;border-radius:6px;flex:0 0 auto;font-size:10px}
-.sg span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sg .live{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);flex:0 0 auto}
-.sg .live.paused{background:var(--warn);box-shadow:none}
-.side-empty{padding:8px 10px;color:var(--faint);font-size:12.5px}
-.now-card{
-  display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px;align-items:center;padding:8px;border-radius:12px;
-  background:var(--panel-bg);border:1px solid var(--panel-border);box-shadow:var(--glow);cursor:pointer;
-}
-.now-card canvas{width:70px;aspect-ratio:256/240;border-radius:6px;background:#000;display:block;image-rendering:pixelated}
-.now-card .eyebrow{color:var(--accent-2);font:800 10px/1 var(--font);letter-spacing:.1em;text-transform:uppercase}
-.now-card .t{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:3px 0 6px}
-.side-foot{display:grid;gap:8px}
-.side-foot-row{display:flex;align-items:center;gap:8px}
-
-.main{min-width:0;display:flex;flex-direction:column}
-.topbar{
-  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;height:64px;padding:0 28px;
-  background:color-mix(in srgb,var(--bg) 78%,transparent);
-  backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);
-  border-bottom:1px solid var(--panel-border);
-}
-.topbar h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
-.crumb{color:var(--muted);font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
-.crumb button{border:0;background:transparent;color:var(--muted);font-weight:600;padding:0}
-.crumb button:hover{color:var(--accent-2)}
-.menu-btn{display:none}
-.view{width:100%;max-width:1640px;margin:0 auto;padding:26px 28px 40px}
-.footer{margin-top:auto;padding:0 20px 22px;text-align:center;color:var(--faint);font-size:12px}
-
-/* Library: hero banner */
-.hero{
-  position:relative;isolation:isolate;overflow:hidden;border-radius:20px;min-height:320px;
-  display:flex;align-items:flex-end;padding:34px;
-  border:1px solid var(--panel-border);box-shadow:var(--glow),var(--shadow);background:#05070c;
-}
-.hero-art{position:absolute;inset:-40px;z-index:-2;background:center/cover no-repeat;filter:blur(22px) saturate(1.35);transform:scale(1.08);opacity:.85}
-.hero-art.gen{filter:none;opacity:1;inset:0;transform:none;background:linear-gradient(120deg,hsl(var(--h) 70% 32%),hsl(calc(var(--h) + 60) 70% 16%))}
-.hero::before{
-  content:"";position:absolute;inset:0;z-index:-1;
-  background:linear-gradient(90deg,rgba(3,5,10,.92) 0,rgba(3,5,10,.65) 45%,rgba(3,5,10,.05) 100%),linear-gradient(0deg,rgba(3,5,10,.75),transparent 55%);
-}
-.hero-shot{
-  position:absolute;right:34px;top:50%;transform:translateY(-50%) perspective(900px) rotateY(-8deg);
-  width:min(330px,32%);aspect-ratio:256/240;border-radius:12px;background:#000 center/cover no-repeat;image-rendering:pixelated;
-  box-shadow:0 30px 60px -20px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.12),0 0 50px -10px var(--accent);
-}
-.hero-content{max-width:600px;color:#fff}
-.hero-eyebrow{color:var(--accent-2);font:800 11.5px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.6)}
-.hero h2{margin:10px 0 12px;font-size:clamp(28px,4vw,46px);line-height:1.04;letter-spacing:-.035em;font-weight:900;text-shadow:0 2px 20px rgba(0,0,0,.5);overflow-wrap:anywhere}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
-.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);color:#dfe5ee;font-size:12px;font-weight:600;backdrop-filter:blur(6px)}
-.hero-actions{display:flex;flex-wrap:wrap;gap:10px}
-.hero .btn:not(.btn-primary){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(6px)}
-.hero .btn:not(.btn-primary):hover{background:rgba(255,255,255,.18)}
-
-/* Library: shelf header + grid */
-.shelf-head{display:flex;align-items:center;gap:12px;margin:34px 0 14px}
-.shelf-head h3{margin:0;font:800 13px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.shelf-head h3 b{color:var(--text)}
+.search{position:relative;display:block}
+.search .i{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);pointer-events:none}
+.search input{width:100%;height:40px;padding:0 12px 0 36px;border-radius:99px;border:1px solid var(--border-2);background:color-mix(in srgb,var(--panel) 70%,transparent);font-size:14px;backdrop-filter:blur(10px)}
+.search input:focus{border-color:var(--accent-2);outline:0;box-shadow:0 0 0 3px var(--accent-soft)}
 .select{
-  appearance:none;-webkit-appearance:none;height:34px;max-width:200px;padding:0 30px 0 11px;border-radius:9px;
-  border:1px solid var(--border-2);
+  appearance:none;-webkit-appearance:none;height:34px;max-width:200px;padding:0 30px 0 11px;border-radius:9px;border:1px solid var(--border-2);
   background:var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%238d93a1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 11px center;
   cursor:pointer;font-size:13px;
 }
 .select option{background:var(--panel);color:var(--text)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:20px}
-.card{
-  position:relative;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;cursor:pointer;
-  background:var(--panel-bg);border:1px solid var(--panel-border);
-  transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,border-color .2s;
-}
-.card:hover,.card:focus-visible{transform:translateY(-5px);border-color:var(--accent-line);box-shadow:0 22px 40px -18px rgba(0,0,0,.85),0 0 30px -6px color-mix(in srgb,var(--accent) 40%,transparent)}
-.card.current{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--glow)}
 .cover{position:relative;background:#000 center/cover no-repeat;image-rendering:pixelated;overflow:hidden}
-.card .cover{aspect-ratio:3/4}
 .cover.gen{
   image-rendering:auto;display:grid;place-items:center;
-  background:
-    radial-gradient(120% 80% at 30% 0%,rgba(255,255,255,.22),transparent 55%),
-    linear-gradient(160deg,hsl(var(--h) 72% 48%),hsl(calc(var(--h) + 50) 66% 20%));
+  background:radial-gradient(120% 80% at 30% 0%,rgba(255,255,255,.22),transparent 55%),linear-gradient(160deg,hsl(var(--h) 72% 48%),hsl(calc(var(--h) + 50) 66% 20%));
 }
 .cover.gen::before{content:"";position:absolute;top:0;left:14%;right:14%;height:9%;border-radius:0 0 6px 6px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 3px,transparent 3px 8px)}
 .cover.gen::after{content:"chimiNES";position:absolute;left:0;right:0;bottom:0;padding:7px 0;text-align:center;font:800 9px/1 var(--font);letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.8);background:rgba(0,0,0,.28)}
 .cover-initials{font:900 clamp(30px,4vw,48px)/1 var(--font);letter-spacing:-.05em;color:rgba(255,255,255,.95);text-shadow:0 4px 18px rgba(0,0,0,.35)}
 .mini.cover.gen::before,.mini.cover.gen::after{display:none}
-.mini .cover-initials{font-size:10px;letter-spacing:0}
-.cover.has-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent 40%)}
-.card-play{
-  position:absolute;left:50%;top:50%;z-index:2;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;
-  display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);
-  box-shadow:0 10px 30px -6px var(--accent);opacity:0;transform:scale(.8);transition:opacity .18s,transform .18s;
-}
-.card-play .i{width:24px;height:24px;margin-left:3px}
-.card:hover .card-play,.card:focus-visible .card-play{opacity:1;transform:none}
-.card-badge{position:absolute;top:8px;left:8px;z-index:2;padding:3px 8px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font:800 9.5px/1.3 var(--font);letter-spacing:.08em;text-transform:uppercase}
-@media (hover:none){.card-play{opacity:.9;transform:none}}
-.card-body{padding:10px 12px 12px;min-width:0}
-.card-title{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-meta{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.add-card{border-style:dashed;background:transparent;color:var(--muted)}
-.add-card .cover{background:transparent;display:grid;place-items:center}
-.add-card .cover .i{width:40px;height:40px;stroke-width:1.5}
-.add-card:hover{color:var(--text)}
+.mini .cover-initials{font-size:16px;letter-spacing:-.02em}
+.cover.has-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.35),transparent 40%)}
 
-/* Save cards (Saves page + Now Playing shelf) */
-.save-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+/* Save cards (Now Playing shelf) */
 .save-row{display:grid;grid-auto-flow:column;grid-auto-columns:190px;gap:14px;overflow-x:auto;padding:2px 2px 10px}
 .save-card{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;cursor:pointer;background:var(--panel-bg);border:1px solid var(--panel-border);transition:transform .18s,border-color .18s,box-shadow .18s}
 .save-card:hover,.save-card:focus-visible{transform:translateY(-3px);border-color:var(--accent-line);box-shadow:0 0 24px -6px color-mix(in srgb,var(--accent) 35%,transparent)}
@@ -256,15 +239,67 @@ input[type=file]{display:none}
 .new-save{display:grid;place-items:center;gap:6px;align-content:center;border:1px dashed var(--border-2);border-radius:12px;color:var(--muted);background:transparent;font-weight:650;min-height:150px}
 .new-save:hover{color:var(--text);border-color:var(--accent)}
 .new-save .i{width:28px;height:28px}
-.group-title{display:flex;align-items:center;gap:10px;margin:28px 0 12px;font-weight:800;font-size:15px}
-.group-title:first-child{margin-top:4px}
-.group-title .mini{width:28px;height:28px;border-radius:7px}
+.shelf-head{display:flex;align-items:center;gap:12px;margin:30px 0 14px}
+.shelf-head h3{margin:0;font:800 13px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.shelf-head h3 b{color:var(--text)}
 
-/* Now Playing page */
-.play-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+/* Save States — RetroArch XMB */
+.xmb{position:relative;min-height:calc(100vh - 76px);padding:4vh clamp(16px,4vw,56px) 40px}
+.xmb-tools{position:absolute;top:4vh;right:clamp(16px,4vw,56px);display:flex;gap:8px;z-index:2}
+.xmb-cats{display:flex;align-items:flex-start;gap:clamp(14px,2.4vw,34px);padding:18px 0 22px 10%;overflow-x:auto;scrollbar-width:none}
+.xmb-cats::-webkit-scrollbar{display:none}
+.xc{display:grid;justify-items:center;gap:12px;flex:0 0 auto;width:96px;padding:0;border:0;background:transparent;color:var(--muted);opacity:.5;transition:opacity .25s,transform .25s cubic-bezier(.2,.8,.2,1)}
+.xc .cover,.xc .xc-ico{width:68px;height:68px;border-radius:16px;box-shadow:0 10px 22px -12px rgba(0,0,0,.8)}
+.xc .xc-ico{display:grid;place-items:center;background:var(--panel-bg);border:1px solid var(--panel-border);color:var(--text)}
+.xc .xc-ico .i{width:30px;height:30px}
+.xc span{max-width:150px;font-size:13px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .2s}
+.xc:hover{opacity:.8}
+.xc.sel{opacity:1;transform:scale(1.18)}
+.xc.sel span{opacity:1;color:var(--text);transform:scale(.85)}
+.xc:focus-visible{outline:0}
+.xmb-list{display:grid;gap:6px;max-width:780px;margin-left:calc(10% + 12px)}
+.xi{
+  display:grid;grid-template-columns:104px minmax(0,1fr) auto;align-items:center;gap:18px;padding:8px 12px 8px 8px;border-radius:16px;
+  border:1px solid transparent;background:transparent;opacity:.55;cursor:pointer;transition:opacity .2s,background .2s,border-color .2s,transform .2s;
+}
+.xi:hover{opacity:.85}
+.xi .cover{aspect-ratio:256/240;border-radius:9px}
+.xi .t{font-size:16.5px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xi .m{color:var(--muted);font-size:13px}
+.xi .acts{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.xi.sel{opacity:1;background:color-mix(in srgb,var(--panel) 72%,transparent);border-color:var(--panel-border);box-shadow:var(--glow),0 14px 30px -18px rgba(0,0,0,.8);backdrop-filter:blur(12px);transform:translateX(6px)}
+.xi.sel .acts,.xi:hover .acts{opacity:1}
+.xi:focus-visible{outline:0}
+.xmb-hint,.qm-hint{display:flex;flex-wrap:wrap;gap:14px;color:var(--faint);font-size:12px;font-weight:600}
+.xmb-hint{margin:22px 0 0 calc(10% + 12px)}
+kbd.k{min-width:22px;padding:1px 6px}
+
+/* Now Playing */
+.play-head{display:flex;align-items:center;gap:12px;padding:4px clamp(16px,4vw,56px) 14px}
+.play-head h1{margin:0;font-size:clamp(18px,2vw,24px);font-weight:850;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.play-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 clamp(12px,3vw,40px) 40px}
 .player{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;min-width:0}
 .play-saves{width:100%;max-width:max(var(--stage-w),600px)}
 .play-saves .shelf-head{margin-top:16px}
+
+/* Quick Menu (RetroArch) — lives inside the stage so it works in fullscreen */
+.qmenu{position:absolute;inset:0;z-index:8;display:flex;align-items:center;background:linear-gradient(90deg,rgba(0,0,0,.86),rgba(0,0,0,.55) 55%,rgba(0,0,0,.2));backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);color:#fff;animation:qmIn .18s ease-out}
+@keyframes qmIn{from{opacity:0}}
+.qm-panel{margin-left:clamp(14px,6%,70px);width:min(360px,84%);display:grid;gap:10px}
+.qm-head{display:flex;align-items:center;gap:12px;padding:0 6px 6px}
+.qm-head .cover{width:44px;height:44px;border-radius:10px;flex:0 0 auto}
+.qm-eyebrow{color:var(--accent-2);font:800 10.5px/1 var(--font);letter-spacing:.14em;text-transform:uppercase}
+.qm-title{font-weight:850;font-size:clamp(15px,1.8vw,19px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.qm-list{display:grid;gap:2px}
+.qm-list button{
+  display:flex;align-items:center;gap:14px;width:100%;height:clamp(36px,4.6vh,46px);padding:0 14px;border:0;border-radius:12px;
+  background:transparent;color:rgba(255,255,255,.55);font-size:clamp(13.5px,1.5vw,16.5px);font-weight:750;text-align:left;transition:background .12s,color .12s;
+}
+.qm-list button .i{width:20px;height:20px}
+.qm-list button .v{margin-left:auto;color:var(--accent-2);font-size:.86em}
+.qm-list button.sel{color:#fff;background:rgba(255,255,255,.12);box-shadow:inset 3px 0 0 var(--accent-2)}
+.qm-hint{padding:6px 14px 0;color:rgba(255,255,255,.45)}
+.stage.qm-open .veil{display:none!important}
 
 /* Game details dialog */
 dialog.modal{
@@ -569,23 +604,25 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
 /* ============================================================
    Responsive
    ============================================================ */
-.scrim{display:none}
-@media (max-width:1000px){
-  .app{grid-template-columns:minmax(0,1fr)}
-  .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(290px,86vw);transform:translateX(-105%);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
-  .app.nav-open .sidebar{transform:none}
-  .app.nav-open .scrim{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.5)}
-  .menu-btn{display:inline-flex}
-  .hero-shot{display:none}
+@media (max-width:900px){
+  .statusbar{grid-template-columns:auto minmax(0,1fr) auto;gap:10px}
+  .cats{overflow-x:auto;scrollbar-width:none;justify-self:center;max-width:100%}
+  .cats button{padding:0 14px;font-size:13px}
 }
 @media (max-width:640px){
-  .topbar{height:58px;padding:0 12px;gap:8px}
-  .topbar h1{font-size:17px}
   .hide-sm{display:none!important}
-  .view{padding:14px 12px 24px}
-  .hero{min-height:260px;padding:22px;border-radius:16px}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
-  .save-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .statusbar{height:64px;padding:0 12px}
+  .avatar{width:38px;height:38px}
+  .cats button{padding:0 11px;height:34px}
+  .clock{font-size:15px}
+  .tiles{--tile:104px;padding:54px 22px 22px}
+  .home-info{padding:4px 16px 0}
+  .pill{height:50px;padding:0 28px}
+  .orb-c{width:52px;height:52px}
+  .home-dock{gap:12px 16px;font-size:11px}
+  .xmb-cats{padding-left:4px}.xmb-list,.xmb-hint{margin-left:0}
+  .xmb-tools{position:static;margin-bottom:6px}
+  .xi{grid-template-columns:84px minmax(0,1fr) auto;gap:12px}
   .stage{border-radius:10px}
   .dock{flex-wrap:wrap;padding:10px 12px}
   .controls{width:100%;justify-content:space-between}
@@ -626,148 +663,148 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="m20.5 16-5-5-8.5 8.5"/></symbol>
   <symbol id="i-screen" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="12" rx="2"/><path d="M9 20h6M12 16.5V20"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M6.5 9.5V20h11V9.5"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 2-.8 2-1.8 0-1.3-1.1-1.6-1.1-2.7 0-1 .8-1.7 1.8-1.7h2.2c2.2 0 3.6-1.6 3.6-3.6 0-4-3.8-7.2-8.5-7.2z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10" cy="7.5" r="1.2" fill="currentColor"/><circle cx="14.5" cy="7.5" r="1.2" fill="currentColor"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
 </svg>
 
+<div class="scene" id="scene" aria-hidden="true"><div class="scene-layer"></div><div class="scene-layer"></div></div>
+<canvas class="xmb-bg" id="xmbBg" aria-hidden="true"></canvas>
+
 <div class="app" id="app">
-  <div class="scrim" id="scrim"></div>
-  <aside class="sidebar" aria-label="Navigation">
-    <div class="brand">
-      <img class="brand-logo" src="controller.png" alt="" onerror="this.remove()">
-      <span class="wordmark">chimi<b>NES</b></span>
+  <header class="statusbar">
+    <div class="sb-left">
+      <div class="avatar"><img src="controller.png" alt="" onerror="this.remove()"></div>
+      <span class="wordmark hide-sm">chimi<b>NES</b></span>
     </div>
-    <nav class="nav" aria-label="Main">
-      <button data-view="library" aria-current="page"><svg class="i"><use href="#i-grid"/></svg>Library<span class="count" id="libCount">0</span></button>
-      <button data-view="play"><svg class="i"><use href="#i-pad"/></svg>Now Playing</button>
-      <button data-view="saves"><svg class="i"><use href="#i-save"/></svg>Save States<span class="count" id="saveCount">0</span></button>
+    <nav class="cats" aria-label="Main">
+      <button data-view="library" aria-current="page">Games</button>
+      <button data-view="play" id="tabPlay">Now Playing</button>
+      <button data-view="saves">Save States</button>
     </nav>
-    <div class="side-head"><span>Games</span></div>
-    <label class="search"><svg class="i"><use href="#i-search"/></svg><input type="search" id="sideSearch" placeholder="Search library" autocomplete="off" spellcheck="false" aria-label="Search games"></label>
-    <div class="side-games" id="sideGames"></div>
-    <div class="now-card" id="nowCard" hidden role="button" tabindex="0" title="Return to your game">
-      <canvas id="nowCanvas" width="256" height="240"></canvas>
-      <div style="min-width:0">
-        <div class="eyebrow" id="nowStatus">Paused</div>
-        <div class="t" id="nowTitle">—</div>
-        <button class="btn btn-primary btn-sm" id="nowResume" type="button"><svg class="i fill" style="width:13px;height:13px"><use href="#i-play"/></svg>Resume</button>
-      </div>
+    <div class="sb-right">
+      <span class="badge hide-sm" id="rendererBadge" title="Display renderer">starting…</span>
+      <span class="sb-ico" id="padInd" hidden title="Controller connected"><svg class="i"><use href="#i-pad"/></svg></span>
+      <span class="sb-ico hide-sm" id="battery" hidden></span>
+      <span class="clock" id="clock">--:--</span>
+      <button class="round" id="topSettingsBtn" aria-label="Settings" title="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
     </div>
-    <div class="side-foot">
-      <button class="btn btn-primary wide" id="importRomBtn"><svg class="i"><use href="#i-plus"/></svg>Add ROM</button>
-      <div class="side-foot-row">
-        <button class="btn btn-ghost btn-sm" id="settingsBtn"><svg class="i"><use href="#i-sliders"/></svg>Settings</button>
-        <div class="grow"></div>
-        <span class="badge" id="rendererBadge" title="Display renderer">starting…</span>
-      </div>
-    </div>
-  </aside>
+  </header>
 
-  <div class="main">
-    <header class="topbar">
-      <button class="btn icon-btn btn-ghost menu-btn" id="menuBtn" aria-label="Open menu"><svg class="i"><use href="#i-menu"/></svg></button>
-      <h1 id="viewTitle">Library</h1>
+  <!-- Home -->
+  <section class="view" data-viewpane="library">
+    <div class="home">
+      <label class="search home-search" id="searchWrap" hidden><svg class="i"><use href="#i-search"/></svg><input type="search" id="sideSearch" placeholder="Search your games" autocomplete="off" spellcheck="false" aria-label="Search games"></label>
+      <div class="tiles" id="tileRow" role="listbox" aria-label="Games"></div>
+      <div class="home-info">
+        <div class="home-eyebrow" id="heroEyebrow">Get started</div>
+        <h2 id="heroTitle">Welcome to chimiNES</h2>
+        <div class="chips" id="heroMeta"></div>
+        <p class="home-desc" id="heroDesc" hidden></p>
+        <div class="home-actions">
+          <button class="btn btn-primary pill" id="heroPlay"><svg class="i fill"><use href="#i-play"/></svg><span id="heroPlayLabel">Play</span></button>
+          <button class="round" id="heroSave" hidden aria-label="Load latest save" title="Load latest save"><svg class="i"><use href="#i-load"/></svg></button>
+          <button class="round" id="heroInfo" hidden aria-label="Game details" title="Game details & cover art"><svg class="i"><use href="#i-edit"/></svg></button>
+          <button class="round" id="heroRemove" hidden aria-label="Remove from library" title="Remove from library"><svg class="i"><use href="#i-trash"/></svg></button>
+        </div>
+      </div>
+      <nav class="home-dock" aria-label="Home menu">
+        <button class="orb accent" id="importRomBtn"><span class="orb-c"><svg class="i"><use href="#i-plus"/></svg></span>Add ROM</button>
+        <button class="orb" id="orbSaves"><span class="orb-c"><svg class="i"><use href="#i-save"/></svg></span>Save States</button>
+        <button class="orb" id="searchBtn"><span class="orb-c"><svg class="i"><use href="#i-search"/></svg></span>Search</button>
+        <button class="orb" id="sortBtn"><span class="orb-c"><svg class="i"><use href="#i-sort"/></svg></span><span id="sortLabel">Recent</span></button>
+        <button class="orb" id="orbThemes"><span class="orb-c"><svg class="i"><use href="#i-palette"/></svg></span>Themes</button>
+        <button class="orb" id="orbControls"><span class="orb-c"><svg class="i"><use href="#i-pad"/></svg></span>Controllers</button>
+        <button class="orb" id="settingsBtn"><span class="orb-c"><svg class="i"><use href="#i-sliders"/></svg></span>Settings</button>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Now Playing -->
+  <section class="view" data-viewpane="play" hidden>
+    <div class="play-head">
+      <button class="round" id="homeBtn" aria-label="Home" title="Home"><svg class="i"><use href="#i-home"/></svg></button>
+      <h1 id="viewTitle">Now Playing</h1>
       <div class="grow"></div>
-      <button class="btn hide-sm" id="openRomBtn"><svg class="i"><use href="#i-folder"/></svg>Open ROM</button>
       <button class="btn" id="gameInfoBtn" hidden title="Edit details & cover art"><svg class="i"><use href="#i-edit"/></svg><span class="hide-sm">Game details</span></button>
-      <button class="btn icon-btn" id="topSettingsBtn" aria-label="Settings" title="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
-    </header>
-
-    <!-- Library -->
-    <section class="view" data-viewpane="library">
-      <div class="hero" id="hero">
-        <div class="hero-art" id="heroArt"></div>
-        <div class="hero-shot" id="heroShot" hidden></div>
-        <div class="hero-content">
-          <div class="hero-eyebrow" id="heroEyebrow">Get started</div>
-          <h2 id="heroTitle">Welcome to chimiNES</h2>
-          <div class="chips" id="heroMeta"></div>
-          <p class="hero-desc" id="heroDesc" hidden></p>
-          <div class="hero-actions">
-            <button class="btn btn-primary btn-lg" id="heroPlay"><svg class="i fill"><use href="#i-play"/></svg><span id="heroPlayLabel">Play</span></button>
-            <button class="btn btn-lg" id="heroSave" hidden><svg class="i"><use href="#i-load"/></svg>Latest save</button>
-            <button class="btn btn-lg icon-btn" id="heroInfo" hidden aria-label="Edit game details" title="Edit details & cover art" style="width:50px"><svg class="i"><use href="#i-edit"/></svg></button>
+      <button class="btn" id="qmBtn" title="Quick Menu (Esc · Start+Select)"><svg class="i"><use href="#i-menu"/></svg><span class="hide-sm">Quick Menu</span></button>
+    </div>
+    <div class="play-wrap">
+      <div class="player" id="player">
+        <div class="stage" id="stage">
+          <canvas id="screen" width="256" height="240" aria-label="NES game screen"></canvas>
+          <div class="fallback-fx"></div>
+          <div class="touch" id="touchControls" hidden aria-label="Touch controls">
+            <div class="t-dpad">
+              <button type="button" class="tk t-up" data-touch="up" aria-label="Up"><svg class="i"><use href="#i-chev"/></svg></button>
+              <button type="button" class="tk t-left" data-touch="left" aria-label="Left"><svg class="i" style="transform:rotate(-90deg)"><use href="#i-chev"/></svg></button>
+              <button type="button" class="tk t-right" data-touch="right" aria-label="Right"><svg class="i" style="transform:rotate(90deg)"><use href="#i-chev"/></svg></button>
+              <button type="button" class="tk t-down" data-touch="down" aria-label="Down"><svg class="i" style="transform:rotate(180deg)"><use href="#i-chev"/></svg></button>
+            </div>
+            <div class="t-sys"><button type="button" class="tk" data-touch="select">Select</button><button type="button" class="tk" data-touch="start">Start</button></div>
+            <div class="t-ab"><button type="button" class="tk t-b" data-touch="b">B</button><button type="button" class="tk t-a" data-touch="a">A</button></div>
           </div>
-        </div>
-      </div>
-      <div class="shelf-head">
-        <h3>All games <b id="gridCount">(0)</b></h3>
-        <div class="grow"></div>
-        <select class="select" id="sortSelect" aria-label="Sort games"><option value="recent">Recently played</option><option value="fav">Favorites first</option><option value="name">Name</option></select>
-      </div>
-      <div class="grid" id="gameGrid"></div>
-    </section>
-
-    <!-- Now Playing -->
-    <section class="view" data-viewpane="play" hidden>
-      <div class="play-wrap">
-        <div class="player" id="player">
-          <div class="stage" id="stage">
-            <canvas id="screen" width="256" height="240" aria-label="NES game screen"></canvas>
-            <div class="fallback-fx"></div>
-            <div class="touch" id="touchControls" hidden aria-label="Touch controls">
-              <div class="t-dpad">
-                <button type="button" class="tk t-up" data-touch="up" aria-label="Up"><svg class="i"><use href="#i-chev"/></svg></button>
-                <button type="button" class="tk t-left" data-touch="left" aria-label="Left"><svg class="i" style="transform:rotate(-90deg)"><use href="#i-chev"/></svg></button>
-                <button type="button" class="tk t-right" data-touch="right" aria-label="Right"><svg class="i" style="transform:rotate(90deg)"><use href="#i-chev"/></svg></button>
-                <button type="button" class="tk t-down" data-touch="down" aria-label="Down"><svg class="i" style="transform:rotate(180deg)"><use href="#i-chev"/></svg></button>
-              </div>
-              <div class="t-sys"><button type="button" class="tk" data-touch="select">Select</button><button type="button" class="tk" data-touch="start">Start</button></div>
-              <div class="t-ab"><button type="button" class="tk t-b" data-touch="b">B</button><button type="button" class="tk t-a" data-touch="a">A</button></div>
-            </div>
-            <div class="fps" id="fpsOverlay" hidden>-- fps</div>
-            <div class="overlay veil" id="pauseVeil" hidden>
-              <div><button class="veil-btn" type="button" aria-label="Resume" tabindex="-1" data-sfx="none"><svg class="i fill"><use href="#i-play"/></svg></button><small id="veilText">Paused</small></div>
-            </div>
-            <div class="overlay empty" id="emptyState">
-              <div class="empty-inner">
-                <img src="controller.png" alt="" onerror="this.remove()">
-                <h2>Ready when you are</h2>
-                <p>Drop a .nes ROM here or pick a game from your library.</p>
-                <button class="btn btn-primary" id="emptyOpenBtn"><svg class="i"><use href="#i-folder"/></svg>Choose ROM</button>
-              </div>
+          <div class="fps" id="fpsOverlay" hidden>-- fps</div>
+          <div class="overlay veil" id="pauseVeil" hidden>
+            <div><button class="veil-btn" type="button" aria-label="Resume" tabindex="-1" data-sfx="none"><svg class="i fill"><use href="#i-play"/></svg></button><small id="veilText">Paused</small></div>
+          </div>
+          <div class="qmenu" id="qmenu" hidden>
+            <div class="qm-panel">
+              <div class="qm-head"><div id="qmCover"></div><div style="min-width:0"><div class="qm-eyebrow">Quick Menu</div><div class="qm-title" id="qmTitle"></div></div></div>
+              <div class="qm-list" id="qmList" role="menu"></div>
+              <div class="qm-hint"><span>↑↓ Select</span><span>←→ Change</span><span>Enter / A: OK</span><span>Esc / B: Back</span></div>
             </div>
           </div>
-
-          <div class="dock">
-            <div class="now">
-              <div class="now-title" id="gameTitle">No game loaded</div>
-              <div class="now-sub"><span class="dot" id="statusDot"></span><span id="statusText">Waiting for ROM</span></div>
-            </div>
-            <div class="controls">
-              <button class="btn btn-primary play-btn" id="pauseBtn" aria-label="Play" title="Play / pause (Space)"><svg class="i fill"><use href="#i-play"/></svg></button>
-              <button class="btn icon-btn btn-ghost" id="resetBtn" aria-label="Reset" title="Reset console"><svg class="i"><use href="#i-reset"/></svg></button>
-              <span class="vsep"></span>
-              <button class="btn icon-btn btn-ghost" id="saveBtn" aria-label="Save state" title="Save state (F2)"><svg class="i"><use href="#i-save"/></svg></button>
-              <button class="btn icon-btn btn-ghost" id="loadStateBtn" aria-label="Load latest state" title="Load latest state (F4)"><svg class="i"><use href="#i-load"/></svg></button>
-              <span class="vsep"></span>
-              <select class="chip-select" id="speed" aria-label="Playback speed" title="Playback speed">
-                <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option>
-              </select>
-              <button class="btn icon-btn btn-ghost" id="muteBtn" aria-label="Mute" title="Sound on / off (M)"><svg class="i"><use href="#i-vol"/></svg></button>
-              <button class="btn icon-btn btn-ghost" id="fullscreenBtn" aria-label="Fullscreen" title="Fullscreen (F)"><svg class="i"><use href="#i-full"/></svg></button>
+          <div class="overlay empty" id="emptyState">
+            <div class="empty-inner">
+              <img src="controller.png" alt="" onerror="this.remove()">
+              <h2>Ready when you are</h2>
+              <p>Drop a .nes ROM here or pick a game from your library.</p>
+              <button class="btn btn-primary" id="emptyOpenBtn"><svg class="i"><use href="#i-folder"/></svg>Choose ROM</button>
             </div>
           </div>
         </div>
-        <div class="play-saves" id="playSaves" hidden>
-          <div class="shelf-head"><h3>Save states <b id="playSaveCount"></b></h3></div>
-          <div class="save-row" id="playSaveRow"></div>
+
+        <div class="dock">
+          <div class="now">
+            <div class="now-title" id="gameTitle">No game loaded</div>
+            <div class="now-sub"><span class="dot" id="statusDot"></span><span id="statusText">Waiting for ROM</span></div>
+          </div>
+          <div class="controls">
+            <button class="btn btn-primary play-btn" id="pauseBtn" aria-label="Play" title="Play / pause (Space)"><svg class="i fill"><use href="#i-play"/></svg></button>
+            <button class="btn icon-btn btn-ghost" id="resetBtn" aria-label="Reset" title="Reset console"><svg class="i"><use href="#i-reset"/></svg></button>
+            <span class="vsep"></span>
+            <button class="btn icon-btn btn-ghost" id="saveBtn" aria-label="Save state" title="Save state (F2)"><svg class="i"><use href="#i-save"/></svg></button>
+            <button class="btn icon-btn btn-ghost" id="loadStateBtn" aria-label="Load latest state" title="Load latest state (F4)"><svg class="i"><use href="#i-load"/></svg></button>
+            <span class="vsep"></span>
+            <select class="chip-select" id="speed" aria-label="Playback speed" title="Playback speed">
+              <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option>
+            </select>
+            <button class="btn icon-btn btn-ghost" id="muteBtn" aria-label="Mute" title="Sound on / off (M)"><svg class="i"><use href="#i-vol"/></svg></button>
+            <button class="btn icon-btn btn-ghost" id="fullscreenBtn" aria-label="Fullscreen" title="Fullscreen (F)"><svg class="i"><use href="#i-full"/></svg></button>
+          </div>
         </div>
       </div>
-    </section>
+      <div class="play-saves" id="playSaves" hidden>
+        <div class="shelf-head"><h3>Save states <b id="playSaveCount"></b></h3></div>
+        <div class="save-row" id="playSaveRow"></div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Save states -->
-    <section class="view" data-viewpane="saves" hidden>
-      <div class="shelf-head" style="margin-top:0">
-        <h3>Checkpoints stored in this browser</h3>
-        <div class="grow"></div>
+  <!-- Save States (XMB) -->
+  <section class="view" data-viewpane="saves" hidden>
+    <div class="xmb">
+      <div class="xmb-tools">
         <button class="btn btn-sm" id="exportStatesBtn"><svg class="i"><use href="#i-download"/></svg>Export all</button>
         <button class="btn btn-sm" id="importStateBtn"><svg class="i"><use href="#i-upload"/></svg>Import</button>
       </div>
-      <div id="saveGroups"></div>
-    </section>
-
-    <div class="footer">chimiNES · made for your browser · load roms you have the right to use.</div>
-  </div>
+      <div class="xmb-cats" id="xmbCats"></div>
+      <div class="xmb-list" id="xmbList"></div>
+      <div class="xmb-hint" id="xmbHint"><span><kbd class="k">←</kbd><kbd class="k">→</kbd> Game</span><span><kbd class="k">↑</kbd><kbd class="k">↓</kbd> Save</span><span><kbd class="k">Enter</kbd> Load</span><span><kbd class="k">Esc</kbd> Home</span></div>
+    </div>
+  </section>
 </div>
 
 <dialog class="drawer" id="settings" aria-labelledby="settingsTitle">
@@ -1548,7 +1585,7 @@ function syncPlayUI() {
   if (!romLoaded) setStatus('Waiting for ROM', '');
   else setStatus(paused ? 'Paused' : 'Running', paused ? 'paused' : 'on');
   ['resetBtn', 'saveBtn'].forEach(id => $(id).disabled = !romLoaded);
-  if (typeof renderNowCard === 'function' && roms !== undefined) { renderNowCard(); renderSidebar(); }
+  if (typeof renderNowCard === 'function' && roms !== undefined) { renderNowCard(); if (view === 'library') renderLibrary(); }
 }
 function setPaused(p) {
   if (!romLoaded) return;
@@ -1569,6 +1606,7 @@ function togglePause() {
 let lastIdleDraw = 0;
 function tick(t) {
   requestAnimationFrame(tick);
+  pollMenuPad(t, romLoaded && !paused && view === 'play' && !qmOpen);
   if (romLoaded && !paused && nes) {
     if (!lastTick) lastTick = t;
     const dt = Math.min(250, t - lastTick); lastTick = t;
@@ -1735,7 +1773,7 @@ async function refreshData() {
   try { states = (await dbOp('readonly', s => s.getAll(), STATE_STORE)).map(meta); } catch (e) { states = null; }
   renderAll();
 }
-function renderAll() { renderSidebar(); renderLibrary(); renderSaves(); renderPlaySaves(); renderNowCard(); }
+function renderAll() { renderLibrary(); renderSaves(); renderPlaySaves(); renderNowCard(); }
 
 function coverEl(name, cls) {
   const el = document.createElement('div'); el.className = 'cover ' + (cls || '');
@@ -1770,101 +1808,102 @@ function activate(el, fn) {
   el.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === el) { e.preventDefault(); fn(); } });
 }
 
-function renderSidebar() {
-  const box = $('sideGames');
-  $('libCount').textContent = roms ? roms.length : 0;
-  $('saveCount').textContent = states ? states.filter(s => !s.autosave).length : 0;
-  if (!roms) { box.innerHTML = '<div class="side-empty">Browser storage is unavailable.</div>'; return; }
-  const list = visibleRoms();
-  if (!list.length) { const d = document.createElement('div'); d.className = 'side-empty'; d.textContent = roms.length ? 'No matches.' : 'Your games will appear here.'; box.replaceChildren(d); return; }
-  box.replaceChildren(...list.map(item => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'sg' + (isCurrent(item.name) ? ' current' : ''); b.title = displayName(item);
-    const name = document.createElement('span'); name.textContent = (item.favorite ? '★ ' : '') + displayName(item);
-    b.append(coverEl(item.name, 'mini'), name);
-    if (isCurrent(item.name)) { const l = document.createElement('i'); l.className = 'live' + (paused ? ' paused' : ''); b.append(l); }
-    b.addEventListener('click', () => playRom(item));
-    b.addEventListener('contextmenu', e => { e.preventDefault(); openGameDialog(item.name); });
-    return b;
-  }));
-}
-
-function renderLibrary() {
-  const grid = $('gameGrid');
-  const all = roms || [];
-  // Hero: the game in progress, else the most recently played.
-  const featured = all.find(r => isCurrent(r.name)) || [...all].sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0))[0];
-  const art = $('heroArt'), shot = $('heroShot'), metaBox = $('heroMeta');
-  metaBox.replaceChildren();
-  const chip = text => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = text; metaBox.append(c); };
-  if (!featured) {
-    art.className = 'hero-art gen'; art.style.backgroundImage = ''; art.style.setProperty('--h', 215);
-    shot.hidden = true;
-    $('heroEyebrow').textContent = roms ? 'Get started' : 'Storage unavailable';
-    $('heroTitle').textContent = 'Welcome to chimiNES';
-    chip('Classic NES gaming in your browser'); chip('Saves stay on this device');
-    $('heroPlayLabel').textContent = 'Add your first ROM';
-    $('heroPlay').onclick = openRomPicker; $('heroSave').hidden = true;
-    $('heroInfo').hidden = true; $('heroDesc').hidden = true; heroName = null;
-  } else {
-    heroName = featured.name;
-    const thumb = states ? coverFor(featured.name) : null;
-    const bg = artOk(featured.banner) ? featured.banner : artOk(featured.cover) ? featured.cover : thumb;
-    art.className = 'hero-art' + (artOk(featured.banner) ? ' banner' : '');
-    if (bg) art.style.backgroundImage = `url("${bg}")`;
-    else { art.className = 'hero-art gen'; art.style.backgroundImage = ''; art.style.setProperty('--h', hueOf(featured.name)); }
-    shot.hidden = !thumb || artOk(featured.banner);
-    if (thumb) shot.style.backgroundImage = `url("${thumb}")`;
-    $('heroInfo').hidden = false;
-    $('heroDesc').hidden = !featured.description; $('heroDesc').textContent = featured.description || '';
-    const cur = isCurrent(featured.name);
-    $('heroEyebrow').textContent = cur ? (paused ? 'Paused' : 'Now playing') : 'Jump back in';
-    $('heroTitle').textContent = displayName(featured);
-    if (featured.favorite) chip('★ Favorite');
-    for (const v of [featured.genre, featured.year, featured.developer]) if (v) chip(v);
-    if (featured.savedAt) chip('Last played ' + ago(featured.savedAt));
-    const fs = states ? statesOf(featured.name) : [];
-    const manual = fs.filter(s => !s.autosave).length;
-    chip(manual + ' save state' + (manual === 1 ? '' : 's'));
-
-    $('heroPlayLabel').textContent = cur ? 'Resume' : 'Play';
-    $('heroPlay').onclick = () => playRom(featured);
-    const latest = fs.filter(s => !s.autosave).sort(byNewest)[0];
-    $('heroSave').hidden = !latest;
-    $('heroSave').onclick = () => latest && loadSaveMeta(latest);
+/* Home: PS5-style row of square Switch tiles; the selected game drives the scene */
+let homeSel = null; // rom name, or '__add'
+let tilePointer = false;
+$('tileRow').addEventListener('pointerdown', () => { tilePointer = true; setTimeout(() => { tilePointer = false; }, 400); }, true);
+const SORTS = { recent: 'Recent', fav: 'Favorites', name: 'A–Z' };
+function setScene(item) {
+  const layers = [...document.querySelectorAll('#scene .scene-layer')];
+  const cur = layers.find(l => l.classList.contains('on')) || layers[1];
+  const next = layers[0] === cur ? layers[1] : layers[0];
+  let bg = null, blur = true;
+  if (item) {
+    if (artOk(item.banner)) { bg = item.banner; blur = false; }
+    else if (artOk(item.cover)) bg = item.cover;
+    else bg = states ? coverFor(item.name) : null;
   }
+  const key = bg ? bg.slice(-64) + blur : 'gen' + (item ? hueOf(item.name) : 215);
+  if (cur.dataset.key === key) return;
+  next.className = 'scene-layer' + (bg ? (blur ? ' blur' : '') : ' gen');
+  next.style.backgroundImage = bg ? `url("${bg}")` : '';
+  next.style.setProperty('--h', item ? hueOf(item.name) : 215);
+  next.dataset.key = key;
+  requestAnimationFrame(() => { next.classList.add('on'); cur.classList.remove('on'); });
+}
+function tileFor(item) {
+  const t = document.createElement('button'); t.type = 'button'; t.className = 'tile'; t.dataset.name = item.name;
+  t.setAttribute('role', 'option'); t.title = displayName(item);
+  const name = document.createElement('span'); name.className = 'tile-name'; name.textContent = displayName(item);
+  t.append(coverEl(item.name), name);
+  if (item.favorite) { const f = document.createElement('span'); f.className = 'tile-fav'; f.textContent = '★'; t.append(f); }
+  if (isCurrent(item.name)) { const b = document.createElement('span'); b.className = 'tile-badge'; b.textContent = paused ? 'Paused' : 'Playing'; t.append(b); }
+  t.addEventListener('click', () => { if (homeSel === item.name) playRom(item); else selectTile(item.name); });
+  t.addEventListener('focus', () => { if (!tilePointer && homeSel !== item.name) selectTile(item.name, { scroll: false }); });
+  t.addEventListener('contextmenu', e => { e.preventDefault(); openGameDialog(item.name); });
+  t.addEventListener('dragover', e => { if ([...(e.dataTransfer.items || [])].some(i => i.type.startsWith('image/'))) { e.preventDefault(); e.stopPropagation(); t.classList.add('drop-target'); } });
+  t.addEventListener('dragleave', () => t.classList.remove('drop-target'));
+  t.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; t.classList.remove('drop-target'); if (f && f.type.startsWith('image/')) { e.preventDefault(); e.stopPropagation(); setCoverFromFile(item.name, f); } });
+  return t;
+}
+function renderLibrary() {
+  const row = $('tileRow');
   const list = visibleRoms();
-  $('gridCount').textContent = '(' + list.length + ')';
-  const cards = list.map(item => {
-    const card = document.createElement('div'); card.className = 'card' + (isCurrent(item.name) ? ' current' : ''); card.title = displayName(item);
-    const cover = coverEl(item.name);
-    const play = document.createElement('span'); play.className = 'card-play'; play.innerHTML = '<svg class="i fill"><use href="#i-play"/></svg>';
-    cover.append(play);
-    if (isCurrent(item.name)) { const b = document.createElement('span'); b.className = 'card-badge'; b.textContent = paused ? 'Paused' : 'Playing'; cover.append(b); }
-    const tools = document.createElement('div'); tools.className = 'card-tools';
-    tools.append(iconBtn('edit', 'Edit details & cover art', () => openGameDialog(item.name)), iconBtn('trash', 'Remove from library', () => removeRom(item)));
-    const body = document.createElement('div'); body.className = 'card-body';
-    const t = document.createElement('div'); t.className = 'card-title';
-    if (item.favorite) { const f = document.createElement('span'); f.className = 'fav'; f.textContent = '★'; t.append(f); }
-    t.append(displayName(item));
-    const m = document.createElement('div'); m.className = 'card-meta';
-    const n = states ? statesOf(item.name).filter(s => !s.autosave).length : 0;
-    m.textContent = [item.genre, item.year].filter(Boolean).join(' · ') || (item.savedAt ? 'Played ' + ago(item.savedAt) : (n + ' saves'));
-    body.append(t, m);
-    card.append(cover, tools, body);
-    activate(card, () => playRom(item));
-    card.addEventListener('contextmenu', e => { e.preventDefault(); openGameDialog(item.name); });
-    // Drop an image on a card to set its cover.
-    card.addEventListener('dragover', e => { if ([...(e.dataTransfer.items || [])].some(i => i.type.startsWith('image/'))) { e.preventDefault(); e.stopPropagation(); card.classList.add('drop-target'); } });
-    card.addEventListener('dragleave', () => card.classList.remove('drop-target'));
-    card.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; card.classList.remove('drop-target'); if (f && f.type.startsWith('image/')) { e.preventDefault(); e.stopPropagation(); setCoverFromFile(item.name, f); } });
-    return card;
-  });
-  const add = document.createElement('div'); add.className = 'card add-card';
-  const ac = document.createElement('div'); ac.className = 'cover'; ac.innerHTML = '<svg class="i"><use href="#i-plus"/></svg>';
-  const ab = document.createElement('div'); ab.className = 'card-body'; ab.innerHTML = '<div class="card-title">Add ROM</div><div class="card-meta">.nes files</div>';
-  add.append(ac, ab); activate(add, openRomPicker);
-  if (!list.length && roms && roms.length) { const d = emptyList('search', 'No games match “' + libQuery + '”.'); d.style.gridColumn = '1/-1'; grid.replaceChildren(d); return; }
-  grid.replaceChildren(...cards, add);
+  if (!homeSel || (homeSel !== '__add' && !list.some(r => sameRom(r.name, homeSel)))) homeSel = ((list.find(r => isCurrent(r.name)) || list[0]) || {}).name || '__add';
+  const add = document.createElement('button'); add.type = 'button'; add.className = 'tile add'; add.dataset.name = '__add'; add.title = 'Add ROM';
+  add.innerHTML = '<span class="cover"><svg class="i"><use href="#i-plus"/></svg></span><span class="tile-name">Add ROM</span>';
+  add.addEventListener('click', () => { if (homeSel === '__add') openRomPicker(); else selectTile('__add'); });
+  add.addEventListener('focus', () => { if (!tilePointer && homeSel !== '__add') selectTile('__add', { scroll: false }); });
+  row.replaceChildren(...list.map(tileFor), add);
+  markSelected();
+  renderHomeInfo();
+  $('sortLabel').textContent = SORTS[libSort];
+}
+function markSelected(scroll) {
+  let selEl = null;
+  for (const t of $('tileRow').children) { const on = t.dataset.name === homeSel; t.classList.toggle('sel', on); t.setAttribute('aria-selected', String(on)); if (on) selEl = t; }
+  if (selEl && scroll) selEl.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+  return selEl;
+}
+function selectTile(name, { scroll = true, focus = false } = {}) {
+  homeSel = name;
+  const el = markSelected(scroll);
+  if (focus && el) el.focus({ preventScroll: true });
+  renderHomeInfo();
+}
+function renderHomeInfo() {
+  const metaBox = $('heroMeta'); metaBox.replaceChildren();
+  const chip = text => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = text; metaBox.append(c); };
+  const item = homeSel && homeSel !== '__add' ? romByName(homeSel) : null;
+  heroName = item ? item.name : null;
+  ['heroSave', 'heroInfo', 'heroRemove'].forEach(id => $(id).hidden = !item);
+  if (!item) {
+    setScene(null);
+    $('heroEyebrow').textContent = roms === null ? 'Storage unavailable' : (roms && roms.length ? 'Library' : 'Get started');
+    $('heroTitle').textContent = roms && roms.length ? 'Add a game' : 'Welcome to chimiNES';
+    chip('.nes ROMs'); chip('Saved in this browser'); if (sgdbReady()) chip('Artwork from SteamGridDB');
+    $('heroDesc').hidden = false; $('heroDesc').textContent = 'Pick a ROM file or drop one anywhere on the page. It stays in your library for next time.';
+    $('heroPlayLabel').textContent = 'Add ROM';
+    $('heroPlay').onclick = openRomPicker;
+    return;
+  }
+  setScene(item);
+  const cur = isCurrent(item.name);
+  $('heroEyebrow').textContent = cur ? (paused ? 'Paused' : 'Now playing') : (item.genre || 'Game');
+  $('heroTitle').textContent = displayName(item);
+  if (item.favorite) chip('★ Favorite');
+  for (const v of [item.year, item.developer]) if (v) chip(v);
+  if (item.savedAt) chip('Played ' + ago(item.savedAt));
+  const fs = states ? statesOf(item.name) : [];
+  const manual = fs.filter(s => !s.autosave).length;
+  chip(manual + ' save' + (manual === 1 ? '' : 's'));
+  $('heroDesc').hidden = !item.description; $('heroDesc').textContent = item.description || '';
+  $('heroPlayLabel').textContent = cur ? 'Resume' : 'Play';
+  $('heroPlay').onclick = () => playRom(item);
+  const latest = fs.filter(s => !s.autosave).sort(byNewest)[0];
+  $('heroSave').hidden = !latest;
+  $('heroSave').onclick = () => latest && loadSaveMeta(latest);
+  $('heroRemove').onclick = () => removeRom(item);
 }
 
 function saveCard(rec) {
@@ -1898,24 +1937,77 @@ function shownStates(list) {
   for (const s of list) if (s.autosave) { const k = String(s.romName).toLowerCase(); const c = auto.get(k); if (!c || (s.createdAt || 0) > (c.createdAt || 0)) auto.set(k, s); }
   return [...manual, ...auto.values()].sort(byNewest);
 }
-function renderSaves() {
-  const box = $('saveGroups');
-  if (!states) { box.replaceChildren(emptyList('save', 'Browser storage is unavailable, so save states can’t be kept here.')); return; }
-  const shown = shownStates(states);
-  if (!shown.length) { box.replaceChildren(emptyList('save', 'No save states yet. Press F2 or the save button while playing.')); return; }
+/* Save States: RetroArch XMB — games across, saves down */
+let xmbCat = 0, xmbItem = 0, xmbCatKey = null;
+function xmbCategories() {
+  const shown = shownStates(states || []);
+  const cats = [];
+  if (shown.length) cats.push({ key: '__recent', name: 'Recent', list: shown.slice(0, 20) });
   const groups = new Map();
-  for (const s of shown) { const k = String(s.romName).toLowerCase(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); }
-  const out = [];
-  for (const list of groups.values()) {
-    const h = document.createElement('div'); h.className = 'group-title';
-    const name = document.createElement('span'); name.textContent = titleOf(list[0].romName);
-    const c = document.createElement('span'); c.className = 'count'; c.textContent = list.length;
-    h.append(coverEl(list[0].romName, 'mini'), name, c);
-    const g = document.createElement('div'); g.className = 'save-grid';
-    g.append(...list.slice(0, 40).map(saveCard));
-    out.push(h, g);
-  }
-  box.replaceChildren(...out);
+  for (const s of shown) { const k = String(s.romName).toLowerCase(); if (!groups.has(k)) groups.set(k, { key: k, rom: s.romName, name: titleOf(s.romName), list: [] }); groups.get(k).list.push(s); }
+  return cats.concat([...groups.values()]);
+}
+function renderSaves() {
+  const catsBox = $('xmbCats'), listBox = $('xmbList');
+  if (!states) { catsBox.replaceChildren(); listBox.replaceChildren(emptyList('save', 'Browser storage is unavailable, so save states can’t be kept here.')); $('xmbHint').hidden = true; return; }
+  const cats = xmbCategories();
+  $('xmbHint').hidden = !cats.length;
+  if (!cats.length) { catsBox.replaceChildren(); listBox.replaceChildren(emptyList('save', 'No save states yet. Press F2 or open the Quick Menu while playing.')); return; }
+  // Keep the same game selected across refreshes.
+  const keep = cats.findIndex(c => c.key === xmbCatKey);
+  xmbCat = keep >= 0 ? keep : clamp(xmbCat, 0, cats.length - 1);
+  xmbCatKey = cats[xmbCat].key;
+  const cat = cats[xmbCat];
+  xmbItem = clamp(xmbItem, 0, cat.list.length - 1);
+  catsBox.replaceChildren(...cats.map((c, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'xc' + (i === xmbCat ? ' sel' : '');
+    if (c.key === '__recent') { const ic = document.createElement('div'); ic.className = 'xc-ico'; ic.innerHTML = '<svg class="i"><use href="#i-load"/></svg>'; b.append(ic); }
+    else b.append(coverEl(c.rom, 'mini'));
+    const s = document.createElement('span'); s.textContent = c.name; b.append(s);
+    b.title = c.name + ' · ' + c.list.length + ' save' + (c.list.length === 1 ? '' : 's');
+    b.addEventListener('click', () => { xmbCat = i; xmbCatKey = c.key; xmbItem = 0; renderSaves(); });
+    return b;
+  }));
+  listBox.replaceChildren(...cat.list.map((rec, j) => {
+    const row = document.createElement('div'); row.className = 'xi' + (j === xmbItem ? ' sel' : ''); row.tabIndex = -1;
+    const cover = document.createElement('div'); cover.className = 'cover';
+    if (thumbOk(rec.thumb)) cover.style.backgroundImage = `url("${rec.thumb}")`;
+    const info = document.createElement('div'); info.style.minWidth = '0';
+    const t = document.createElement('div'); t.className = 't'; t.textContent = cat.key === '__recent' ? titleOf(rec.romName) : ago(Number(rec.createdAt));
+    if (rec.autosave) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'auto'; t.append(tag); }
+    const m = document.createElement('div'); m.className = 'm';
+    m.textContent = (cat.key === '__recent' ? ago(Number(rec.createdAt)) + ' · ' : '') + new Date(Number(rec.createdAt) || 0).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    info.append(t, m);
+    const acts = document.createElement('div'); acts.className = 'acts';
+    acts.append(
+      iconBtn('download', 'Export', () => exportSave(rec)),
+      iconBtn('trash', 'Delete', () => deleteSave(rec)));
+    row.append(cover, info, acts);
+    row.addEventListener('click', () => { if (xmbItem === j) loadSaveMeta(rec); else { xmbItem = j; renderSaves(); } });
+    return row;
+  }));
+  const sel = catsBox.children[xmbCat]; if (sel) sel.scrollIntoView({ block: 'nearest', inline: 'center' });
+  if (view === 'saves') { const r = listBox.children[xmbItem]; if (r) r.scrollIntoView({ block: 'nearest' }); }
+}
+async function exportSave(rec) {
+  try { const full = await fullState(rec); downloadJSON(fileBase(rec.romName) + '-save-' + new Date(rec.createdAt || Date.now()).toISOString().replace(/[:.]/g, '-') + '.json', portableState(full)); }
+  catch (e) { toast('Could not export: ' + errMsg(e), 'error'); }
+}
+async function deleteSave(rec) {
+  if (!confirm('Delete this save state for ' + titleOf(rec.romName) + '?')) return;
+  try { await dbOp('readwrite', s => s.delete(rec.id), STATE_STORE); await refreshData(); }
+  catch (e) { toast('Could not delete: ' + errMsg(e), 'error'); }
+}
+function xmbMove(k) {
+  const cats = xmbCategories(); if (!cats.length) return false;
+  if (k === 'left' || k === 'right') { const n = clamp(xmbCat + (k === 'left' ? -1 : 1), 0, cats.length - 1); if (n === xmbCat) return true; xmbCat = n; xmbCatKey = cats[n].key; xmbItem = 0; }
+  else if (k === 'up' || k === 'down') { const n = clamp(xmbItem + (k === 'up' ? -1 : 1), 0, cats[xmbCat].list.length - 1); if (n === xmbItem) return true; xmbItem = n; }
+  else if (k === 'ok') { const rec = cats[xmbCat].list[xmbItem]; if (rec) loadSaveMeta(rec); return true; }
+  else if (k === 'x') { const rec = cats[xmbCat].list[xmbItem]; if (rec) deleteSave(rec); return true; }
+  else return false;
+  sfx.play('move');
+  renderSaves();
+  return true;
 }
 function renderPlaySaves() {
   const wrap = $('playSaves');
@@ -2253,19 +2345,18 @@ async function autoArtwork(name, { quiet = false } = {}) {
 
 /* Views */
 let autoPaused = false;
-const VIEW_TITLES = { library: 'Library', play: 'Now Playing', saves: 'Save States' };
+const VIEW_TITLES = { library: 'Games', play: 'Now Playing', saves: 'Save States' };
 function showView(v) {
   if (!VIEW_TITLES[v]) v = 'library';
   const leaving = view;
   view = v;
+  document.body.dataset.view = v;
+  if (qmOpen && v !== 'play') closeQuickMenu(false);
   document.querySelectorAll('[data-viewpane]').forEach(p => p.hidden = p.dataset.viewpane !== v);
-  document.querySelectorAll('.nav [data-view]').forEach(b => { if (b.dataset.view === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  document.querySelectorAll('.cats [data-view]').forEach(b => { if (b.dataset.view === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   $('viewTitle').textContent = v === 'play' && romLoaded ? titleOf(currentName) : VIEW_TITLES[v];
-  $('app').classList.remove('nav-open');
-  if (v !== 'play' && leaving === 'play' && romLoaded) {
-    snapshotNow();
-    if (!paused) { setPaused(true); autoPaused = true; }
-  }
+  if (v !== 'play' && leaving === 'play' && romLoaded && !paused) { setPaused(true); autoPaused = true; }
+  if (v === 'library' && leaving !== 'library' && romLoaded) homeSel = currentName;
   if (v === 'play') {
     layoutScreen();
     if (autoPaused && romLoaded && paused) setPaused(false);
@@ -2273,28 +2364,236 @@ function showView(v) {
   }
   if (v !== leaving) window.scrollTo(0, 0);
   renderAll();
-}
-function snapshotNow() {
-  try { $('nowCanvas').getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(frame.buffer.slice(0)), NES_W, NES_H), 0, 0); } catch (_) {}
+  if (v === 'library' && v !== leaving) requestAnimationFrame(() => { const s = markSelected(true); if (s && document.activeElement === document.body) s.focus({ preventScroll: true }); });
 }
 function renderNowCard() {
-  const show = romLoaded && view !== 'play';
-  $('nowCard').hidden = !show;
+  $('tabPlay').classList.toggle('live', romLoaded);
   $('gameInfoBtn').hidden = !(romLoaded && view === 'play' && romByName(currentName));
-  if (!show) return;
-  $('nowTitle').textContent = titleOf(currentName);
-  $('nowStatus').textContent = paused ? 'Paused' : 'Now playing';
+  $('qmBtn').hidden = !romLoaded;
 }
-const resumeGame = () => { autoPaused = true; showView('play'); };
-$('nowResume').addEventListener('click', e => { e.stopPropagation(); resumeGame(); });
-$('nowCard').addEventListener('click', resumeGame);
-$('nowCard').addEventListener('keydown', e => { if (e.key === 'Enter') resumeGame(); });
-document.querySelectorAll('.nav [data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
-$('menuBtn').addEventListener('click', () => $('app').classList.toggle('nav-open'));
-$('scrim').addEventListener('click', () => $('app').classList.remove('nav-open'));
-$('sideSearch').addEventListener('input', e => { libQuery = e.target.value; renderSidebar(); renderLibrary(); if (view !== 'library' && libQuery) showView('library'); });
-$('sortSelect').value = libSort;
-$('sortSelect').addEventListener('change', e => { libSort = e.target.value; pref.set('sort', libSort); renderSidebar(); renderLibrary(); });
+document.querySelectorAll('.cats [data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+$('homeBtn').addEventListener('click', () => showView('library'));
+$('orbSaves').addEventListener('click', () => showView('saves'));
+$('searchBtn').addEventListener('click', () => {
+  const w = $('searchWrap'); w.hidden = !w.hidden;
+  if (!w.hidden) $('sideSearch').focus(); else if (libQuery) { libQuery = ''; $('sideSearch').value = ''; renderLibrary(); }
+});
+$('sideSearch').addEventListener('input', e => { libQuery = e.target.value; homeSel = null; renderLibrary(); });
+$('sideSearch').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); $('searchBtn').click(); }
+  if (e.key === 'Enter' || e.key === 'ArrowDown') { e.preventDefault(); const s = markSelected(true); if (s) s.focus(); }
+});
+$('sortBtn').addEventListener('click', () => {
+  const order = Object.keys(SORTS); libSort = order[(order.indexOf(libSort) + 1) % order.length];
+  pref.set('sort', libSort); renderLibrary(); toast('Sorted by ' + SORTS[libSort].toLowerCase(), 'info', 'sort', 1200);
+});
+const openSettingsTab = tab => { openSettings(); document.querySelector(`#settingsTabs [data-tab=${tab}]`).click(); };
+$('orbThemes').addEventListener('click', () => openSettingsTab('look'));
+$('orbControls').addEventListener('click', () => openSettingsTab('controls'));
+
+/* Quick Menu (RetroArch-style, inside the game screen) */
+let qmOpen = false, qmSel = 0, qmWasRunning = false;
+const PRESET_ORDER = ['clean', 'soft', 'crt', 'arcade'];
+const PRESET_NAMES = { clean: 'Clean', soft: 'Soft CRT', crt: 'CRT', arcade: 'Arcade', custom: 'Custom' };
+const SPEEDS = [...$('speed').options].map(o => Number(o.value));
+const QM = [
+  { id: 'resume', icon: 'play', label: 'Resume', run: () => closeQuickMenu(true) },
+  { id: 'save', icon: 'save', label: 'Save state', run: () => { closeQuickMenu(true); quickSave(); } },
+  { id: 'load', icon: 'load', label: 'Load latest state', run: () => { closeQuickMenu(false); quickLoad(); } },
+  { id: 'reset', icon: 'reset', label: 'Reset game', run: () => { closeQuickMenu(false); $('resetBtn').click(); } },
+  { id: 'effect', icon: 'screen', label: 'Screen effect', value: () => PRESET_NAMES[display.preset] || 'Custom', step: d => {
+      const i = PRESET_ORDER.indexOf(display.preset); const n = PRESET_ORDER[(Math.max(0, i) + d + PRESET_ORDER.length) % PRESET_ORDER.length];
+      document.querySelector(`[data-preset=${n}]`).click(); } },
+  { id: 'speed', icon: 'load', label: 'Speed', value: () => speed + '×', step: d => setSpeed(SPEEDS[clamp(SPEEDS.indexOf(speed) + d, 0, SPEEDS.length - 1)], false) },
+  { id: 'sound', icon: 'vol', label: 'Game audio', value: () => soundToggle.checked ? 'On' : 'Off', step: () => setSound(!soundToggle.checked) },
+  { id: 'details', icon: 'edit', label: 'Game details', run: () => { closeQuickMenu(false); openGameDialog(currentName); } },
+  { id: 'full', icon: 'full', label: 'Fullscreen', run: () => { toggleFullscreen(); } },
+  { id: 'home', icon: 'home', label: 'Back to Home', run: () => { closeQuickMenu(false); autoPaused = qmWasRunning; showView('library'); } }
+];
+function renderQuickMenu() {
+  $('qmTitle').textContent = titleOf(currentName);
+  $('qmCover').replaceChildren(coverEl(currentName, 'mini'));
+  $('qmList').replaceChildren(...QM.map((it, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.sfx = 'none'; b.setAttribute('role', 'menuitem');
+    if (i === qmSel) b.className = 'sel';
+    b.innerHTML = `<svg class="i"><use href="#i-${it.icon}"/></svg><span></span>`;
+    b.querySelector('span').textContent = it.label;
+    if (it.value) { const v = document.createElement('span'); v.className = 'v'; v.textContent = '‹ ' + it.value() + ' ›'; b.append(v); }
+    b.addEventListener('mouseenter', () => { if (qmSel !== i) { qmSel = i; markQm(); sfx.play('hover', { gesture: false }); } });
+    b.addEventListener('click', () => qmActivate(i));
+    return b;
+  }));
+}
+function markQm() { [...$('qmList').children].forEach((b, i) => b.classList.toggle('sel', i === qmSel)); }
+function qmActivate(i) {
+  const it = QM[i]; qmSel = i;
+  if (it.step) { it.step(1); sfx.play('tab'); renderQuickMenu(); return; }
+  sfx.play(it.id === 'resume' ? 'resume' : it.id === 'home' ? 'back' : 'select');
+  it.run();
+}
+function openQuickMenu() {
+  if (!romLoaded || qmOpen) return;
+  if (view !== 'play') showView('play');
+  qmWasRunning = !paused;
+  if (!paused) setPaused(true);
+  qmOpen = true; qmSel = 0;
+  renderQuickMenu();
+  $('qmenu').hidden = false; stage.classList.add('qm-open');
+  sfx.play('open', { gesture: false });
+}
+function closeQuickMenu(resume) {
+  if (!qmOpen) return;
+  qmOpen = false; $('qmenu').hidden = true; stage.classList.remove('qm-open');
+  if (resume && qmWasRunning && romLoaded) setPaused(false);
+  else syncPlayUI();
+}
+function qmNav(k) {
+  if (k === 'up' || k === 'down') { qmSel = (qmSel + (k === 'up' ? -1 : 1) + QM.length) % QM.length; markQm(); sfx.play('move'); return; }
+  if ((k === 'left' || k === 'right') && QM[qmSel].step) { QM[qmSel].step(k === 'left' ? -1 : 1); sfx.play('tab'); renderQuickMenu(); return; }
+  if (k === 'ok') { qmActivate(qmSel); return; }
+  if (k === 'back' || k === 'home' || k === 'start') { sfx.play('resume'); closeQuickMenu(true); }
+}
+$('qmBtn').addEventListener('click', openQuickMenu);
+
+/* Menu navigation for keyboard and gamepad (console-style) */
+function homeRows() {
+  return [
+    [...$('tileRow').children],
+    [...document.querySelectorAll('.home-actions button')].filter(b => !b.hidden),
+    [...document.querySelectorAll('.home-dock .orb')]
+  ].filter(r => r.length);
+}
+function homeNav(k) {
+  const rows = homeRows(); if (!rows.length) return false;
+  const a = document.activeElement;
+  let r = rows.findIndex(row => row.includes(a));
+  if (r < 0) {
+    // Nothing focused yet: start from the selected tile, then apply the move.
+    const s = markSelected(true); if (!s) return true;
+    s.focus({ preventScroll: true });
+    if (k === 'ok' || k === 'up') return true;
+    return homeNav(k);
+  }
+  const row = rows[r], i = row.indexOf(a);
+  let target = null;
+  if (k === 'left' || k === 'right') target = row[clamp(i + (k === 'left' ? -1 : 1), 0, row.length - 1)];
+  else if (k === 'up' || k === 'down') {
+    const nr = clamp(r + (k === 'up' ? -1 : 1), 0, rows.length - 1);
+    if (nr === r) return true;
+    target = nr === 0 ? (rows[0].find(t => t.dataset.name === homeSel) || rows[0][0]) : rows[nr][Math.min(nr === r ? i : 0, rows[nr].length - 1)];
+  } else if (k === 'ok') { a.click(); return true; }
+  else if (k === 'x') { if (heroName) openGameDialog(heroName); return true; }
+  else if (k === 'start') { openSettings(); return true; }
+  else return false;
+  if (target && target !== a) {
+    target.focus({ preventScroll: rows[0].includes(target) });
+    if (rows[0].includes(target)) { selectTile(target.dataset.name); }
+    else target.scrollIntoView({ block: 'nearest' });
+  }
+  return true;
+}
+function menuInput(k) {
+  if (qmOpen) { qmNav(k); return true; }
+  if (view === 'library') return homeNav(k);
+  if (view === 'saves') { if (k === 'back') { showView('library'); return true; } return xmbMove(k); }
+  if (view === 'play' && (k === 'back' || k === 'home')) { if (romLoaded) openQuickMenu(); else showView('library'); return true; }
+  return false;
+}
+const KEYMAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Enter: 'ok', Escape: 'back', Backspace: 'back', Home: 'home' };
+window.addEventListener('keydown', e => {
+  if (listeningFor || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (settingsDialog.open || gameDialog.open || sgdbDialog.open) return;
+  const k = KEYMAP[e.key]; if (!k) return;
+  const t = e.target;
+  if (isTyping(t) || (t && t.type === 'range')) return;
+  if (!qmOpen && view === 'play' && k !== 'back' && k !== 'home') return; // the game owns the keyboard
+  if (view === 'library' && k === 'ok' && t && t.closest && t.closest('button') && !t.closest('#tileRow')) return; // native button press
+  if (view === 'play' && !qmOpen && k === 'back' && e.key === 'Backspace') return;
+  if (menuInput(k)) { e.preventDefault(); e.stopImmediatePropagation(); }
+}, true);
+
+/* Gamepad: menus (D-pad/stick, A = OK, B = back, X = details, Start = settings),
+   plus Start+Select (or the Home button) for the Quick Menu while playing. */
+const menuPad = { prev: new Set(), dir: null, repeat: 0, active: false, hot: false };
+function pollMenuPad(t, inGame) {
+  if (!navigator.getGamepads) return;
+  const pads = [...navigator.getGamepads()].filter(p => p && p.connected);
+  $('padInd').hidden = !pads.length;
+  if (!pads.length) { menuPad.active = false; return; }
+  const pad = pads[0], b = i => !!(pad.buttons[i] && pad.buttons[i].pressed), ax = pad.axes || [];
+  if (inGame) {
+    const hot = (b(8) && b(9)) || b(16);
+    if (hot && !menuPad.hot) openQuickMenu();
+    menuPad.hot = hot; menuPad.active = false;
+    return;
+  }
+  const now = new Set();
+  if (b(12) || ax[1] < -.6) now.add('up'); if (b(13) || ax[1] > .6) now.add('down');
+  if (b(14) || ax[0] < -.6) now.add('left'); if (b(15) || ax[0] > .6) now.add('right');
+  if (b(0)) now.add('ok'); if (b(1)) now.add('back'); if (b(2)) now.add('x'); if (b(9)) now.add('start'); if (b(16)) now.add('home');
+  if (!menuPad.active) { menuPad.active = true; menuPad.prev = now; menuPad.hot = (b(8) && b(9)) || b(16); return; } // ignore buttons held from gameplay
+  const dialogs = settingsDialog.open || gameDialog.open || sgdbDialog.open;
+  for (const k of now) {
+    if (menuPad.prev.has(k)) continue;
+    if (dialogs) { if (k === 'back') { const d = [sgdbDialog, gameDialog, settingsDialog].find(x => x.open); if (d) d.close(); } continue; }
+    if (k === 'ok' && view === 'library' && !homeRows().some(r => r.includes(document.activeElement))) { homeNav('left'); continue; }
+    if (menuInput(k) && ['up', 'down', 'left', 'right'].includes(k) && !qmOpen && view === 'library') sfx.play('move', { gesture: false });
+    if (['up', 'down', 'left', 'right'].includes(k)) { menuPad.dir = k; menuPad.repeat = t + 380; }
+  }
+  if (menuPad.dir && now.has(menuPad.dir) && t >= menuPad.repeat && !dialogs) {
+    menuInput(menuPad.dir); if (view === 'library') sfx.play('move', { gesture: false });
+    menuPad.repeat = t + 120;
+  }
+  if (menuPad.dir && !now.has(menuPad.dir)) menuPad.dir = null;
+  menuPad.prev = now;
+}
+
+/* RetroArch XMB ribbon background */
+const ribbon = (() => {
+  const cv = $('xmbBg'), cx = cv.getContext('2d');
+  let w = 0, h = 0, d = 1, c1 = '#078cff', c2 = '#00c8ff', last = 0, still = false;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  function resize() { d = Math.min(window.devicePixelRatio || 1, 1.5); w = cv.width = Math.round(innerWidth * d); h = cv.height = Math.round(innerHeight * d); draw(last || 0); }
+  function colors() { const cs = getComputedStyle(document.documentElement); c1 = cs.getPropertyValue('--accent').trim() || c1; c2 = cs.getPropertyValue('--accent-2').trim() || c2; draw(last || 0); }
+  function wave(x, t, k, off) {
+    const u = x / w, ph = k * 1.9;
+    return h * (.6 + k * .012) + Math.sin(u * Math.PI * (2.2 + k * .25) + t * (0.00011 + k * .00002) + ph + off) * h * .055
+      + Math.sin(u * Math.PI * 1.15 - t * 0.00007 + ph * .7) * h * .045;
+  }
+  function draw(t) {
+    if (!w) return;
+    cx.clearRect(0, 0, w, h);
+    const step = w / 90;
+    for (let k = 0; k < 5; k++) {
+      const thick = h * (.018 + .014 * k);
+      cx.beginPath();
+      for (let x = 0; x <= w + step; x += step) cx.lineTo(x, wave(x, t, k, 0));
+      for (let x = w + step; x >= -step; x -= step) cx.lineTo(x, wave(x, t, k, .5 + k * .12) + thick);
+      cx.closePath();
+      cx.globalAlpha = .045 + .02 * k; cx.fillStyle = k % 2 ? c1 : c2; cx.fill();
+      cx.beginPath();
+      for (let x = 0; x <= w + step; x += step) cx.lineTo(x, wave(x, t, k, 0));
+      cx.globalAlpha = .16; cx.strokeStyle = c2; cx.lineWidth = d; cx.stroke();
+    }
+    cx.globalAlpha = 1;
+  }
+  function loop(t) {
+    requestAnimationFrame(loop);
+    const busy = document.hidden || (view === 'play' && romLoaded && !paused && !qmOpen);
+    if (busy || reduce.matches || t - last < 33) return;
+    last = t; draw(t);
+  }
+  window.addEventListener('resize', resize);
+  return { start() { resize(); colors(); requestAnimationFrame(loop); }, colors };
+})();
+
+/* Status bar: clock, battery, controller */
+function tickClock() { $('clock').textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+tickClock(); setInterval(tickClock, 10000);
+if (navigator.getBattery) navigator.getBattery().then(bat => {
+  const show = () => { const p = Math.round(bat.level * 100); $('battery').hidden = false; $('battery').textContent = (bat.charging ? '⚡' : '▮') + ' ' + p + '%'; $('battery').title = 'Battery ' + p + '%' + (bat.charging ? ' (charging)' : ''); };
+  show(); bat.addEventListener('levelchange', show); bat.addEventListener('chargingchange', show);
+}).catch(() => {});
 
 let autosaveOn = true, autosaveMs = 5000, lastAutosave = 0, autosaveBusy = false;
 async function saveState(isAuto = false) {
@@ -2434,7 +2733,7 @@ function loadFile(f) {
 }
 function openRomPicker() { resumeAudio(); $('romFile').click(); }
 $('romFile').addEventListener('change', e => { loadFile(e.target.files[0]); e.target.value = ''; });
-['openRomBtn', 'emptyOpenBtn', 'importRomBtn'].forEach(id => $(id).addEventListener('click', openRomPicker));
+['emptyOpenBtn', 'importRomBtn'].forEach(id => $(id).addEventListener('click', openRomPicker));
 let dragDepth = 0;
 stage.addEventListener('dragenter', e => { e.preventDefault(); dragDepth++; stage.classList.add('drag-active'); });
 stage.addEventListener('dragover', e => { e.preventDefault(); });
@@ -2571,7 +2870,7 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (settingsDialog.open || gameDialog.open || sgdbDialog.open || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
-  if (view !== 'play' && !isFullscreen()) return;
+  if ((view !== 'play' && !isFullscreen()) || qmOpen) return;
   const id = norm(e.key);
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { e.preventDefault(); if (!e.repeat) { zapperDown = true; zapperAt(null, true); } return; }
   if (zapperOn && id === norm(keybinds.zapperReload)) { e.preventDefault(); zapperDown = false; zapperAt(null, false, true); return; }
@@ -2915,6 +3214,7 @@ function applyTheme() {
   if (t[9]) root.setAttribute('data-light', ''); else root.removeAttribute('data-light');
   root.setAttribute('data-style', uiStyle);
   document.querySelector('meta[name=theme-color]').content = t[2];
+  ribbon.colors();
   document.querySelectorAll('.theme-card').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.theme === themeId)));
   document.querySelectorAll('#styleSeg [data-style]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.style === uiStyle)));
 }
@@ -2946,7 +3246,9 @@ applyTheme();
     if (el.dataset.sfx) return el.dataset.sfx;
     if (SILENT_IDS.has(el.id)) return null;
     if (CLOSE_IDS.has(el.id)) return 'back';
-    if (el.matches('.nav [data-view]')) return 'nav';
+    if (el.matches('.cats [data-view], .orb')) return 'nav';
+    if (el.matches('.tile')) return el.classList.contains('sel') ? 'select' : 'move';
+    if (el.matches('.xc')) return 'tab';
     if (el.matches('[role=tab], .seg button, .sgdb-game, .theme-card, .preset, .swatch')) return 'tab';
     if (usesIcon(el, 'trash')) return 'remove';
     if (el.matches('.card, .sg, .save-card, .sgdb-art, .now-card, #heroPlay, #nowResume, .btn-primary')) return 'select';
@@ -2972,7 +3274,7 @@ applyTheme();
     sfx.play('tick', { pitch: .75 + (Number(t.value) - min) / (max - min) * .9 });
   }, true);
   // Quiet hover ticks on launcher tiles (mouse only, once audio has been unlocked by a click).
-  const HOVERABLE = '.card, .nav [data-view], .sg, .theme-card, .preset, .save-card, .sgdb-art, .sgdb-game';
+  const HOVERABLE = '.tile, .cats [data-view], .orb, .xc, .xi, .theme-card, .preset, .save-card, .sgdb-art, .sgdb-game';
   let lastHover = null;
   document.addEventListener('pointerover', e => {
     if (e.pointerType !== 'mouse') return;
@@ -3011,6 +3313,7 @@ applyTheme();
    ------------------------------------------------------------------ */
 syncPlayUI();
 showView('library');
+ribbon.start();
 refreshData();
 if (!window.jsnes) toast('The emulator core couldn’t load. Check your connection and reload.', 'error', null, 8000);
 initRenderer(true).then(() => requestAnimationFrame(tick));

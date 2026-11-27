@@ -234,9 +234,7 @@ input[type=file]{display:none}
 .card-play .i{width:24px;height:24px;margin-left:3px}
 .card:hover .card-play,.card:focus-visible .card-play{opacity:1;transform:none}
 .card-badge{position:absolute;top:8px;left:8px;z-index:2;padding:3px 8px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font:800 9.5px/1.3 var(--font);letter-spacing:.08em;text-transform:uppercase}
-.card-del{position:absolute;top:6px;right:6px;z-index:3;opacity:0;background:rgba(0,0,0,.55)!important;color:#fff!important;backdrop-filter:blur(6px)}
-.card:hover .card-del,.card:focus-within .card-del{opacity:1}
-@media (hover:none){.card-del{opacity:1}.card-play{opacity:.9;transform:none}}
+@media (hover:none){.card-play{opacity:.9;transform:none}}
 .card-body{padding:10px 12px 12px;min-width:0}
 .card-title{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-meta{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -267,6 +265,49 @@ input[type=file]{display:none}
 .player{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;min-width:0}
 .play-saves{width:100%;max-width:max(var(--stage-w),600px)}
 .play-saves .shelf-head{margin-top:16px}
+
+/* Game details dialog */
+dialog.modal{
+  width:min(780px,calc(100vw - 24px));max-height:calc(100vh - 24px);padding:0;margin:auto;
+  border:1px solid var(--panel-border);border-radius:18px;background:var(--panel);color:var(--text);
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.8),var(--glow);
+}
+dialog.modal[open]{animation:pop .2s cubic-bezier(.2,.8,.2,1)}
+dialog.modal::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+@keyframes pop{from{transform:scale(.97);opacity:0}}
+.modal form{display:flex;flex-direction:column;max-height:calc(100vh - 26px)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 4px 24px}
+.modal-head h2{margin:0;font-size:19px;letter-spacing:-.01em}
+.modal-body{overflow:auto;padding:14px 24px 8px}
+.modal-foot{display:flex;align-items:center;gap:8px;padding:14px 18px 18px 24px;border-top:1px solid var(--border)}
+.gd-grid{display:grid;grid-template-columns:210px minmax(0,1fr);gap:24px}
+.gd-cover{aspect-ratio:3/4;border-radius:12px;border:1px solid var(--border-2);cursor:pointer;box-shadow:var(--shadow)}
+.gd-cover.drag,.gd-banner.drag{outline:2px dashed var(--accent-2);outline-offset:3px}
+.gd-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.gd-btns .btn{flex:1 1 auto}
+.field{display:grid;gap:6px;margin-bottom:14px}
+.field>span,.flabel{font:800 10.5px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.field input,.field textarea{
+  width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border-2);background:var(--surface-2);font:inherit;font-size:14px;color:var(--text);resize:vertical;
+}
+.field input:focus,.field textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field-row{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:12px}
+.fav-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border)}
+.gd-banner{position:relative;aspect-ratio:7/2;max-height:190px;border-radius:12px;background:var(--surface-2) center/cover no-repeat;border:1px solid var(--border-2);display:grid;place-items:center;color:var(--muted);font-size:12.5px;overflow:hidden;cursor:pointer;margin-top:6px}
+.gd-file{margin:14px 0 6px;color:var(--faint);font:12px var(--mono);overflow-wrap:anywhere}
+.danger{color:var(--err)!important}
+.hint{color:var(--faint);font-size:12px;line-height:1.45;margin:10px 2px 0}
+.cover.has-art{image-rendering:auto}
+.cover.has-art::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.35),transparent 35%)}
+.card-tools{position:absolute;top:6px;right:6px;z-index:3;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.card-tools .btn{background:rgba(0,0,0,.6)!important;color:#fff!important;backdrop-filter:blur(6px)}
+.card:hover .card-tools,.card:focus-within .card-tools{opacity:1}
+@media (hover:none){.card-tools{opacity:1}}
+.card.drop-target{outline:2px dashed var(--accent-2);outline-offset:3px}
+.fav{color:#ffc83d;margin-right:4px}
+.hero-desc{margin:-4px 0 18px;max-width:560px;color:#cfd6e1;font-size:14px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.hero-art.banner{filter:none;inset:0;transform:none;opacity:1}
+@media (max-width:640px){.gd-grid{grid-template-columns:1fr}.gd-cover-col{max-width:220px;margin:0 auto;width:100%}.field-row{grid-template-columns:1fr 90px}}
 
 /* Theme picker */
 .theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 0}
@@ -553,6 +594,9 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
   <symbol id="i-pad" viewBox="0 0 24 24"><path d="M6.5 8h11a4 4 0 0 1 4 4.4l-.5 3.6a2.6 2.6 0 0 1-4.6 1.3L15 15.5H9l-1.4 1.8A2.6 2.6 0 0 1 3 16l-.5-3.6a4 4 0 0 1 4-4.4z"/><path d="M7.5 11v3M6 12.5h3"/><circle cx="15.5" cy="12" r=".6" fill="currentColor"/><circle cx="17.5" cy="13.5" r=".6" fill="currentColor"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="m20.5 16-5-5-8.5 8.5"/></symbol>
+  <symbol id="i-screen" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="12" rx="2"/><path d="M9 20h6M12 16.5V20"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
 </svg>
 
@@ -595,6 +639,7 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
       <h1 id="viewTitle">Library</h1>
       <div class="grow"></div>
       <button class="btn hide-sm" id="openRomBtn"><svg class="i"><use href="#i-folder"/></svg>Open ROM</button>
+      <button class="btn" id="gameInfoBtn" hidden title="Edit details & cover art"><svg class="i"><use href="#i-edit"/></svg><span class="hide-sm">Game details</span></button>
       <button class="btn icon-btn" id="topSettingsBtn" aria-label="Settings" title="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
     </header>
 
@@ -607,16 +652,18 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
           <div class="hero-eyebrow" id="heroEyebrow">Get started</div>
           <h2 id="heroTitle">Welcome to chimiNES</h2>
           <div class="chips" id="heroMeta"></div>
+          <p class="hero-desc" id="heroDesc" hidden></p>
           <div class="hero-actions">
             <button class="btn btn-primary btn-lg" id="heroPlay"><svg class="i fill"><use href="#i-play"/></svg><span id="heroPlayLabel">Play</span></button>
             <button class="btn btn-lg" id="heroSave" hidden><svg class="i"><use href="#i-load"/></svg>Latest save</button>
+            <button class="btn btn-lg icon-btn" id="heroInfo" hidden aria-label="Edit game details" title="Edit details & cover art" style="width:50px"><svg class="i"><use href="#i-edit"/></svg></button>
           </div>
         </div>
       </div>
       <div class="shelf-head">
         <h3>All games <b id="gridCount">(0)</b></h3>
         <div class="grow"></div>
-        <select class="select" id="sortSelect" aria-label="Sort games"><option value="recent">Recently played</option><option value="name">Name</option></select>
+        <select class="select" id="sortSelect" aria-label="Sort games"><option value="recent">Recently played</option><option value="fav">Favorites first</option><option value="name">Name</option></select>
       </div>
       <div class="grid" id="gameGrid"></div>
     </section>
@@ -830,6 +877,55 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <input type="file" id="romFile" accept=".nes,application/octet-stream">
 <input type="file" id="stateFile" accept=".json,application/json">
+<input type="file" id="imageFile" accept="image/*">
+
+<dialog class="modal" id="gameDialog" aria-labelledby="gdTitle">
+  <form id="gameForm" novalidate>
+    <div class="modal-head">
+      <h2 id="gdTitle">Game details</h2>
+      <button type="button" class="btn icon-btn btn-ghost" id="gdClose" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="gd-grid">
+        <div class="gd-cover-col">
+          <div class="flabel" style="margin-bottom:8px">Cover art</div>
+          <div class="cover gd-cover" id="gdCover" title="Click or drop an image"></div>
+          <div class="gd-btns">
+            <button type="button" class="btn btn-sm" id="gdCoverUpload"><svg class="i"><use href="#i-image"/></svg>Upload</button>
+            <button type="button" class="btn btn-sm" id="gdCoverScreen"><svg class="i"><use href="#i-screen"/></svg>Screen</button>
+            <button type="button" class="btn btn-sm" id="gdCoverSave"><svg class="i"><use href="#i-save"/></svg>Latest save</button>
+            <button type="button" class="btn btn-sm btn-ghost" id="gdCoverReset">Reset</button>
+          </div>
+          <p class="hint">Without custom art, the newest save screenshot is used. You can also drop an image straight onto a game card.</p>
+        </div>
+        <div>
+          <label class="field"><span>Title</span><input id="gdName" maxlength="80" autocomplete="off"></label>
+          <div class="field-row">
+            <label class="field"><span>Developer / publisher</span><input id="gdDev" maxlength="60" autocomplete="off"></label>
+            <label class="field"><span>Year</span><input id="gdYear" maxlength="4" inputmode="numeric" placeholder="1988" autocomplete="off"></label>
+          </div>
+          <label class="field"><span>Genre</span><input id="gdGenre" list="genreList" maxlength="40" autocomplete="off"><datalist id="genreList"></datalist></label>
+          <label class="field"><span>Description</span><textarea id="gdDesc" rows="4" maxlength="600" placeholder="Notes, a summary, where you left off…"></textarea></label>
+          <div class="fav-row"><label for="gdFav"><b>Favorite</b><span class="desc" style="display:block;color:var(--muted);font-size:12px">Pinned to the top of your library.</span></label><input type="checkbox" class="switch" id="gdFav"></div>
+        </div>
+      </div>
+      <div class="flabel" style="margin-top:20px">Banner</div>
+      <div class="gd-banner" id="gdBanner" title="Click or drop an image"><span id="gdBannerEmpty">No banner — the library uses a blurred cover or screenshot</span></div>
+      <div class="gd-btns" style="max-width:420px">
+        <button type="button" class="btn btn-sm" id="gdBannerUpload"><svg class="i"><use href="#i-image"/></svg>Upload banner</button>
+        <button type="button" class="btn btn-sm" id="gdBannerScreen"><svg class="i"><use href="#i-screen"/></svg>Use screen</button>
+        <button type="button" class="btn btn-sm btn-ghost" id="gdBannerReset">Reset</button>
+      </div>
+      <div class="gd-file" id="gdFile"></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-ghost danger" id="gdDelete"><svg class="i"><use href="#i-trash"/></svg><span class="hide-sm">Remove game</span></button>
+      <div class="grow"></div>
+      <button type="button" class="btn" id="gdCancel">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</dialog>
 
 <!-- JSNES 1.2.1: the 2.x line has a reported sprite-layer issue in SMB3/Kirby, so the stable core is pinned. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsnes/1.2.1/jsnes.min.js" crossorigin="anonymous"></script>
@@ -1450,7 +1546,11 @@ function parseState(state) {
 
 /* ---------------- Library, saves & views ---------------- */
 let roms = [], states = [];
-let libQuery = '', libSort = pref.get('sort', 'recent') === 'name' ? 'name' : 'recent';
+let libQuery = '', libSort = ['name', 'fav'].includes(pref.get('sort', 'recent')) ? pref.get('sort', 'recent') : 'recent';
+let heroName = null;
+const displayName = item => (item && typeof item.title === 'string' && item.title.trim()) || stripExt(item && item.name);
+const romByName = name => (roms || []).find(r => sameRom(r.name, name));
+const titleOf = name => { const r = romByName(name); return r ? displayName(r) : stripExt(name); };
 const THUMB_RE = /^data:image\/(webp|jpeg|png);base64,/;
 const thumbOk = t => typeof t === 'string' && THUMB_RE.test(t);
 const byNewest = (a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
@@ -1472,16 +1572,20 @@ function renderAll() { renderSidebar(); renderLibrary(); renderSaves(); renderPl
 
 function coverEl(name, cls) {
   const el = document.createElement('div'); el.className = 'cover ' + (cls || '');
+  const r = romByName(name);
+  if (r && thumbOk(r.cover)) { el.classList.add('has-art'); el.style.backgroundImage = `url("${r.cover}")`; return el; }
   const t = states ? coverFor(name) : null;
   if (t) { el.classList.add('has-thumb'); el.style.backgroundImage = `url("${t}")`; }
-  else { el.classList.add('gen'); el.style.setProperty('--h', hueOf(name)); const s = document.createElement('span'); s.className = 'cover-initials'; s.textContent = initials(name); el.append(s); }
+  else { el.classList.add('gen'); el.style.setProperty('--h', hueOf(name)); const s = document.createElement('span'); s.className = 'cover-initials'; s.textContent = initials(titleOf(name)); el.append(s); }
   return el;
 }
 function visibleRoms() {
   if (!roms) return [];
   const q = libQuery.trim().toLowerCase();
-  const list = roms.filter(r => !q || stripExt(r.name).toLowerCase().includes(q));
-  return list.sort(libSort === 'name' ? (a, b) => stripExt(a.name).localeCompare(stripExt(b.name), undefined, { sensitivity: 'base' }) : (a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+  const list = roms.filter(r => !q || [displayName(r), r.name, r.genre, r.developer, r.year].some(v => v && String(v).toLowerCase().includes(q)));
+  const recent = (a, b) => (b.savedAt || 0) - (a.savedAt || 0);
+  const byName = (a, b) => displayName(a).localeCompare(displayName(b), undefined, { sensitivity: 'base', numeric: true });
+  return list.sort(libSort === 'name' ? byName : libSort === 'fav' ? (a, b) => (!!b.favorite - !!a.favorite) || recent(a, b) : recent);
 }
 const isCurrent = name => romLoaded && sameRom(name, currentName);
 function playRom(item) {
@@ -1489,8 +1593,8 @@ function playRom(item) {
   loadBytes(new Uint8Array(item.bytes), item.name, true);
 }
 async function removeRom(item) {
-  if (!confirm('Remove ' + stripExt(item.name) + ' from this browser? Its save states are kept.')) return;
-  try { await dbOp('readwrite', s => s.delete(item.name)); await refreshData(); toast('Removed ' + stripExt(item.name)); }
+  if (!confirm('Remove ' + displayName(item) + ' from this browser? Its save states are kept.')) return;
+  try { await dbOp('readwrite', s => s.delete(item.name)); await refreshData(); toast('Removed ' + displayName(item)); }
   catch (e) { toast('Could not remove ROM: ' + errMsg(e), 'error'); }
 }
 function activate(el, fn) {
@@ -1507,11 +1611,12 @@ function renderSidebar() {
   const list = visibleRoms();
   if (!list.length) { const d = document.createElement('div'); d.className = 'side-empty'; d.textContent = roms.length ? 'No matches.' : 'Your games will appear here.'; box.replaceChildren(d); return; }
   box.replaceChildren(...list.map(item => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'sg' + (isCurrent(item.name) ? ' current' : ''); b.title = stripExt(item.name);
-    const name = document.createElement('span'); name.textContent = stripExt(item.name);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sg' + (isCurrent(item.name) ? ' current' : ''); b.title = displayName(item);
+    const name = document.createElement('span'); name.textContent = (item.favorite ? '★ ' : '') + displayName(item);
     b.append(coverEl(item.name, 'mini'), name);
     if (isCurrent(item.name)) { const l = document.createElement('i'); l.className = 'live' + (paused ? ' paused' : ''); b.append(l); }
     b.addEventListener('click', () => playRom(item));
+    b.addEventListener('contextmenu', e => { e.preventDefault(); openGameDialog(item.name); });
     return b;
   }));
 }
@@ -1532,18 +1637,28 @@ function renderLibrary() {
     chip('Classic NES gaming in your browser'); chip('Saves stay on this device');
     $('heroPlayLabel').textContent = 'Add your first ROM';
     $('heroPlay').onclick = openRomPicker; $('heroSave').hidden = true;
+    $('heroInfo').hidden = true; $('heroDesc').hidden = true; heroName = null;
   } else {
+    heroName = featured.name;
     const thumb = states ? coverFor(featured.name) : null;
-    if (thumb) { art.className = 'hero-art'; art.style.backgroundImage = `url("${thumb}")`; shot.style.backgroundImage = `url("${thumb}")`; shot.hidden = false; }
-    else { art.className = 'hero-art gen'; art.style.backgroundImage = ''; art.style.setProperty('--h', hueOf(featured.name)); shot.hidden = true; }
+    const bg = thumbOk(featured.banner) ? featured.banner : thumbOk(featured.cover) ? featured.cover : thumb;
+    art.className = 'hero-art' + (thumbOk(featured.banner) ? ' banner' : '');
+    if (bg) art.style.backgroundImage = `url("${bg}")`;
+    else { art.className = 'hero-art gen'; art.style.backgroundImage = ''; art.style.setProperty('--h', hueOf(featured.name)); }
+    shot.hidden = !thumb || thumbOk(featured.banner);
+    if (thumb) shot.style.backgroundImage = `url("${thumb}")`;
+    $('heroInfo').hidden = false;
+    $('heroDesc').hidden = !featured.description; $('heroDesc').textContent = featured.description || '';
     const cur = isCurrent(featured.name);
     $('heroEyebrow').textContent = cur ? (paused ? 'Paused' : 'Now playing') : 'Jump back in';
-    $('heroTitle').textContent = stripExt(featured.name);
+    $('heroTitle').textContent = displayName(featured);
+    if (featured.favorite) chip('★ Favorite');
+    for (const v of [featured.genre, featured.year, featured.developer]) if (v) chip(v);
     if (featured.savedAt) chip('Last played ' + ago(featured.savedAt));
     const fs = states ? statesOf(featured.name) : [];
     const manual = fs.filter(s => !s.autosave).length;
     chip(manual + ' save state' + (manual === 1 ? '' : 's'));
-    if (featured.bytes) chip(Math.round(featured.bytes.byteLength / 1024) + ' KB');
+
     $('heroPlayLabel').textContent = cur ? 'Resume' : 'Play';
     $('heroPlay').onclick = () => playRom(featured);
     const latest = fs.filter(s => !s.autosave).sort(byNewest)[0];
@@ -1553,20 +1668,28 @@ function renderLibrary() {
   const list = visibleRoms();
   $('gridCount').textContent = '(' + list.length + ')';
   const cards = list.map(item => {
-    const card = document.createElement('div'); card.className = 'card' + (isCurrent(item.name) ? ' current' : ''); card.title = stripExt(item.name);
+    const card = document.createElement('div'); card.className = 'card' + (isCurrent(item.name) ? ' current' : ''); card.title = displayName(item);
     const cover = coverEl(item.name);
     const play = document.createElement('span'); play.className = 'card-play'; play.innerHTML = '<svg class="i fill"><use href="#i-play"/></svg>';
     cover.append(play);
     if (isCurrent(item.name)) { const b = document.createElement('span'); b.className = 'card-badge'; b.textContent = paused ? 'Paused' : 'Playing'; cover.append(b); }
-    const del = iconBtn('trash', 'Remove from library', () => removeRom(item), 'card-del');
+    const tools = document.createElement('div'); tools.className = 'card-tools';
+    tools.append(iconBtn('edit', 'Edit details & cover art', () => openGameDialog(item.name)), iconBtn('trash', 'Remove from library', () => removeRom(item)));
     const body = document.createElement('div'); body.className = 'card-body';
-    const t = document.createElement('div'); t.className = 'card-title'; t.textContent = stripExt(item.name);
+    const t = document.createElement('div'); t.className = 'card-title';
+    if (item.favorite) { const f = document.createElement('span'); f.className = 'fav'; f.textContent = '★'; t.append(f); }
+    t.append(displayName(item));
     const m = document.createElement('div'); m.className = 'card-meta';
     const n = states ? statesOf(item.name).filter(s => !s.autosave).length : 0;
-    m.textContent = item.savedAt ? 'Played ' + ago(item.savedAt) : (n + ' saves');
+    m.textContent = [item.genre, item.year].filter(Boolean).join(' · ') || (item.savedAt ? 'Played ' + ago(item.savedAt) : (n + ' saves'));
     body.append(t, m);
-    card.append(cover, del, body);
+    card.append(cover, tools, body);
     activate(card, () => playRom(item));
+    card.addEventListener('contextmenu', e => { e.preventDefault(); openGameDialog(item.name); });
+    // Drop an image on a card to set its cover.
+    card.addEventListener('dragover', e => { if ([...(e.dataTransfer.items || [])].some(i => i.type.startsWith('image/'))) { e.preventDefault(); e.stopPropagation(); card.classList.add('drop-target'); } });
+    card.addEventListener('dragleave', () => card.classList.remove('drop-target'));
+    card.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; card.classList.remove('drop-target'); if (f && f.type.startsWith('image/')) { e.preventDefault(); e.stopPropagation(); setCoverFromFile(item.name, f); } });
     return card;
   });
   const add = document.createElement('div'); add.className = 'card add-card';
@@ -1618,7 +1741,7 @@ function renderSaves() {
   const out = [];
   for (const list of groups.values()) {
     const h = document.createElement('div'); h.className = 'group-title';
-    const name = document.createElement('span'); name.textContent = stripExt(list[0].romName);
+    const name = document.createElement('span'); name.textContent = titleOf(list[0].romName);
     const c = document.createElement('span'); c.className = 'count'; c.textContent = list.length;
     h.append(coverEl(list[0].romName, 'mini'), name, c);
     const g = document.createElement('div'); g.className = 'save-grid';
@@ -1642,6 +1765,147 @@ async function loadSaveMeta(rec) {
   try { await restoreState(await fullState(rec)); } catch (e) { toast(errMsg(e), 'error'); }
 }
 
+/* ---------------- Game details (cover art, banner, metadata) ---------------- */
+const gameDialog = $('gameDialog');
+let editing = null; // { name, draft }
+const GENRES = ['Action', 'Adventure', 'Platformer', 'RPG', 'Puzzle', 'Shooter', 'Sports', 'Racing', 'Fighting', 'Strategy', 'Beat ’em up', 'Homebrew'];
+$('genreList').innerHTML = GENRES.map(g => `<option value="${g}">`).join('');
+
+function readImage(file, maxW, maxH) {
+  return new Promise((res, rej) => {
+    if (!file || !/^image\//.test(file.type)) { rej(new Error('Choose an image file (PNG, JPG, WebP or GIF).')); return; }
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, maxW / img.naturalWidth, maxH / img.naturalHeight);
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.naturalWidth * s)); c.height = Math.max(1, Math.round(img.naturalHeight * s));
+      const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      let d = c.toDataURL('image/webp', 0.86);
+      if (!d.startsWith('data:image/webp')) d = c.toDataURL('image/jpeg', 0.88);
+      res(d);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('That image couldn’t be read.')); };
+    img.src = url;
+  });
+}
+// Upscale pixel art with nearest-neighbour so covers stay crisp.
+function pixelUpscale(src) {
+  return new Promise(res => {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 480;
+    const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+    if (src instanceof Uint32Array) {
+      const t = document.createElement('canvas'); t.width = NES_W; t.height = NES_H;
+      t.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(src.buffer.slice(0)), NES_W, NES_H), 0, 0);
+      x.drawImage(t, 0, 0, 512, 480); res(c.toDataURL('image/png'));
+    } else {
+      const img = new Image(); img.onload = () => { x.drawImage(img, 0, 0, 512, 480); res(c.toDataURL('image/png')); }; img.onerror = () => res(null); img.src = src;
+    }
+  });
+}
+async function updateRom(name, patch) {
+  await dbOp('readwrite', s => { const g = s.get(name); g.onsuccess = () => { if (g.result) s.put({ ...g.result, ...patch }); }; });
+  await refreshData();
+}
+async function setCoverFromFile(name, file) {
+  try { await updateRom(name, { cover: await readImage(file, 600, 800) }); toast('Cover updated', 'ok'); }
+  catch (e) { toast(errMsg(e), 'error'); }
+}
+
+function paintDraft() {
+  const d = editing.draft;
+  const cov = $('gdCover');
+  cov.className = 'cover gd-cover'; cov.style.backgroundImage = ''; cov.replaceChildren();
+  const thumb = coverFor(editing.name);
+  if (thumbOk(d.cover)) { cov.classList.add('has-art'); cov.style.backgroundImage = `url("${d.cover}")`; }
+  else if (thumb) { cov.classList.add('has-thumb'); cov.style.backgroundImage = `url("${thumb}")`; }
+  else { cov.classList.add('gen'); cov.style.setProperty('--h', hueOf(editing.name)); const s = document.createElement('span'); s.className = 'cover-initials'; s.textContent = initials($('gdName').value || stripExt(editing.name)); cov.append(s); }
+  const ban = $('gdBanner');
+  ban.style.backgroundImage = thumbOk(d.banner) ? `url("${d.banner}")` : '';
+  $('gdBannerEmpty').hidden = thumbOk(d.banner);
+  $('gdCoverReset').disabled = !d.cover; $('gdBannerReset').disabled = !d.banner;
+  const cur = isCurrent(editing.name);
+  $('gdCoverScreen').disabled = $('gdBannerScreen').disabled = !cur;
+  $('gdCoverScreen').title = $('gdBannerScreen').title = cur ? 'Capture the game screen as it is now' : 'Start this game to capture its screen';
+  $('gdCoverSave').disabled = !thumb;
+}
+function openGameDialog(name) {
+  const item = romByName(name);
+  if (!item) { toast('Add this game to your library first.'); return; }
+  editing = { name: item.name, draft: { cover: item.cover || null, banner: item.banner || null } };
+  $('gdName').value = item.title || '';
+  $('gdName').placeholder = stripExt(item.name);
+  $('gdDev').value = item.developer || '';
+  $('gdYear').value = item.year || '';
+  $('gdGenre').value = item.genre || '';
+  $('gdDesc').value = item.description || '';
+  $('gdFav').checked = !!item.favorite;
+  $('gdFile').textContent = item.name + (item.bytes ? ' · ' + Math.round(item.bytes.byteLength / 1024) + ' KB' : '') + (item.savedAt ? ' · last played ' + ago(item.savedAt) : '');
+  paintDraft();
+  $('app').classList.remove('nav-open');
+  releaseAllInput();
+  gameDialog.showModal();
+}
+let imageTarget = null;
+const pickImage = target => { imageTarget = target; $('imageFile').click(); };
+$('imageFile').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f || !editing) return;
+  try {
+    if (imageTarget === 'cover') editing.draft.cover = await readImage(f, 600, 800);
+    else editing.draft.banner = await readImage(f, 1800, 700);
+    paintDraft();
+  } catch (err) { toast(errMsg(err), 'error'); }
+});
+$('gdCoverUpload').addEventListener('click', () => pickImage('cover'));
+$('gdBannerUpload').addEventListener('click', () => pickImage('banner'));
+$('gdCoverScreen').addEventListener('click', async () => { editing.draft.cover = await pixelUpscale(frame); paintDraft(); });
+$('gdBannerScreen').addEventListener('click', async () => { editing.draft.banner = await pixelUpscale(frame); paintDraft(); });
+$('gdCoverSave').addEventListener('click', async () => { const t = coverFor(editing.name); if (t) { editing.draft.cover = await pixelUpscale(t); paintDraft(); } });
+$('gdCoverReset').addEventListener('click', () => { editing.draft.cover = null; paintDraft(); });
+$('gdBannerReset').addEventListener('click', () => { editing.draft.banner = null; paintDraft(); });
+$('gdName').addEventListener('input', () => { if (!editing.draft.cover) paintDraft(); });
+for (const [zone, key, w, h] of [['gdCover', 'cover', 600, 800], ['gdBanner', 'banner', 1800, 700]]) {
+  const el = $(zone);
+  el.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); el.classList.add('drag'); });
+  el.addEventListener('dragleave', () => el.classList.remove('drag'));
+  el.addEventListener('drop', async e => {
+    e.preventDefault(); e.stopPropagation(); el.classList.remove('drag');
+    try { editing.draft[key] = await readImage(e.dataTransfer.files[0], w, h); paintDraft(); } catch (err) { toast(errMsg(err), 'error'); }
+  });
+  el.addEventListener('click', () => pickImage(key));
+}
+const closeGameDialog = () => { gameDialog.close(); editing = null; };
+$('gdClose').addEventListener('click', closeGameDialog);
+$('gdCancel').addEventListener('click', closeGameDialog);
+gameDialog.addEventListener('click', e => { if (e.target === gameDialog) closeGameDialog(); });
+$('gdDelete').addEventListener('click', async () => { const item = romByName(editing.name); if (!item) return; closeGameDialog(); await removeRom(item); });
+$('gameForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!editing) return;
+  const year = $('gdYear').value.trim();
+  if (year && !/^\d{4}$/.test(year)) { toast('Year should be four digits, like 1988.', 'error'); return; }
+  const name = editing.name;
+  const patch = {
+    title: $('gdName').value.trim().slice(0, 80) || null,
+    developer: $('gdDev').value.trim().slice(0, 60) || null,
+    year: year || null,
+    genre: $('gdGenre').value.trim().slice(0, 40) || null,
+    description: $('gdDesc').value.trim().slice(0, 600) || null,
+    favorite: $('gdFav').checked,
+    cover: editing.draft.cover || null,
+    banner: editing.draft.banner || null
+  };
+  closeGameDialog();
+  try {
+    await updateRom(name, patch);
+    if (isCurrent(name)) { $('gameTitle').textContent = titleOf(name); document.title = titleOf(name) + ' · chimiNES'; if (view === 'play') $('viewTitle').textContent = titleOf(name); }
+    toast('Saved details for ' + titleOf(name), 'ok');
+  } catch (err) { toast('Couldn’t save details: ' + errMsg(err), 'error'); }
+});
+$('heroInfo').addEventListener('click', () => { if (heroName) openGameDialog(heroName); });
+$('gameInfoBtn').addEventListener('click', () => { if (romLoaded) openGameDialog(currentName); });
+
 /* Views */
 let autoPaused = false;
 const VIEW_TITLES = { library: 'Library', play: 'Now Playing', saves: 'Save States' };
@@ -1651,7 +1915,7 @@ function showView(v) {
   view = v;
   document.querySelectorAll('[data-viewpane]').forEach(p => p.hidden = p.dataset.viewpane !== v);
   document.querySelectorAll('.nav [data-view]').forEach(b => { if (b.dataset.view === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-  $('viewTitle').textContent = v === 'play' && romLoaded ? stripExt(currentName) : VIEW_TITLES[v];
+  $('viewTitle').textContent = v === 'play' && romLoaded ? titleOf(currentName) : VIEW_TITLES[v];
   $('app').classList.remove('nav-open');
   if (v !== 'play' && leaving === 'play' && romLoaded) {
     snapshotNow();
@@ -1671,8 +1935,9 @@ function snapshotNow() {
 function renderNowCard() {
   const show = romLoaded && view !== 'play';
   $('nowCard').hidden = !show;
+  $('gameInfoBtn').hidden = !(romLoaded && view === 'play' && romByName(currentName));
   if (!show) return;
-  $('nowTitle').textContent = stripExt(currentName);
+  $('nowTitle').textContent = titleOf(currentName);
   $('nowStatus').textContent = paused ? 'Paused' : 'Now playing';
 }
 const resumeGame = () => { autoPaused = true; showView('play'); };
@@ -1785,14 +2050,15 @@ async function loadBytes(bytes, name, save, skipAutoRestore = false) {
     clearAudio(); frame.fill(0xff000000); frameDirty = true; clearAmbient();
     resetCheats();
     lastAutosave = performance.now();
-    $('gameTitle').textContent = stripExt(name);
-    document.title = stripExt(name) + ' · chimiNES';
+    $('gameTitle').textContent = titleOf(name);
+    document.title = titleOf(name) + ' · chimiNES';
     paused = !pref.bool('autostart', true);
     lastTick = 0; acc = 0;
     syncPlayUI();
     if (paused) $('veilText').textContent = 'Ready — press play';
     if (save) {
-      try { await dbOp('readwrite', s => s.put({ name, bytes: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), savedAt: Date.now() })); }
+      const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      try { await dbOp('readwrite', s => { const g = s.get(name); g.onsuccess = () => s.put({ ...(g.result || {}), name, bytes: buf, savedAt: Date.now() }); }); }
       catch (e) { toast('Game loaded, but it couldn’t be saved to your library: ' + errMsg(e), 'error'); }
     }
     autoPaused = false;
@@ -1956,7 +2222,7 @@ window.addEventListener('keydown', e => {
     keybinds[listeningFor] = e.key; pref.setJson('keybinds', keybinds); stopListening('Saved.');
     return;
   }
-  if (settingsDialog.open || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (settingsDialog.open || gameDialog.open || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
   if (view !== 'play' && !isFullscreen()) return;
   const id = norm(e.key);
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { e.preventDefault(); if (!e.repeat) { zapperDown = true; zapperAt(null, true); } return; }

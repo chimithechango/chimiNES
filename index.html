@@ -493,13 +493,18 @@ dialog.drawer::backdrop{background:rgba(0,0,0,.3)}
   cursor:pointer;font-size:13px;
 }
 .select option{background:var(--surface);color:var(--text)}
-input[type=range]{
-  -webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;margin:0;
-  background:linear-gradient(var(--accent),var(--accent)) 0/var(--p,50%) 100% no-repeat,var(--surface-3);
-  cursor:pointer;
-}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.45),0 0 0 3px var(--accent-soft)}
-input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+/* Sliders: a 26px-tall hit area (the old 4px element missed most clicks on the handle) with a thin track drawn inside. */
+input[type=range]{-webkit-appearance:none;appearance:none;display:block;width:100%;height:26px;margin:0;padding:0;background:transparent;cursor:pointer;touch-action:pan-y}
+input[type=range]:focus{outline:none}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:99px;background:linear-gradient(var(--accent),var(--accent)) 0/var(--p,50%) 100% no-repeat,var(--surface-3)}
+input[type=range]::-moz-range-track{height:5px;border-radius:99px;background:var(--surface-3)}
+input[type=range]::-moz-range-progress{height:5px;border-radius:99px;background:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-6.5px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.45),0 0 0 3px var(--accent-soft);transition:box-shadow .15s,transform .15s}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.45),0 0 0 3px var(--accent-soft)}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.1)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.18)}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent-2)}
+input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent-2)}
 input.switch{
   -webkit-appearance:none;appearance:none;flex:0 0 auto;margin:0;
   width:42px;height:24px;border-radius:99px;position:relative;cursor:pointer;
@@ -2784,12 +2789,34 @@ function spatialNext(from, dir, cands) {
 }
 function anyDialogOpen() { return [settingsDialog, gameDialog, sgdbDialog, layoutDialog].some(d => d && d.open); }
 function topDialog() { return [sgdbDialog, gameDialog, layoutDialog, settingsDialog].find(d => d && d.open); }
+// Change a slider by 5% of its range, or step a drop-down to the next visible option.
+function adjustControl(el, dir) {
+  if (el.type === 'range') {
+    const min = Number(el.min) || 0, max = Number(el.max) || 100, step = Number(el.step) || 1;
+    const delta = Math.max(step, Math.round((max - min) / 20 / step) * step);
+    const v = clamp(Number(el.value) + dir * delta, min, max);
+    if (v === Number(el.value)) return true;
+    el.value = String(v);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+  if (el.tagName === 'SELECT') {
+    const opts = [...el.options];
+    let i = el.selectedIndex;
+    do { i += dir; } while (i >= 0 && i < opts.length && (opts[i].hidden || opts[i].disabled));
+    if (i >= 0 && i < opts.length && i !== el.selectedIndex) { el.selectedIndex = i; el.dispatchEvent(new Event('change', { bubbles: true })); }
+    return true;
+  }
+  return false;
+}
 function dialogNav(d, k) {
   const items = [...d.querySelectorAll('button:not([disabled]), [href], input:not([type=hidden]), select, textarea, [tabindex]:not([tabindex="-1"])')].filter(el => el.offsetParent !== null || el.getClientRects().length);
   const a = d.contains(document.activeElement) ? document.activeElement : null;
   if (k === 'back') { d.close(); return; }
   if (k === 'ok') { if (a) a.click(); else if (items[0]) items[0].focus(); return; }
   if (!a) { if (items[0]) items[0].focus(); return; }
+  if ((k === 'left' || k === 'right') && adjustControl(a, k === 'right' ? 1 : -1)) return;
   const n = spatialNext(a, k, items);
   if (n) { n.focus(); n.scrollIntoView({ block: 'nearest' }); sfx.play('move', { gesture: false }); }
 }

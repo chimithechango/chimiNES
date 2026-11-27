@@ -143,13 +143,13 @@ body[data-view="play"] .scene,body[data-view="saves"] .scene{--scene-o:.22}
 .home{display:flex;flex-direction:column;min-height:calc(100vh - 76px)}
 .home-search{margin:8px clamp(16px,4vw,56px) 0;max-width:420px}
 .tiles{
-  --tile:clamp(112px,10.5vw,168px);
+  --tile:clamp(100px,9.2vw,148px);
   display:flex;align-items:center;gap:clamp(12px,1.3vw,20px);overflow-x:auto;overflow-y:visible;
   padding:64px clamp(16px,4vw,56px) 30px;scroll-padding:0 clamp(16px,4vw,56px);scrollbar-width:none;
 }
 .tiles::-webkit-scrollbar{display:none}
 .tile{
-  position:relative;flex:0 0 auto;width:var(--tile);aspect-ratio:1;padding:0;border:0;border-radius:18px;background:transparent;
+  position:relative;flex:0 0 auto;width:var(--tile);aspect-ratio:2/3;padding:0;border:0;border-radius:16px;background:transparent;
   transition:transform .25s cubic-bezier(.2,.8,.2,1),margin .25s cubic-bezier(.2,.8,.2,1);
 }
 .tile .cover{position:absolute;inset:0;border-radius:inherit;box-shadow:0 16px 30px -16px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.08)}
@@ -311,7 +311,7 @@ dialog.modal::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-web
 .modal-body{overflow:auto;padding:14px 24px 8px}
 .modal-foot{display:flex;align-items:center;gap:8px;padding:14px 18px 18px 24px;border-top:1px solid var(--border)}
 .gd-grid{display:grid;grid-template-columns:210px minmax(0,1fr);gap:24px}
-.gd-cover{aspect-ratio:3/4;border-radius:12px;border:1px solid var(--border-2);cursor:pointer;box-shadow:var(--shadow)}
+.gd-cover{aspect-ratio:2/3;border-radius:12px;border:1px solid var(--border-2);cursor:pointer;box-shadow:var(--shadow)}
 .gd-cover.drag,.gd-banner.drag{outline:2px dashed var(--accent-2);outline-offset:3px}
 .gd-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .gd-btns .btn{flex:1 1 auto}
@@ -631,7 +631,7 @@ dialog.modal.layouts::backdrop{background:rgba(0,0,0,.25);backdrop-filter:none;-
 
 /* Switch: big tiles, flat background, no info text */
 body[data-layout="switch"] .scene,body[data-layout="switch"] .xmb-bg{display:none}
-body[data-layout="switch"] .tiles{--tile:clamp(150px,16vw,250px);padding-top:16vh;padding-bottom:44px}
+body[data-layout="switch"] .tiles{--tile:clamp(130px,13.5vw,210px);padding-top:16vh;padding-bottom:44px}
 body[data-layout="switch"] .tile.sel{transform:scale(1.08);margin:0 calc(var(--tile) * .04)}
 body[data-layout="switch"] .tile-name{bottom:calc(100% + 18px);transform:translateX(-50%);font-size:16px}
 body[data-layout="switch"] :is(#heroEyebrow,#heroTitle,.chips,.home-desc){display:none}
@@ -640,7 +640,7 @@ body[data-layout="switch"] .home-actions{margin-top:0}
 /* PlayStation: small tiles, the game's art dominates */
 body[data-layout="ps5"] .xmb-bg{display:none}
 body[data-layout="ps5"] .scene{--scene-o:.95}
-body[data-layout="ps5"] .tiles{--tile:clamp(80px,7vw,112px);padding-top:56px}
+body[data-layout="ps5"] .tiles{--tile:clamp(70px,6vw,96px);padding-top:56px}
 body[data-layout="ps5"] .home-info{padding-top:12vh}
 body[data-layout="ps5"] .home-info h2{font-size:clamp(42px,6.8vw,92px)}
 
@@ -652,7 +652,7 @@ body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .home-
 body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .tiles{grid-row:2;flex-direction:column;align-items:flex-start;overflow-x:hidden;overflow-y:auto;max-height:calc(100vh - 250px)}
 body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .home-info{grid-row:2;align-self:center;padding-left:0}
 body[data-layout="xmb"] .scene{display:none}
-body[data-layout="xmb"] .tiles{--tile:62px;gap:8px;padding:8vh 0 8vh 20%}
+body[data-layout="xmb"] .tiles{--tile:52px;gap:8px;padding:8vh 0 8vh 20%}
 body[data-layout="xmb"] .tile{transform-origin:left center}
 body[data-layout="xmb"] .tile:not(.sel){opacity:.55}
 body[data-layout="xmb"] .tile.sel{transform:scale(1.35);margin:14px 0}
@@ -675,7 +675,7 @@ body:is([data-layout="list"],[data-layout="sidebar"]) .tile.add .cover{border-wi
 body:is([data-layout="list"],[data-layout="sidebar"]) .tile.add .cover .i{width:20px;height:20px}
 body[data-layout="list"] :is(.scene,.xmb-bg){display:none}
 body[data-layout="list"] .home{padding:0 clamp(16px,4vw,56px)}
-body[data-layout="list"] .hero-cover,body[data-layout="spotlight"] .hero-cover{display:block;width:min(230px,28vw);aspect-ratio:3/4;border-radius:18px;margin-bottom:22px;box-shadow:0 26px 50px -24px rgba(0,0,0,.9),0 0 0 1px var(--panel-border)}
+body[data-layout="list"] .hero-cover,body[data-layout="spotlight"] .hero-cover{display:block;width:min(220px,26vw);aspect-ratio:2/3;border-radius:18px;margin-bottom:22px;box-shadow:0 26px 50px -24px rgba(0,0,0,.9),0 0 0 1px var(--panel-border)}
 body[data-layout="sidebar"] .xmb-bg{display:none}
 body[data-layout="sidebar"] .home{grid-template-columns:minmax(260px,340px) minmax(0,1fr)}
 body[data-layout="sidebar"] .tiles{grid-row:1/3;max-height:none;height:calc(100vh - 76px);position:sticky;top:76px;background:var(--panel-bg);border-right:1px solid var(--panel-border);padding:18px 12px;box-shadow:var(--glow)}
@@ -684,7 +684,7 @@ body[data-layout="sidebar"] .home-dock{grid-column:2}
 body[data-layout="sidebar"] .home-info h2{font-size:clamp(36px,5.5vw,76px)}
 
 /* Cover Flow: 3D carousel */
-body[data-layout="coverflow"] .tiles{--tile:clamp(130px,13vw,200px);gap:0;padding:72px 44vw 70px;perspective:1100px}
+body[data-layout="coverflow"] .tiles{--tile:clamp(120px,11.5vw,180px);gap:0;padding:72px 44vw 70px;perspective:1100px}
 body[data-layout="coverflow"] .tile{margin:0 -14px;transform:rotateY(calc(clamp(-1, var(--off, 0), 1) * -58deg)) scale(.84);transition:transform .4s cubic-bezier(.2,.8,.2,1),margin .4s}
 body[data-layout="coverflow"] .tile.sel{transform:scale(1.2);margin:0 calc(var(--tile) * .32)}
 body[data-layout="coverflow"] .tile .cover{-webkit-box-reflect:below 6px linear-gradient(transparent 62%,rgba(255,255,255,.22))}
@@ -696,7 +696,6 @@ body[data-layout="coverflow"] .home-desc{margin-left:auto;margin-right:auto}
 body:is([data-layout="grid"],[data-layout="compact"]) .tiles{flex-wrap:wrap;overflow:visible;align-items:flex-start}
 body[data-layout="grid"] .home-info,body[data-layout="compact"] .home-info{order:-1;padding-top:2vh}
 body[data-layout="grid"] .tiles{--tile:clamp(120px,10.5vw,168px);row-gap:54px;padding-top:34px}
-body:is([data-layout="grid"],[data-layout="shelf"]) .tile{aspect-ratio:2/3}
 body[data-layout="shelf"] .tiles{--tile:clamp(120px,11vw,170px);padding-bottom:56px}
 body[data-layout="banners"] .tiles{--tile:clamp(230px,23vw,360px);padding-bottom:56px}
 body[data-layout="banners"] .tile{aspect-ratio:16/9}
@@ -704,14 +703,14 @@ body[data-layout="banners"] .tile-banner{display:block;position:absolute;inset:0
 body:is([data-layout="grid"],[data-layout="compact"]) .tile.sel{transform:scale(1.07);margin:0}
 body:is([data-layout="grid"],[data-layout="shelf"],[data-layout="banners"]) .tile-name{opacity:1;left:0;bottom:auto;top:calc(100% + 10px);transform:none;max-width:100%;color:var(--text);font-size:13px;text-align:left}
 body:is([data-layout="grid"],[data-layout="shelf"],[data-layout="banners"]) .tile.sel .tile-name{color:var(--accent-2);transform:scale(.88);transform-origin:top left}
-body[data-layout="compact"] .tiles{--tile:clamp(66px,5.6vw,92px);gap:10px;padding-top:24px}
+body[data-layout="compact"] .tiles{--tile:clamp(58px,4.8vw,80px);gap:10px;padding-top:24px}
 body[data-layout="compact"] .tile-name{display:none}
 body[data-layout="compact"] .home-info h2{font-size:clamp(26px,3.2vw,40px)}
 
 /* Spotlight: one big cover with details; the row becomes a thumbnail strip */
 body[data-layout="spotlight"] .home-info{order:-1;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:44px;align-items:center;max-width:1180px;padding-top:6vh}
 body[data-layout="spotlight"] .hero-cover{grid-row:1/span 6;width:min(300px,30vw);margin:0}
-body[data-layout="spotlight"] .tiles{--tile:64px;justify-content:center;padding-top:46px}
+body[data-layout="spotlight"] .tiles{--tile:52px;justify-content:center;padding-top:46px}
 body[data-layout="spotlight"] .tile:not(.sel){opacity:.5}
 body[data-layout="spotlight"] .tile-name{display:none}
 
@@ -759,7 +758,7 @@ body[data-layout="arcade"] :is(.round,.orb-c,.btn,.pill,.chip,.cats,.cats button
   .orb-c{border-radius:16px}
   .cats button{padding:0 11px;height:34px}
   .clock{font-size:15px}
-  .tiles{--tile:104px;padding:54px 22px 22px}
+  .tiles{--tile:92px;padding:54px 22px 22px}
   .home-info{padding:4px 16px 0}
   .pill{height:50px;padding:0 28px}
   .orb-c{width:52px;height:52px}
@@ -2679,9 +2678,9 @@ tickClock(); setInterval(tickClock, 10000);
 // Preview shapes in a 100×60 box: [kind, x, y, w, h]. Kinds: t tile, s selected tile, x text,
 // p play button, d dock button, r ribbon, b art backdrop, q side panel, g grid floor.
 const LAYOUTS = [
-  { id: 'console', name: 'Console', desc: 'PS5 row, Switch tiles, XMB ribbon', shapes: [['b'], ['r'], ['s', 6, 7, 13, 13], ['t', 22, 9, 10, 10], ['t', 34, 9, 10, 10], ['t', 46, 9, 10, 10], ['x', 6, 27, 30, 4], ['x', 6, 34, 18, 2], ['p', 6, 40, 15, 5], ['d', 38, 52], ['d', 46, 52], ['d', 54, 52]] },
-  { id: 'switch', name: 'Switch', desc: 'Big tiles on a clean background', shapes: [['s', 6, 12, 21, 21], ['t', 30, 14, 18, 18], ['t', 51, 14, 18, 18], ['t', 72, 14, 18, 18], ['p', 6, 39, 15, 5], ['d', 38, 52], ['d', 46, 52], ['d', 54, 52]] },
-  { id: 'ps5', name: 'PlayStation', desc: 'Small tiles, huge game art', shapes: [['b', 1], ['s', 6, 5, 8, 8], ['t', 16, 6, 7, 7], ['t', 25, 6, 7, 7], ['t', 34, 6, 7, 7], ['x', 6, 25, 46, 7], ['x', 6, 35, 24, 2], ['p', 6, 41, 17, 6]] },
+  { id: 'console', name: 'Console', desc: 'PS5 row, Switch tiles, XMB ribbon', shapes: [['b'], ['r'], ['s', 6, 7, 9.4, 13], ['t', 22, 9, 7.2, 10], ['t', 34, 9, 7.2, 10], ['t', 46, 9, 7.2, 10], ['x', 6, 27, 30, 4], ['x', 6, 34, 18, 2], ['p', 6, 40, 15, 5], ['d', 38, 52], ['d', 46, 52], ['d', 54, 52]] },
+  { id: 'switch', name: 'Switch', desc: 'Big tiles on a clean background', shapes: [['s', 6, 12, 15.1, 21], ['t', 30, 14, 13, 18], ['t', 51, 14, 13, 18], ['t', 72, 14, 13, 18], ['p', 6, 39, 15, 5], ['d', 38, 52], ['d', 46, 52], ['d', 54, 52]] },
+  { id: 'ps5', name: 'PlayStation', desc: 'Small tiles, huge game art', shapes: [['b', 1], ['s', 6, 5, 5.8, 8], ['t', 16, 6, 5, 7], ['t', 25, 6, 5, 7], ['t', 34, 6, 5, 7], ['x', 6, 25, 46, 7], ['x', 6, 35, 24, 2], ['p', 6, 41, 17, 6]] },
   { id: 'xmb', name: 'XMB', desc: 'RetroArch-style vertical list', shapes: [['r'], ['t', 18, 6, 6, 6], ['s', 17, 15, 10, 10], ['t', 18, 29, 6, 6], ['t', 18, 38, 6, 6], ['x', 29, 18, 16, 3], ['x', 27, 8, 12, 2], ['x', 27, 31, 12, 2], ['x', 58, 22, 30, 4], ['p', 58, 30, 15, 5]] },
   { id: 'coverflow', name: 'Cover Flow', desc: '3D carousel with reflections', shapes: [['t', 12, 16, 10, 13], ['t', 25, 14, 11, 15], ['s', 40, 9, 20, 22], ['t', 63, 14, 11, 15], ['t', 77, 16, 10, 13], ['x', 34, 37, 32, 3], ['p', 42, 43, 16, 5]] },
   { id: 'grid', name: 'Library Grid', desc: 'Portrait covers in a grid', shapes: [['x', 6, 6, 30, 4], ['p', 6, 12, 13, 4], ['s', 6, 22, 9, 13], ['t', 18, 22, 9, 13], ['t', 30, 22, 9, 13], ['t', 42, 22, 9, 13], ['t', 54, 22, 9, 13], ['t', 66, 22, 9, 13], ['t', 6, 40, 9, 13], ['t', 18, 40, 9, 13]] },
@@ -2689,10 +2688,10 @@ const LAYOUTS = [
   { id: 'banners', name: 'Big Picture', desc: 'Wide banner cards', shapes: [['b'], ['s', 6, 7, 30, 17], ['t', 39, 9, 26, 14], ['t', 68, 9, 26, 14], ['x', 6, 32, 30, 4], ['p', 6, 40, 15, 5]] },
   { id: 'list', name: 'List', desc: 'Compact playlist with a cover', shapes: [['t', 6, 8, 34, 5], ['s', 6, 15, 34, 6], ['t', 6, 23, 34, 5], ['t', 6, 30, 34, 5], ['t', 6, 37, 34, 5], ['t', 50, 8, 15, 20], ['x', 69, 10, 24, 4], ['p', 69, 18, 15, 5]] },
   { id: 'sidebar', name: 'Sidebar', desc: 'Games on the left, art on the right', shapes: [['b'], ['q', 0, 0, 34, 60], ['t', 4, 8, 26, 5], ['s', 4, 15, 26, 6], ['t', 4, 23, 26, 5], ['t', 4, 30, 26, 5], ['x', 42, 30, 34, 5], ['x', 42, 38, 20, 2], ['p', 42, 43, 15, 5]] },
-  { id: 'spotlight', name: 'Spotlight', desc: 'One big game at a time', shapes: [['b'], ['s', 8, 6, 20, 27], ['x', 34, 10, 40, 6], ['x', 34, 20, 28, 2], ['p', 34, 26, 16, 5], ['t', 30, 45, 6, 6], ['t', 38, 45, 6, 6], ['t', 46, 45, 6, 6], ['t', 54, 45, 6, 6]] },
-  { id: 'compact', name: 'Compact', desc: 'Dense grid of small tiles', shapes: [['s', 6, 6, 7, 7], ['t', 15, 6, 7, 7], ['t', 24, 6, 7, 7], ['t', 33, 6, 7, 7], ['t', 42, 6, 7, 7], ['t', 51, 6, 7, 7], ['t', 6, 15, 7, 7], ['t', 15, 15, 7, 7], ['x', 6, 30, 28, 4], ['p', 6, 38, 13, 5]] },
-  { id: 'minimal', name: 'Minimal', desc: 'No background art or ribbon', shapes: [['s', 6, 9, 12, 12], ['t', 21, 10, 10, 10], ['t', 33, 10, 10, 10], ['t', 45, 10, 10, 10], ['x', 6, 30, 26, 4], ['p', 6, 38, 13, 5]] },
-  { id: 'arcade', name: 'Arcade', desc: 'Neon cabinet with scanlines', shapes: [['g'], ['s', 6, 7, 13, 13], ['t', 22, 9, 10, 10], ['t', 34, 9, 10, 10], ['t', 46, 9, 10, 10], ['x', 6, 27, 34, 5], ['p', 6, 37, 15, 5]] }
+  { id: 'spotlight', name: 'Spotlight', desc: 'One big game at a time', shapes: [['b'], ['s', 8, 6, 20, 27], ['x', 34, 10, 40, 6], ['x', 34, 20, 28, 2], ['p', 34, 26, 16, 5], ['t', 30, 45, 4.3, 6], ['t', 38, 45, 4.3, 6], ['t', 46, 45, 4.3, 6], ['t', 54, 45, 4.3, 6]] },
+  { id: 'compact', name: 'Compact', desc: 'Dense grid of small tiles', shapes: [['s', 6, 6, 5, 7], ['t', 15, 6, 5, 7], ['t', 24, 6, 5, 7], ['t', 33, 6, 5, 7], ['t', 42, 6, 5, 7], ['t', 51, 6, 5, 7], ['t', 6, 15, 5, 7], ['t', 15, 15, 5, 7], ['x', 6, 30, 28, 4], ['p', 6, 38, 13, 5]] },
+  { id: 'minimal', name: 'Minimal', desc: 'No background art or ribbon', shapes: [['s', 6, 9, 8.6, 12], ['t', 21, 10, 7.2, 10], ['t', 33, 10, 7.2, 10], ['t', 45, 10, 7.2, 10], ['x', 6, 30, 26, 4], ['p', 6, 38, 13, 5]] },
+  { id: 'arcade', name: 'Arcade', desc: 'Neon cabinet with scanlines', shapes: [['g'], ['s', 6, 7, 9.4, 13], ['t', 22, 9, 7.2, 10], ['t', 34, 9, 7.2, 10], ['t', 46, 9, 7.2, 10], ['x', 6, 27, 34, 5], ['p', 6, 37, 15, 5]] }
 ];
 function layoutSVG(shapes) {
   const out = [];

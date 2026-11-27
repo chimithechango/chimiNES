@@ -9,6 +9,20 @@ chimiNES is a lightweight, browser-based NES emulator built with HTML, CSS, and 
 
 the frontend provides an interactive interface for loading ROMs, configuring controls, adjusting display settings, and managing experimental features. JSNES handles the core NES emulation, while chimiNES builds on top of it with additional interface customization, rendering options, and input functionality.
 
+what's new in the remaster
+
+webgpu display pipeline: the game screen is drawn by a WGSL shader on the GPU. it handles sharp pixel scaling, scanlines, screen curvature, a phosphor mask, bloom, vignette, color fringing and every color mode in one pass. browsers without webgpu fall back to canvas 2d automatically (with scanlines, vignette and color modes).
+
+effect presets: clean, soft crt, crt and arcade, each with sliders to fine-tune.
+
+simpler layout: one big screen with a control dock under it, a library / saves panel on the side, and everything else in a settings drawer you can keep open while watching the effect change live.
+
+save states with thumbnails, relative timestamps and one-key shortcuts (F2 save, F4 load).
+
+ambient glow, accent colors and auto / dark / light / black modes replace the long theme list.
+
+bug fixes: typing in the cheat boxes no longer triggers game buttons (letters like A, S, Z, X were blocked), keys no longer get stuck when the window loses focus, the "auto-start" toggle actually works now, audio latency stays capped at high speeds, the emulator no longer spirals when it falls behind, autosave no longer reads the whole database every second, a failed rom load no longer leaves the previous game half-broken, and switching games autosaves the one you were playing.
+
 features
 
 JSNES integration: uses the JSNES JavaScript library to emulate NES hardware and run compatible games in the browser.

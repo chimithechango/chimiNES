@@ -25,6 +25,8 @@ steamgriddb artwork: search steamgriddb right from game details and pick a cover
 
 site owner, one-time setup: steamgriddb doesn't accept calls straight from web pages, so chimiNES talks to it through a tiny relay. deploy it once with `npx wrangler deploy` inside steamgriddb-proxy/ and put the printed url in `DEFAULT_SGDB_PROXY` near the top of the steamgriddb section in index.html. see steamgriddb-proxy/README.md.
 
+menu sound effects: clicks, blips and chimes for navigating, selecting, going back, opening and closing panels, toggles, sliders, launching a game, pausing, saving and errors. they're synthesized live (no sound files), come in "8-bit" and "soft" styles, and can be turned off or turned down in settings → play → menu sounds.
+
 28 full themes: every original chimiNES theme (neon blue is still the default) plus steam deck, epic night, synthwave, famicom, pocket green, paper and snow. each theme recolors the whole interface, not just the accent. the classic glowing-panel look is back as the "glow" style, with a "flat" style as an option. ambient glow lights the page with the game's colors.
 
 bug fixes: typing in the cheat boxes no longer triggers game buttons (letters like A, S, Z, X were blocked), keys no longer get stuck when the window loses focus, the "auto-start" toggle actually works now, audio latency stays capped at high speeds, the emulator no longer spirals when it falls behind, autosave no longer reads the whole database every second, a failed rom load no longer leaves the previous game half-broken, and switching games autosaves the one you were playing.

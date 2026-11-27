@@ -122,13 +122,8 @@ body[data-view="play"] .scene,body[data-view="saves"] .scene{--scene-o:.22}
   background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 70%,transparent),transparent);
 }
 .sb-left{display:flex;align-items:center;gap:12px;min-width:0}
-.avatar{
-  width:46px;height:46px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;
-  background:var(--panel-bg);border:2px solid var(--accent-2);
-  box-shadow:0 0 18px color-mix(in srgb,var(--accent-2) 40%,transparent);
-}
-.avatar img{width:32px;height:22px;object-fit:contain}
-.wordmark{font-weight:900;font-size:22px;letter-spacing:-.04em;white-space:nowrap}
+.brand-logo{width:86px;height:50px;flex:0 0 auto;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(0,0,0,.45))}
+.wordmark{font-weight:900;font-size:28px;letter-spacing:-.04em;white-space:nowrap}
 .wordmark b{color:#e8323f;font-weight:900}
 .cats{display:flex;gap:4px;padding:5px;border-radius:99px;background:color-mix(in srgb,var(--panel) 55%,transparent);border:1px solid var(--border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .cats button{position:relative;height:38px;padding:0 20px;border:0;border-radius:99px;background:transparent;color:var(--muted);font-weight:750;font-size:14px;white-space:nowrap;transition:background .2s,color .2s}
@@ -139,7 +134,7 @@ body[data-view="play"] .scene,body[data-view="saves"] .scene{--scene-o:.22}
 .clock{font:750 18px/1 var(--font);color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .sb-ico{display:inline-flex;align-items:center;gap:5px}
 .sb-ico .i{width:20px;height:20px}
-.round{width:42px;height:42px;padding:0;border-radius:50%;display:inline-grid;place-items:center;border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--text);box-shadow:var(--glow);transition:transform .15s,box-shadow .15s,border-color .15s}
+.round{width:42px;height:42px;padding:0;border-radius:13px;display:inline-grid;place-items:center;border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--text);box-shadow:var(--glow);transition:transform .15s,box-shadow .15s,border-color .15s}
 .round:hover,.round:focus-visible{border-color:var(--accent-2);box-shadow:0 0 0 2px var(--accent-2),0 0 18px color-mix(in srgb,var(--accent-2) 50%,transparent);outline:0}
 .round .i{width:20px;height:20px}
 .view{width:100%;flex:1}
@@ -186,14 +181,14 @@ body[data-view="play"] .scene,body[data-view="saves"] .scene{--scene-o:.22}
 .chip{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:99px;background:color-mix(in srgb,var(--panel) 55%,transparent);border:1px solid var(--border);color:var(--text);font-size:12.5px;font-weight:650;backdrop-filter:blur(8px)}
 .home-desc{margin:0 0 4px;max-width:640px;color:var(--muted);font-size:15px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .home-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:22px}
-.pill{height:54px;padding:0 38px;border-radius:99px;font-size:16.5px;font-weight:800;letter-spacing:.01em}
+.pill{height:54px;padding:0 38px;border-radius:16px;font-size:16.5px;font-weight:800;letter-spacing:.01em}
 .pill .i{width:20px;height:20px}
-.home-actions .round{width:54px;height:54px}
+.home-actions .round{width:54px;height:54px;border-radius:16px}
 
 .home-dock{margin-top:auto;display:flex;justify-content:center;flex-wrap:wrap;gap:clamp(14px,2.6vw,34px);padding:30px 16px 34px}
 .orb{display:grid;justify-items:center;gap:9px;padding:0;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.02em}
 .orb-c{
-  width:62px;height:62px;border-radius:50%;display:grid;place-items:center;color:var(--text);
+  width:62px;height:62px;border-radius:19px;display:grid;place-items:center;color:var(--text);
   background:var(--panel-bg);border:1px solid var(--panel-border);box-shadow:var(--glow),0 10px 24px -14px rgba(0,0,0,.8);
   transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,border-color .18s;
 }
@@ -421,7 +416,7 @@ dialog.modal.sgdb[open]{display:flex}
 .empty p{margin:0 0 6px;color:#9aa1ae;font-size:13px}
 @keyframes float{50%{transform:translateY(-6px)}}
 .veil{z-index:4;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);cursor:pointer;color:#fff}
-.veil-btn{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 30px -6px var(--accent);border:0;margin:0 auto 10px}
+.veil-btn{width:68px;height:68px;border-radius:20px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 30px -6px var(--accent);border:0;margin:0 auto 10px}
 .veil-btn .i{width:28px;height:28px;margin-left:3px}
 .veil small{display:block;color:#c9ced8;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:11px}
 .fps{position:absolute;top:10px;left:10px;z-index:5;padding:3px 8px;border-radius:7px;background:rgba(0,0,0,.65);color:#7dffb2;font:700 11.5px/1.4 var(--mono);pointer-events:none}
@@ -442,7 +437,7 @@ dialog.modal.sgdb[open]{display:flex}
 .dot.err{background:var(--err)}
 .controls{display:flex;align-items:center;gap:6px}
 .vsep{width:1px;height:22px;background:var(--border-2);margin:0 4px}
-.play-btn{width:42px;height:42px;border-radius:50%;padding:0}
+.play-btn{width:42px;height:42px;border-radius:13px;padding:0}
 .play-btn .i{width:20px;height:20px}
 .chip-select{
   appearance:none;-webkit-appearance:none;height:38px;padding:0 26px 0 12px;border-radius:var(--radius-sm);
@@ -602,6 +597,151 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
 .stage{box-shadow:0 0 0 1px var(--panel-border),0 0 140px 6px var(--ambient),var(--glow),0 40px 80px -40px rgba(0,0,0,.9)}
 
 /* ============================================================
+   Layout picker + layout variants (body[data-layout])
+   ============================================================ */
+dialog.modal.layouts{width:min(1000px,calc(100vw - 24px));max-height:min(620px,calc(100vh - 24px));margin:auto auto 18px;flex-direction:column}
+dialog.modal.layouts[open]{display:flex}
+dialog.modal.layouts::backdrop{background:rgba(0,0,0,.25);backdrop-filter:none;-webkit-backdrop-filter:none}
+.layouts .modal-body{flex:1;min-height:0}
+.layout-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding-bottom:18px}
+.layout-card{display:grid;gap:4px;padding:8px 8px 10px;border-radius:16px;border:1px solid var(--border);background:var(--surface-2);text-align:left;color:var(--muted);transition:border-color .15s,box-shadow .15s,transform .15s}
+.layout-card svg{display:block;width:100%;aspect-ratio:100/60;border-radius:10px;margin-bottom:4px}
+.layout-card b{color:var(--text);font-size:13.5px}
+.layout-card small{font-size:11.5px;line-height:1.35}
+.layout-card:hover,.layout-card:focus-visible{border-color:var(--accent-2);outline:0;transform:translateY(-2px)}
+.layout-card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--glow)}
+.layout-card .lbg{fill:color-mix(in srgb,var(--bg) 80%,var(--panel))}
+.layout-card .lb{fill:var(--accent)}
+.layout-card .lr{fill:var(--accent-2);opacity:.28}.layout-card .lr2{fill:none;stroke:var(--accent-2);stroke-width:.6;opacity:.6}
+.layout-card .lg{fill:none;stroke:var(--accent-2);stroke-width:.5;opacity:.7}
+.layout-card .lq{fill:var(--panel);opacity:.9}
+.layout-card .lt{fill:color-mix(in srgb,var(--panel) 70%,var(--text))}
+.layout-card .ls{fill:color-mix(in srgb,var(--panel) 60%,var(--text));stroke:var(--accent-2);stroke-width:1.2}
+.layout-card .lx{fill:var(--text);opacity:.75}
+.layout-card .lp{fill:var(--accent)}
+
+.hero-cover{display:none}
+.hero-cover .cover{width:100%;height:100%;border-radius:inherit}
+.tile-banner{display:none}
+.tile{z-index:var(--z,1)}
+.tile.sel{z-index:200}
+
+/* Switch: big tiles, flat background, no info text */
+body[data-layout="switch"] .scene,body[data-layout="switch"] .xmb-bg{display:none}
+body[data-layout="switch"] .tiles{--tile:clamp(150px,16vw,250px);padding-top:16vh;padding-bottom:44px}
+body[data-layout="switch"] .tile.sel{transform:scale(1.08);margin:0 calc(var(--tile) * .04)}
+body[data-layout="switch"] .tile-name{bottom:calc(100% + 18px);transform:translateX(-50%);font-size:16px}
+body[data-layout="switch"] :is(#heroEyebrow,#heroTitle,.chips,.home-desc){display:none}
+body[data-layout="switch"] .home-actions{margin-top:0}
+
+/* PlayStation: small tiles, the game's art dominates */
+body[data-layout="ps5"] .xmb-bg{display:none}
+body[data-layout="ps5"] .scene{--scene-o:.95}
+body[data-layout="ps5"] .tiles{--tile:clamp(80px,7vw,112px);padding-top:56px}
+body[data-layout="ps5"] .home-info{padding-top:12vh}
+body[data-layout="ps5"] .home-info h2{font-size:clamp(42px,6.8vw,92px)}
+
+/* XMB: vertical list, names beside the icons */
+body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .home{display:grid;grid-template-columns:minmax(260px,42%) minmax(0,1fr);grid-template-rows:auto 1fr auto;column-gap:4vw}
+body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) :is(.home-search,.home-dock){grid-column:1/-1}
+body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .home-search{grid-row:1}
+body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .home-dock{grid-row:3}
+body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .tiles{grid-row:2;flex-direction:column;align-items:flex-start;overflow-x:hidden;overflow-y:auto;max-height:calc(100vh - 250px)}
+body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .home-info{grid-row:2;align-self:center;padding-left:0}
+body[data-layout="xmb"] .scene{display:none}
+body[data-layout="xmb"] .tiles{--tile:62px;gap:8px;padding:8vh 0 8vh 20%}
+body[data-layout="xmb"] .tile{transform-origin:left center}
+body[data-layout="xmb"] .tile:not(.sel){opacity:.55}
+body[data-layout="xmb"] .tile.sel{transform:scale(1.35);margin:14px 0}
+body[data-layout="xmb"] .tile.sel::after{display:none}
+body[data-layout="xmb"] .tile-name{opacity:1;left:calc(100% + 16px);bottom:auto;top:50%;transform:translateY(-50%);transform-origin:left center;max-width:24vw;color:var(--text);font-size:15px}
+body[data-layout="xmb"] .tile.sel .tile-name{transform:translateY(-50%) scale(.82);color:var(--accent-2)}
+
+/* List / Sidebar: rows with small covers */
+body:is([data-layout="list"],[data-layout="sidebar"]) .tiles{--tile:100%;align-items:stretch;gap:4px;padding:18px 8px}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile{width:100%;aspect-ratio:auto;height:60px;flex:0 0 auto;display:flex;align-items:center;border-radius:14px;background:color-mix(in srgb,var(--panel) 45%,transparent)}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile .cover{position:relative;inset:auto;width:44px;height:44px;margin-left:8px;border-radius:10px;flex:0 0 auto}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile .cover-initials{font-size:15px}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile .cover.gen::before,body:is([data-layout="list"],[data-layout="sidebar"]) .tile .cover.gen::after{display:none}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile-name{position:static;opacity:1;transform:none;margin-left:14px;color:var(--text);font-size:14.5px;max-width:none;text-align:left;text-shadow:none}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile.sel{transform:none;margin:0;background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent-2)}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile.sel::after{display:none}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile-badge{left:auto;right:12px;bottom:auto;top:50%;transform:translateY(-50%)}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile-fav{top:50%;right:auto;left:42px;transform:translateY(-120%)}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile.add .cover{border-width:1px}
+body:is([data-layout="list"],[data-layout="sidebar"]) .tile.add .cover .i{width:20px;height:20px}
+body[data-layout="list"] :is(.scene,.xmb-bg){display:none}
+body[data-layout="list"] .home{padding:0 clamp(16px,4vw,56px)}
+body[data-layout="list"] .hero-cover,body[data-layout="spotlight"] .hero-cover{display:block;width:min(230px,28vw);aspect-ratio:3/4;border-radius:18px;margin-bottom:22px;box-shadow:0 26px 50px -24px rgba(0,0,0,.9),0 0 0 1px var(--panel-border)}
+body[data-layout="sidebar"] .xmb-bg{display:none}
+body[data-layout="sidebar"] .home{grid-template-columns:minmax(260px,340px) minmax(0,1fr)}
+body[data-layout="sidebar"] .tiles{grid-row:1/3;max-height:none;height:calc(100vh - 76px);position:sticky;top:76px;background:var(--panel-bg);border-right:1px solid var(--panel-border);padding:18px 12px;box-shadow:var(--glow)}
+body[data-layout="sidebar"] .home-search{grid-column:2}
+body[data-layout="sidebar"] .home-dock{grid-column:2}
+body[data-layout="sidebar"] .home-info h2{font-size:clamp(36px,5.5vw,76px)}
+
+/* Cover Flow: 3D carousel */
+body[data-layout="coverflow"] .tiles{--tile:clamp(130px,13vw,200px);gap:0;padding:72px 44vw 70px;perspective:1100px}
+body[data-layout="coverflow"] .tile{margin:0 -14px;transform:rotateY(calc(clamp(-1, var(--off, 0), 1) * -58deg)) scale(.84);transition:transform .4s cubic-bezier(.2,.8,.2,1),margin .4s}
+body[data-layout="coverflow"] .tile.sel{transform:scale(1.2);margin:0 calc(var(--tile) * .32)}
+body[data-layout="coverflow"] .tile .cover{-webkit-box-reflect:below 6px linear-gradient(transparent 62%,rgba(255,255,255,.22))}
+body[data-layout="coverflow"] .home-info{margin:0 auto;text-align:center}
+body[data-layout="coverflow"] :is(.chips,.home-actions){justify-content:center}
+body[data-layout="coverflow"] .home-desc{margin-left:auto;margin-right:auto}
+
+/* Library grid / Shelf / Big Picture / Compact */
+body:is([data-layout="grid"],[data-layout="compact"]) .tiles{flex-wrap:wrap;overflow:visible;align-items:flex-start}
+body[data-layout="grid"] .home-info,body[data-layout="compact"] .home-info{order:-1;padding-top:2vh}
+body[data-layout="grid"] .tiles{--tile:clamp(120px,10.5vw,168px);row-gap:54px;padding-top:34px}
+body:is([data-layout="grid"],[data-layout="shelf"]) .tile{aspect-ratio:2/3}
+body[data-layout="shelf"] .tiles{--tile:clamp(120px,11vw,170px);padding-bottom:56px}
+body[data-layout="banners"] .tiles{--tile:clamp(230px,23vw,360px);padding-bottom:56px}
+body[data-layout="banners"] .tile{aspect-ratio:16/9}
+body[data-layout="banners"] .tile-banner{display:block;position:absolute;inset:0;border-radius:inherit;background:center/cover no-repeat}
+body:is([data-layout="grid"],[data-layout="compact"]) .tile.sel{transform:scale(1.07);margin:0}
+body:is([data-layout="grid"],[data-layout="shelf"],[data-layout="banners"]) .tile-name{opacity:1;left:0;bottom:auto;top:calc(100% + 10px);transform:none;max-width:100%;color:var(--text);font-size:13px;text-align:left}
+body:is([data-layout="grid"],[data-layout="shelf"],[data-layout="banners"]) .tile.sel .tile-name{color:var(--accent-2);transform:scale(.88);transform-origin:top left}
+body[data-layout="compact"] .tiles{--tile:clamp(66px,5.6vw,92px);gap:10px;padding-top:24px}
+body[data-layout="compact"] .tile-name{display:none}
+body[data-layout="compact"] .home-info h2{font-size:clamp(26px,3.2vw,40px)}
+
+/* Spotlight: one big cover with details; the row becomes a thumbnail strip */
+body[data-layout="spotlight"] .home-info{order:-1;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:44px;align-items:center;max-width:1180px;padding-top:6vh}
+body[data-layout="spotlight"] .hero-cover{grid-row:1/span 6;width:min(300px,30vw);margin:0}
+body[data-layout="spotlight"] .tiles{--tile:64px;justify-content:center;padding-top:46px}
+body[data-layout="spotlight"] .tile:not(.sel){opacity:.5}
+body[data-layout="spotlight"] .tile-name{display:none}
+
+/* Minimal */
+body[data-layout="minimal"] :is(.scene,.xmb-bg,.chips,.home-desc){display:none}
+body[data-layout="minimal"] .tile.sel::after{animation:none;border-width:2px;box-shadow:none}
+
+/* Arcade: neon cabinet */
+body[data-layout="arcade"]{font-family:var(--mono)}
+body[data-layout="arcade"] :is(.scene,.xmb-bg){display:none}
+body[data-layout="arcade"]::before{content:"";position:fixed;left:-50%;right:-50%;top:48%;bottom:-20%;z-index:-2;pointer-events:none;
+  background:linear-gradient(var(--accent-2) 1px,transparent 1px) 0 0/100% 44px,linear-gradient(90deg,var(--accent-2) 1px,transparent 1px) 0 0/44px 100%;
+  opacity:.22;transform:perspective(420px) rotateX(62deg);transform-origin:top center}
+body[data-layout="arcade"]::after{content:"";position:fixed;inset:0;z-index:40;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px)}
+body[data-layout="arcade"] :is(.home-info h2,.home-eyebrow,.wordmark){text-transform:uppercase;letter-spacing:.02em;text-shadow:0 0 16px var(--accent),0 0 2px #fff}
+body[data-layout="arcade"] .tile .cover{border-radius:6px;box-shadow:0 0 0 2px var(--accent),0 0 18px color-mix(in srgb,var(--accent) 50%,transparent)}
+body[data-layout="arcade"] .tile,body[data-layout="arcade"] .tile.sel::after{border-radius:8px}
+body[data-layout="arcade"] :is(.round,.orb-c,.btn,.pill,.chip,.cats,.cats button){border-radius:6px}
+
+@media (max-width:760px){
+  body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .home{display:flex}
+  body:is([data-layout="xmb"],[data-layout="list"],[data-layout="sidebar"]) .tiles{max-height:46vh;height:auto;position:static;border-right:0}
+  body[data-layout="xmb"] .tiles{padding-left:12px}
+  body[data-layout="xmb"] .tile-name{max-width:60vw}
+  body[data-layout="spotlight"] .home-info{grid-template-columns:1fr}
+  body[data-layout="spotlight"] .hero-cover{grid-row:auto;width:46vw;margin-bottom:18px}
+}
+
+/* Dock under the game: home · title · play · quick menu */
+.dock .round{flex:0 0 auto}
+.dock .controls{gap:8px}
+
+/* ============================================================
    Responsive
    ============================================================ */
 @media (max-width:900px){
@@ -612,7 +752,8 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
 @media (max-width:640px){
   .hide-sm{display:none!important}
   .statusbar{height:64px;padding:0 12px}
-  .avatar{width:38px;height:38px}
+  .brand-logo{width:60px;height:38px}
+  .orb-c{border-radius:16px}
   .cats button{padding:0 11px;height:34px}
   .clock{font-size:15px}
   .tiles{--tile:104px;padding:54px 22px 22px}
@@ -675,7 +816,7 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
 <div class="app" id="app">
   <header class="statusbar">
     <div class="sb-left">
-      <div class="avatar"><img src="controller.png" alt="" onerror="this.remove()"></div>
+      <img class="brand-logo" src="controller.png" alt="" onerror="this.remove()">
       <span class="wordmark hide-sm">chimi<b>NES</b></span>
     </div>
     <nav class="cats" aria-label="Main">
@@ -684,9 +825,7 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
       <button data-view="saves">Save States</button>
     </nav>
     <div class="sb-right">
-      <span class="badge hide-sm" id="rendererBadge" title="Display renderer">starting…</span>
       <span class="sb-ico" id="padInd" hidden title="Controller connected"><svg class="i"><use href="#i-pad"/></svg></span>
-      <span class="sb-ico hide-sm" id="battery" hidden></span>
       <span class="clock" id="clock">--:--</span>
       <button class="round" id="topSettingsBtn" aria-label="Settings" title="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
     </div>
@@ -698,6 +837,7 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
       <label class="search home-search" id="searchWrap" hidden><svg class="i"><use href="#i-search"/></svg><input type="search" id="sideSearch" placeholder="Search your games" autocomplete="off" spellcheck="false" aria-label="Search games"></label>
       <div class="tiles" id="tileRow" role="listbox" aria-label="Games"></div>
       <div class="home-info">
+        <div class="hero-cover" id="heroCover"></div>
         <div class="home-eyebrow" id="heroEyebrow">Get started</div>
         <h2 id="heroTitle">Welcome to chimiNES</h2>
         <div class="chips" id="heroMeta"></div>
@@ -706,30 +846,18 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
           <button class="btn btn-primary pill" id="heroPlay"><svg class="i fill"><use href="#i-play"/></svg><span id="heroPlayLabel">Play</span></button>
           <button class="round" id="heroSave" hidden aria-label="Load latest save" title="Load latest save"><svg class="i"><use href="#i-load"/></svg></button>
           <button class="round" id="heroInfo" hidden aria-label="Game details" title="Game details & cover art"><svg class="i"><use href="#i-edit"/></svg></button>
-          <button class="round" id="heroRemove" hidden aria-label="Remove from library" title="Remove from library"><svg class="i"><use href="#i-trash"/></svg></button>
         </div>
       </div>
       <nav class="home-dock" aria-label="Home menu">
-        <button class="orb accent" id="importRomBtn"><span class="orb-c"><svg class="i"><use href="#i-plus"/></svg></span>Add ROM</button>
-        <button class="orb" id="orbSaves"><span class="orb-c"><svg class="i"><use href="#i-save"/></svg></span>Save States</button>
         <button class="orb" id="searchBtn"><span class="orb-c"><svg class="i"><use href="#i-search"/></svg></span>Search</button>
         <button class="orb" id="sortBtn"><span class="orb-c"><svg class="i"><use href="#i-sort"/></svg></span><span id="sortLabel">Recent</span></button>
-        <button class="orb" id="orbThemes"><span class="orb-c"><svg class="i"><use href="#i-palette"/></svg></span>Themes</button>
-        <button class="orb" id="orbControls"><span class="orb-c"><svg class="i"><use href="#i-pad"/></svg></span>Controllers</button>
-        <button class="orb" id="settingsBtn"><span class="orb-c"><svg class="i"><use href="#i-sliders"/></svg></span>Settings</button>
+        <button class="orb" id="layoutBtn"><span class="orb-c"><svg class="i"><use href="#i-grid"/></svg></span>Layouts</button>
       </nav>
     </div>
   </section>
 
   <!-- Now Playing -->
   <section class="view" data-viewpane="play" hidden>
-    <div class="play-head">
-      <button class="round" id="homeBtn" aria-label="Home" title="Home"><svg class="i"><use href="#i-home"/></svg></button>
-      <h1 id="viewTitle">Now Playing</h1>
-      <div class="grow"></div>
-      <button class="btn" id="gameInfoBtn" hidden title="Edit details & cover art"><svg class="i"><use href="#i-edit"/></svg><span class="hide-sm">Game details</span></button>
-      <button class="btn" id="qmBtn" title="Quick Menu (Esc · Start+Select)"><svg class="i"><use href="#i-menu"/></svg><span class="hide-sm">Quick Menu</span></button>
-    </div>
     <div class="play-wrap">
       <div class="player" id="player">
         <div class="stage" id="stage">
@@ -767,28 +895,16 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
         </div>
 
         <div class="dock">
+          <button class="round" id="homeBtn" aria-label="Home" title="Home"><svg class="i"><use href="#i-home"/></svg></button>
           <div class="now">
             <div class="now-title" id="gameTitle">No game loaded</div>
             <div class="now-sub"><span class="dot" id="statusDot"></span><span id="statusText">Waiting for ROM</span></div>
           </div>
           <div class="controls">
             <button class="btn btn-primary play-btn" id="pauseBtn" aria-label="Play" title="Play / pause (Space)"><svg class="i fill"><use href="#i-play"/></svg></button>
-            <button class="btn icon-btn btn-ghost" id="resetBtn" aria-label="Reset" title="Reset console"><svg class="i"><use href="#i-reset"/></svg></button>
-            <span class="vsep"></span>
-            <button class="btn icon-btn btn-ghost" id="saveBtn" aria-label="Save state" title="Save state (F2)"><svg class="i"><use href="#i-save"/></svg></button>
-            <button class="btn icon-btn btn-ghost" id="loadStateBtn" aria-label="Load latest state" title="Load latest state (F4)"><svg class="i"><use href="#i-load"/></svg></button>
-            <span class="vsep"></span>
-            <select class="chip-select" id="speed" aria-label="Playback speed" title="Playback speed">
-              <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option>
-            </select>
-            <button class="btn icon-btn btn-ghost" id="muteBtn" aria-label="Mute" title="Sound on / off (M)"><svg class="i"><use href="#i-vol"/></svg></button>
-            <button class="btn icon-btn btn-ghost" id="fullscreenBtn" aria-label="Fullscreen" title="Fullscreen (F)"><svg class="i"><use href="#i-full"/></svg></button>
+            <button class="btn" id="qmBtn" title="Quick Menu (Esc · Start+Select)"><svg class="i"><use href="#i-menu"/></svg><span class="hide-sm">Quick Menu</span></button>
           </div>
         </div>
-      </div>
-      <div class="play-saves" id="playSaves" hidden>
-        <div class="shelf-head"><h3>Save states <b id="playSaveCount"></b></h3></div>
-        <div class="save-row" id="playSaveRow"></div>
       </div>
     </div>
   </section>
@@ -976,6 +1092,14 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
 <input type="file" id="stateFile" accept=".json,application/json">
 <input type="file" id="imageFile" accept="image/*">
 
+<dialog class="modal layouts" id="layoutDialog" aria-labelledby="layoutTitle">
+  <div class="modal-head">
+    <h2 id="layoutTitle">Layouts</h2>
+    <button type="button" class="btn icon-btn btn-ghost" id="layoutClose" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="modal-body"><div class="layout-grid" id="layoutGrid"></div></div>
+</dialog>
+
 <dialog class="modal sgdb" id="sgdbDialog" aria-labelledby="sgdbTitle">
   <div class="modal-head">
     <h2 id="sgdbTitle">SteamGridDB <span class="tag" id="sgdbKind">covers</span></h2>
@@ -1048,6 +1172,7 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
 const $ = id => document.getElementById(id);
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const NES_W = 256, NES_H = 240, NES_FPS = 60.0988;
+const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
 let view = 'library';
 
 /* ------------------------------------------------------------------
@@ -1445,10 +1570,6 @@ async function initRenderer(allowGPU = true) {
   }
   if (!renderer) renderer = createCanvasRenderer(canvas);
   stage.classList.toggle('cpu-fx', !renderer.supportsAll);
-  const badge = $('rendererBadge');
-  badge.textContent = renderer.kind === 'webgpu' ? 'WebGPU' : 'Canvas 2D';
-  badge.className = 'badge hide-sm ' + (renderer.kind === 'webgpu' ? 'gpu' : 'cpu');
-  badge.title = renderer.kind === 'webgpu' ? 'Rendering with WebGPU shaders' : 'WebGPU is unavailable; using the Canvas 2D fallback (fewer effects)';
   $('aboutRenderer').textContent = renderer.label;
   renderer.upload(frame);
   syncFxAvailability();
@@ -1584,7 +1705,6 @@ function syncPlayUI() {
   $('emptyState').hidden = romLoaded;
   if (!romLoaded) setStatus('Waiting for ROM', '');
   else setStatus(paused ? 'Paused' : 'Running', paused ? 'paused' : 'on');
-  ['resetBtn', 'saveBtn'].forEach(id => $(id).disabled = !romLoaded);
   if (typeof renderNowCard === 'function' && roms !== undefined) { renderNowCard(); if (view === 'library') renderLibrary(); }
 }
 function setPaused(p) {
@@ -1773,7 +1893,7 @@ async function refreshData() {
   try { states = (await dbOp('readonly', s => s.getAll(), STATE_STORE)).map(meta); } catch (e) { states = null; }
   renderAll();
 }
-function renderAll() { renderLibrary(); renderSaves(); renderPlaySaves(); renderNowCard(); }
+function renderAll() { renderLibrary(); renderSaves(); renderNowCard(); }
 
 function coverEl(name, cls) {
   const el = document.createElement('div'); el.className = 'cover ' + (cls || '');
@@ -1835,7 +1955,9 @@ function tileFor(item) {
   const t = document.createElement('button'); t.type = 'button'; t.className = 'tile'; t.dataset.name = item.name;
   t.setAttribute('role', 'option'); t.title = displayName(item);
   const name = document.createElement('span'); name.className = 'tile-name'; name.textContent = displayName(item);
-  t.append(coverEl(item.name), name);
+  t.append(coverEl(item.name));
+  if (artOk(item.banner)) { const bn = document.createElement('span'); bn.className = 'tile-banner'; bn.style.backgroundImage = `url("${item.banner}")`; t.append(bn); }
+  t.append(name);
   if (item.favorite) { const f = document.createElement('span'); f.className = 'tile-fav'; f.textContent = '★'; t.append(f); }
   if (isCurrent(item.name)) { const b = document.createElement('span'); b.className = 'tile-badge'; b.textContent = paused ? 'Paused' : 'Playing'; t.append(b); }
   t.addEventListener('click', () => { if (homeSel === item.name) playRom(item); else selectTile(item.name); });
@@ -1861,8 +1983,13 @@ function renderLibrary() {
 }
 function markSelected(scroll) {
   let selEl = null;
-  for (const t of $('tileRow').children) { const on = t.dataset.name === homeSel; t.classList.toggle('sel', on); t.setAttribute('aria-selected', String(on)); if (on) selEl = t; }
-  if (selEl && scroll) selEl.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+  const kids = [...$('tileRow').children];
+  const si = Math.max(0, kids.findIndex(t => t.dataset.name === homeSel));
+  kids.forEach((t, i) => { const on = i === si && t.dataset.name === homeSel; t.classList.toggle('sel', on); t.setAttribute('aria-selected', String(on)); t.style.setProperty('--off', i - si); t.style.setProperty('--z', 100 - Math.abs(i - si)); if (on) selEl = t; });
+  if (selEl && scroll) {
+    const center = ['coverflow', 'spotlight'].includes(document.body.dataset.layout);
+    selEl.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', inline: center ? 'center' : 'nearest', block: 'nearest' });
+  }
   return selEl;
 }
 function selectTile(name, { scroll = true, focus = false } = {}) {
@@ -1876,7 +2003,9 @@ function renderHomeInfo() {
   const chip = text => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = text; metaBox.append(c); };
   const item = homeSel && homeSel !== '__add' ? romByName(homeSel) : null;
   heroName = item ? item.name : null;
-  ['heroSave', 'heroInfo', 'heroRemove'].forEach(id => $(id).hidden = !item);
+  ['heroSave', 'heroInfo'].forEach(id => $(id).hidden = !item);
+  const hc = $('heroCover');
+  if (item) hc.replaceChildren(coverEl(item.name)); else { hc.innerHTML = '<div class="cover gen" style="--h:215"><svg class="i" style="width:48px;height:48px;color:#fff"><use href="#i-plus"/></svg></div>'; }
   if (!item) {
     setScene(null);
     $('heroEyebrow').textContent = roms === null ? 'Storage unavailable' : (roms && roms.length ? 'Library' : 'Get started');
@@ -1903,33 +2032,8 @@ function renderHomeInfo() {
   const latest = fs.filter(s => !s.autosave).sort(byNewest)[0];
   $('heroSave').hidden = !latest;
   $('heroSave').onclick = () => latest && loadSaveMeta(latest);
-  $('heroRemove').onclick = () => removeRom(item);
 }
 
-function saveCard(rec) {
-  const card = document.createElement('div'); card.className = 'save-card'; card.title = 'Load this save state';
-  const cover = document.createElement('div'); cover.className = 'cover';
-  if (thumbOk(rec.thumb)) cover.style.backgroundImage = `url("${rec.thumb}")`;
-  const body = document.createElement('div'); body.className = 'save-body';
-  const info = document.createElement('div'); info.className = 'info';
-  const t = document.createElement('div'); t.className = 't'; t.textContent = ago(Number(rec.createdAt));
-  if (rec.autosave) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'auto'; t.append(tag); }
-  const m = document.createElement('div'); m.className = 'm'; m.textContent = new Date(Number(rec.createdAt) || 0).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-  info.append(t, m);
-  body.append(info,
-    iconBtn('download', 'Export', async () => {
-      try { const full = await fullState(rec); downloadJSON(fileBase(rec.romName) + '-save-' + new Date(rec.createdAt || Date.now()).toISOString().replace(/[:.]/g, '-') + '.json', portableState(full)); }
-      catch (e) { toast('Could not export: ' + errMsg(e), 'error'); }
-    }),
-    iconBtn('trash', 'Delete', async () => {
-      if (!confirm('Delete this save state for ' + stripExt(rec.romName) + '?')) return;
-      try { await dbOp('readwrite', s => s.delete(rec.id), STATE_STORE); await refreshData(); }
-      catch (e) { toast('Could not delete: ' + errMsg(e), 'error'); }
-    }));
-  card.append(cover, body);
-  activate(card, () => loadSaveMeta(rec));
-  return card;
-}
 // Manual saves plus only the newest autosave per game.
 function shownStates(list) {
   const manual = list.filter(s => !s.autosave);
@@ -2008,17 +2112,6 @@ function xmbMove(k) {
   sfx.play('move');
   renderSaves();
   return true;
-}
-function renderPlaySaves() {
-  const wrap = $('playSaves');
-  wrap.hidden = !romLoaded || !states;
-  if (wrap.hidden) return;
-  const list = shownStates(statesOf(currentName));
-  $('playSaveCount').textContent = '(' + list.filter(s => !s.autosave).length + ')';
-  const add = document.createElement('button'); add.type = 'button'; add.className = 'new-save';
-  add.innerHTML = '<svg class="i"><use href="#i-save"/></svg><span>Save now <kbd>F2</kbd></span>';
-  add.addEventListener('click', quickSave);
-  $('playSaveRow').replaceChildren(add, ...list.slice(0, 30).map(saveCard));
 }
 async function loadSaveMeta(rec) {
   try { await restoreState(await fullState(rec)); } catch (e) { toast(errMsg(e), 'error'); }
@@ -2159,12 +2252,11 @@ $('gameForm').addEventListener('submit', async e => {
   closeGameDialog();
   try {
     await updateRom(name, patch);
-    if (isCurrent(name)) { $('gameTitle').textContent = titleOf(name); document.title = titleOf(name) + ' · chimiNES'; if (view === 'play') $('viewTitle').textContent = titleOf(name); }
+    if (isCurrent(name)) { $('gameTitle').textContent = titleOf(name); document.title = titleOf(name) + ' · chimiNES'; }
     toast('Saved details for ' + titleOf(name), 'ok');
   } catch (err) { toast('Couldn’t save details: ' + errMsg(err), 'error'); }
 });
 $('heroInfo').addEventListener('click', () => { if (heroName) openGameDialog(heroName); });
-$('gameInfoBtn').addEventListener('click', () => { if (romLoaded) openGameDialog(currentName); });
 
 /* ---------------- SteamGridDB artwork ---------------- */
 // SteamGridDB can't be called directly from a web page (no CORS headers), so
@@ -2308,7 +2400,7 @@ async function autoArtwork(name, { quiet = false } = {}) {
   if (!item.cover) { const grids = (await sgdbArt('cover', g.id)).filter(a => SGDB_CDN.test(a.url)); if (grids[0]) patch.cover = await fetchArt(grids[0].url, 'cover'); }
   if (!item.banner && pref.bool('sgdbBanners', true)) { const heroes = (await sgdbArt('banner', g.id)).filter(a => SGDB_CDN.test(a.url)); if (heroes[0]) patch.banner = await fetchArt(heroes[0].url, 'banner'); }
   await updateRom(name, patch);
-  if (isCurrent(name)) { $('gameTitle').textContent = titleOf(name); document.title = titleOf(name) + ' · chimiNES'; if (view === 'play') $('viewTitle').textContent = titleOf(name); }
+  if (isCurrent(name)) { $('gameTitle').textContent = titleOf(name); document.title = titleOf(name) + ' · chimiNES'; }
   if (!quiet) toast('Artwork added for ' + titleOf(name), 'ok');
   return !!patch.cover;
 }
@@ -2354,7 +2446,6 @@ function showView(v) {
   if (qmOpen && v !== 'play') closeQuickMenu(false);
   document.querySelectorAll('[data-viewpane]').forEach(p => p.hidden = p.dataset.viewpane !== v);
   document.querySelectorAll('.cats [data-view]').forEach(b => { if (b.dataset.view === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-  $('viewTitle').textContent = v === 'play' && romLoaded ? titleOf(currentName) : VIEW_TITLES[v];
   if (v !== 'play' && leaving === 'play' && romLoaded && !paused) { setPaused(true); autoPaused = true; }
   if (v === 'library' && leaving !== 'library' && romLoaded) homeSel = currentName;
   if (v === 'play') {
@@ -2368,12 +2459,10 @@ function showView(v) {
 }
 function renderNowCard() {
   $('tabPlay').classList.toggle('live', romLoaded);
-  $('gameInfoBtn').hidden = !(romLoaded && view === 'play' && romByName(currentName));
   $('qmBtn').hidden = !romLoaded;
 }
 document.querySelectorAll('.cats [data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
 $('homeBtn').addEventListener('click', () => showView('library'));
-$('orbSaves').addEventListener('click', () => showView('saves'));
 $('searchBtn').addEventListener('click', () => {
   const w = $('searchWrap'); w.hidden = !w.hidden;
   if (!w.hidden) $('sideSearch').focus(); else if (libQuery) { libQuery = ''; $('sideSearch').value = ''; renderLibrary(); }
@@ -2388,19 +2477,17 @@ $('sortBtn').addEventListener('click', () => {
   pref.set('sort', libSort); renderLibrary(); toast('Sorted by ' + SORTS[libSort].toLowerCase(), 'info', 'sort', 1200);
 });
 const openSettingsTab = tab => { openSettings(); document.querySelector(`#settingsTabs [data-tab=${tab}]`).click(); };
-$('orbThemes').addEventListener('click', () => openSettingsTab('look'));
-$('orbControls').addEventListener('click', () => openSettingsTab('controls'));
 
 /* Quick Menu (RetroArch-style, inside the game screen) */
 let qmOpen = false, qmSel = 0, qmWasRunning = false;
 const PRESET_ORDER = ['clean', 'soft', 'crt', 'arcade'];
 const PRESET_NAMES = { clean: 'Clean', soft: 'Soft CRT', crt: 'CRT', arcade: 'Arcade', custom: 'Custom' };
-const SPEEDS = [...$('speed').options].map(o => Number(o.value));
+const SPEEDS = SPEED_OPTIONS;
 const QM = [
   { id: 'resume', icon: 'play', label: 'Resume', run: () => closeQuickMenu(true) },
   { id: 'save', icon: 'save', label: 'Save state', run: () => { closeQuickMenu(true); quickSave(); } },
   { id: 'load', icon: 'load', label: 'Load latest state', run: () => { closeQuickMenu(false); quickLoad(); } },
-  { id: 'reset', icon: 'reset', label: 'Reset game', run: () => { closeQuickMenu(false); $('resetBtn').click(); } },
+  { id: 'reset', icon: 'reset', label: 'Reset game', run: () => { closeQuickMenu(false); resetGame(); } },
   { id: 'effect', icon: 'screen', label: 'Screen effect', value: () => PRESET_NAMES[display.preset] || 'Custom', step: d => {
       const i = PRESET_ORDER.indexOf(display.preset); const n = PRESET_ORDER[(Math.max(0, i) + d + PRESET_ORDER.length) % PRESET_ORDER.length];
       document.querySelector(`[data-preset=${n}]`).click(); } },
@@ -2456,38 +2543,30 @@ function qmNav(k) {
 $('qmBtn').addEventListener('click', openQuickMenu);
 
 /* Menu navigation for keyboard and gamepad (console-style) */
-function homeRows() {
-  return [
-    [...$('tileRow').children],
-    [...document.querySelectorAll('.home-actions button')].filter(b => !b.hidden),
-    [...document.querySelectorAll('.home-dock .orb')]
-  ].filter(r => r.length);
+function homeFocusables() {
+  return [...$('tileRow').children, ...[...document.querySelectorAll('.home-actions button, .home-dock .orb')].filter(b => !b.hidden)];
 }
 function homeNav(k) {
-  const rows = homeRows(); if (!rows.length) return false;
+  if (k === 'x') { if (heroName) openGameDialog(heroName); return true; }
+  if (k === 'y') { openLayouts(); return true; }
+  if (k === 'start') { openSettings(); return true; }
+  const tiles = [...$('tileRow').children];
   const a = document.activeElement;
-  let r = rows.findIndex(row => row.includes(a));
-  if (r < 0) {
-    // Nothing focused yet: start from the selected tile, then apply the move.
+  const all = homeFocusables();
+  if (!all.includes(a)) {
+    // Nothing focused yet: start from the selected tile.
     const s = markSelected(true); if (!s) return true;
     s.focus({ preventScroll: true });
-    if (k === 'ok' || k === 'up') return true;
-    return homeNav(k);
+    return true;
   }
-  const row = rows[r], i = row.indexOf(a);
-  let target = null;
-  if (k === 'left' || k === 'right') target = row[clamp(i + (k === 'left' ? -1 : 1), 0, row.length - 1)];
-  else if (k === 'up' || k === 'down') {
-    const nr = clamp(r + (k === 'up' ? -1 : 1), 0, rows.length - 1);
-    if (nr === r) return true;
-    target = nr === 0 ? (rows[0].find(t => t.dataset.name === homeSel) || rows[0][0]) : rows[nr][Math.min(nr === r ? i : 0, rows[nr].length - 1)];
-  } else if (k === 'ok') { a.click(); return true; }
-  else if (k === 'x') { if (heroName) openGameDialog(heroName); return true; }
-  else if (k === 'start') { openSettings(); return true; }
-  else return false;
-  if (target && target !== a) {
-    target.focus({ preventScroll: rows[0].includes(target) });
-    if (rows[0].includes(target)) { selectTile(target.dataset.name); }
+  if (k === 'ok') { a.click(); return true; }
+  if (!['up', 'down', 'left', 'right'].includes(k)) return false;
+  let target = spatialNext(a, k, all);
+  // Coming back up to the tiles lands on the selected game, not the nearest one.
+  if (target && tiles.includes(target) && !tiles.includes(a)) target = tiles.find(t => t.dataset.name === homeSel) || target;
+  if (target) {
+    target.focus({ preventScroll: tiles.includes(target) });
+    if (tiles.includes(target)) selectTile(target.dataset.name);
     else target.scrollIntoView({ block: 'nearest' });
   }
   return true;
@@ -2502,7 +2581,7 @@ function menuInput(k) {
 const KEYMAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Enter: 'ok', Escape: 'back', Backspace: 'back', Home: 'home' };
 window.addEventListener('keydown', e => {
   if (listeningFor || e.ctrlKey || e.metaKey || e.altKey) return;
-  if (settingsDialog.open || gameDialog.open || sgdbDialog.open) return;
+  if (anyDialogOpen()) return;
   const k = KEYMAP[e.key]; if (!k) return;
   const t = e.target;
   if (isTyping(t) || (t && t.type === 'range')) return;
@@ -2530,18 +2609,19 @@ function pollMenuPad(t, inGame) {
   const now = new Set();
   if (b(12) || ax[1] < -.6) now.add('up'); if (b(13) || ax[1] > .6) now.add('down');
   if (b(14) || ax[0] < -.6) now.add('left'); if (b(15) || ax[0] > .6) now.add('right');
-  if (b(0)) now.add('ok'); if (b(1)) now.add('back'); if (b(2)) now.add('x'); if (b(9)) now.add('start'); if (b(16)) now.add('home');
+  if (b(0)) now.add('ok'); if (b(1)) now.add('back'); if (b(2)) now.add('x'); if (b(3)) now.add('y'); if (b(9)) now.add('start'); if (b(16)) now.add('home');
   if (!menuPad.active) { menuPad.active = true; menuPad.prev = now; menuPad.hot = (b(8) && b(9)) || b(16); return; } // ignore buttons held from gameplay
-  const dialogs = settingsDialog.open || gameDialog.open || sgdbDialog.open;
+  const dialogs = anyDialogOpen();
   for (const k of now) {
     if (menuPad.prev.has(k)) continue;
-    if (dialogs) { if (k === 'back') { const d = [sgdbDialog, gameDialog, settingsDialog].find(x => x.open); if (d) d.close(); } continue; }
+    if (dialogs) { const d = topDialog(); if (d && ['up', 'down', 'left', 'right', 'ok', 'back'].includes(k)) dialogNav(d, k); if (['up', 'down', 'left', 'right'].includes(k)) { menuPad.dir = k; menuPad.repeat = t + 380; } continue; }
     if (k === 'ok' && view === 'library' && !homeRows().some(r => r.includes(document.activeElement))) { homeNav('left'); continue; }
     if (menuInput(k) && ['up', 'down', 'left', 'right'].includes(k) && !qmOpen && view === 'library') sfx.play('move', { gesture: false });
     if (['up', 'down', 'left', 'right'].includes(k)) { menuPad.dir = k; menuPad.repeat = t + 380; }
   }
-  if (menuPad.dir && now.has(menuPad.dir) && t >= menuPad.repeat && !dialogs) {
-    menuInput(menuPad.dir); if (view === 'library') sfx.play('move', { gesture: false });
+  if (menuPad.dir && now.has(menuPad.dir) && t >= menuPad.repeat) {
+    if (dialogs) { const d = topDialog(); if (d) dialogNav(d, menuPad.dir); }
+    else { menuInput(menuPad.dir); if (view === 'library') sfx.play('move', { gesture: false }); }
     menuPad.repeat = t + 120;
   }
   if (menuPad.dir && !now.has(menuPad.dir)) menuPad.dir = null;
@@ -2587,13 +2667,107 @@ const ribbon = (() => {
   return { start() { resize(); colors(); requestAnimationFrame(loop); }, colors };
 })();
 
-/* Status bar: clock, battery, controller */
+/* Status bar: clock and controller */
 function tickClock() { $('clock').textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
 tickClock(); setInterval(tickClock, 10000);
-if (navigator.getBattery) navigator.getBattery().then(bat => {
-  const show = () => { const p = Math.round(bat.level * 100); $('battery').hidden = false; $('battery').textContent = (bat.charging ? '⚡' : '▮') + ' ' + p + '%'; $('battery').title = 'Battery ' + p + '%' + (bat.charging ? ' (charging)' : ''); };
-  show(); bat.addEventListener('levelchange', show); bat.addEventListener('chargingchange', show);
-}).catch(() => {});
+
+/* Layouts: one menu, many home-screen arrangements (all CSS-driven) */
+// Preview shapes in a 100×60 box: [kind, x, y, w, h]. Kinds: t tile, s selected tile, x text,
+// p play button, d dock button, r ribbon, b art backdrop, q side panel, g grid floor.
+const LAYOUTS = [
+  { id: 'console', name: 'Console', desc: 'PS5 row, Switch tiles, XMB ribbon', shapes: [['b'], ['r'], ['s', 6, 7, 13, 13], ['t', 22, 9, 10, 10], ['t', 34, 9, 10, 10], ['t', 46, 9, 10, 10], ['x', 6, 27, 30, 4], ['x', 6, 34, 18, 2], ['p', 6, 40, 15, 5], ['d', 38, 52], ['d', 46, 52], ['d', 54, 52]] },
+  { id: 'switch', name: 'Switch', desc: 'Big tiles on a clean background', shapes: [['s', 6, 12, 21, 21], ['t', 30, 14, 18, 18], ['t', 51, 14, 18, 18], ['t', 72, 14, 18, 18], ['p', 6, 39, 15, 5], ['d', 38, 52], ['d', 46, 52], ['d', 54, 52]] },
+  { id: 'ps5', name: 'PlayStation', desc: 'Small tiles, huge game art', shapes: [['b', 1], ['s', 6, 5, 8, 8], ['t', 16, 6, 7, 7], ['t', 25, 6, 7, 7], ['t', 34, 6, 7, 7], ['x', 6, 25, 46, 7], ['x', 6, 35, 24, 2], ['p', 6, 41, 17, 6]] },
+  { id: 'xmb', name: 'XMB', desc: 'RetroArch-style vertical list', shapes: [['r'], ['t', 18, 6, 6, 6], ['s', 17, 15, 10, 10], ['t', 18, 29, 6, 6], ['t', 18, 38, 6, 6], ['x', 29, 18, 16, 3], ['x', 27, 8, 12, 2], ['x', 27, 31, 12, 2], ['x', 58, 22, 30, 4], ['p', 58, 30, 15, 5]] },
+  { id: 'coverflow', name: 'Cover Flow', desc: '3D carousel with reflections', shapes: [['t', 12, 16, 10, 13], ['t', 25, 14, 11, 15], ['s', 40, 9, 20, 22], ['t', 63, 14, 11, 15], ['t', 77, 16, 10, 13], ['x', 34, 37, 32, 3], ['p', 42, 43, 16, 5]] },
+  { id: 'grid', name: 'Library Grid', desc: 'Portrait covers in a grid', shapes: [['x', 6, 6, 30, 4], ['p', 6, 12, 13, 4], ['s', 6, 22, 9, 13], ['t', 18, 22, 9, 13], ['t', 30, 22, 9, 13], ['t', 42, 22, 9, 13], ['t', 54, 22, 9, 13], ['t', 66, 22, 9, 13], ['t', 6, 40, 9, 13], ['t', 18, 40, 9, 13]] },
+  { id: 'shelf', name: 'Shelf', desc: 'Tall capsules in a row', shapes: [['b'], ['s', 6, 5, 13, 20], ['t', 22, 7, 11, 17], ['t', 36, 7, 11, 17], ['t', 50, 7, 11, 17], ['t', 64, 7, 11, 17], ['x', 6, 33, 30, 4], ['p', 6, 41, 15, 5]] },
+  { id: 'banners', name: 'Big Picture', desc: 'Wide banner cards', shapes: [['b'], ['s', 6, 7, 30, 17], ['t', 39, 9, 26, 14], ['t', 68, 9, 26, 14], ['x', 6, 32, 30, 4], ['p', 6, 40, 15, 5]] },
+  { id: 'list', name: 'List', desc: 'Compact playlist with a cover', shapes: [['t', 6, 8, 34, 5], ['s', 6, 15, 34, 6], ['t', 6, 23, 34, 5], ['t', 6, 30, 34, 5], ['t', 6, 37, 34, 5], ['t', 50, 8, 15, 20], ['x', 69, 10, 24, 4], ['p', 69, 18, 15, 5]] },
+  { id: 'sidebar', name: 'Sidebar', desc: 'Games on the left, art on the right', shapes: [['b'], ['q', 0, 0, 34, 60], ['t', 4, 8, 26, 5], ['s', 4, 15, 26, 6], ['t', 4, 23, 26, 5], ['t', 4, 30, 26, 5], ['x', 42, 30, 34, 5], ['x', 42, 38, 20, 2], ['p', 42, 43, 15, 5]] },
+  { id: 'spotlight', name: 'Spotlight', desc: 'One big game at a time', shapes: [['b'], ['s', 8, 6, 20, 27], ['x', 34, 10, 40, 6], ['x', 34, 20, 28, 2], ['p', 34, 26, 16, 5], ['t', 30, 45, 6, 6], ['t', 38, 45, 6, 6], ['t', 46, 45, 6, 6], ['t', 54, 45, 6, 6]] },
+  { id: 'compact', name: 'Compact', desc: 'Dense grid of small tiles', shapes: [['s', 6, 6, 7, 7], ['t', 15, 6, 7, 7], ['t', 24, 6, 7, 7], ['t', 33, 6, 7, 7], ['t', 42, 6, 7, 7], ['t', 51, 6, 7, 7], ['t', 6, 15, 7, 7], ['t', 15, 15, 7, 7], ['x', 6, 30, 28, 4], ['p', 6, 38, 13, 5]] },
+  { id: 'minimal', name: 'Minimal', desc: 'No background art or ribbon', shapes: [['s', 6, 9, 12, 12], ['t', 21, 10, 10, 10], ['t', 33, 10, 10, 10], ['t', 45, 10, 10, 10], ['x', 6, 30, 26, 4], ['p', 6, 38, 13, 5]] },
+  { id: 'arcade', name: 'Arcade', desc: 'Neon cabinet with scanlines', shapes: [['g'], ['s', 6, 7, 13, 13], ['t', 22, 9, 10, 10], ['t', 34, 9, 10, 10], ['t', 46, 9, 10, 10], ['x', 6, 27, 34, 5], ['p', 6, 37, 15, 5]] }
+];
+function layoutSVG(shapes) {
+  const out = [];
+  for (const [k, x, y, w, h] of shapes) {
+    if (k === 'b') out.push(`<rect class="lb" x="0" y="0" width="100" height="60" opacity="${x ? .75 : .4}"/>`);
+    else if (k === 'r') out.push('<path class="lr" d="M0 40 C 25 32, 55 50, 100 38 L100 46 C 55 58, 25 42, 0 50Z"/><path class="lr2" d="M0 46 C 30 38, 60 56, 100 44"/>');
+    else if (k === 'g') out.push('<path class="lg" d="M0 42H100M0 48H100M0 55H100M50 36L10 60M50 36L30 60M50 36L50 60M50 36L70 60M50 36L90 60"/>');
+    else if (k === 'q') out.push(`<rect class="lq" x="${x}" y="${y}" width="${w}" height="${h}"/>`);
+    else if (k === 'd') out.push(`<rect class="lt" x="${x}" y="${y}" width="5" height="5" rx="1.6"/>`);
+    else if (k === 'x') out.push(`<rect class="lx" x="${x}" y="${y}" width="${w}" height="${h}" rx="1"/>`);
+    else if (k === 'p') out.push(`<rect class="lp" x="${x}" y="${y}" width="${w}" height="${h}" rx="2"/>`);
+    else out.push(`<rect class="${k === 's' ? 'ls' : 'lt'}" x="${x}" y="${y}" width="${w}" height="${h}" rx="2"/>`);
+  }
+  return `<svg viewBox="0 0 100 60" aria-hidden="true"><rect class="lbg" width="100" height="60"/>${out.join('')}</svg>`;
+}
+const layoutDialog = $('layoutDialog');
+let layoutId = LAYOUTS.some(l => l.id === pref.get('layout', 'console')) ? pref.get('layout', 'console') : 'console';
+function applyLayout(id, announce) {
+  const l = LAYOUTS.find(x => x.id === id) || LAYOUTS[0];
+  layoutId = l.id; pref.set('layout', l.id);
+  document.body.dataset.layout = l.id;
+  document.querySelectorAll('.layout-card').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.layout === l.id)));
+  if (typeof renderLibrary === 'function' && roms !== undefined) { renderLibrary(); requestAnimationFrame(() => markSelected(true)); }
+  if (announce) toast('Layout: ' + l.name, 'info', 'layout', 1300);
+}
+$('layoutGrid').append(...LAYOUTS.map(l => {
+  const c = document.createElement('button'); c.type = 'button'; c.className = 'layout-card'; c.dataset.layout = l.id;
+  c.innerHTML = layoutSVG(l.shapes) + '<b></b><small></small>';
+  c.querySelector('b').textContent = l.name; c.querySelector('small').textContent = l.desc;
+  c.addEventListener('click', () => applyLayout(l.id, true));
+  return c;
+}));
+function openLayouts() {
+  releaseAllInput();
+  layoutDialog.showModal();
+  const cur = layoutDialog.querySelector(`.layout-card[data-layout="${layoutId}"]`);
+  if (cur) { cur.focus(); cur.scrollIntoView({ block: 'nearest' }); }
+}
+$('layoutBtn').addEventListener('click', openLayouts);
+$('layoutClose').addEventListener('click', () => layoutDialog.close());
+layoutDialog.addEventListener('click', e => { if (e.target === layoutDialog) layoutDialog.close(); });
+applyLayout(layoutId, false);
+
+/* Spatial navigation: move focus to the nearest control in a direction */
+function spatialNext(from, dir, cands) {
+  const r = from.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let best = null, bestScore = Infinity;
+  for (const c of cands) {
+    if (c === from) continue;
+    const q = c.getBoundingClientRect(); if (!q.width && !q.height) continue;
+    const dx = q.left + q.width / 2 - cx, dy = q.top + q.height / 2 - cy;
+    let main, cross;
+    if (dir === 'right') { if (dx <= 4) continue; main = dx; cross = Math.abs(dy); }
+    else if (dir === 'left') { if (dx >= -4) continue; main = -dx; cross = Math.abs(dy); }
+    else if (dir === 'down') { if (dy <= 4) continue; main = dy; cross = Math.abs(dx); }
+    else { if (dy >= -4) continue; main = -dy; cross = Math.abs(dx); }
+    const score = main + cross * 2.2;
+    if (score < bestScore) { bestScore = score; best = c; }
+  }
+  return best;
+}
+function anyDialogOpen() { return [settingsDialog, gameDialog, sgdbDialog, layoutDialog].some(d => d && d.open); }
+function topDialog() { return [sgdbDialog, gameDialog, layoutDialog, settingsDialog].find(d => d && d.open); }
+function dialogNav(d, k) {
+  const items = [...d.querySelectorAll('button:not([disabled]), [href], input:not([type=hidden]), select, textarea, [tabindex]:not([tabindex="-1"])')].filter(el => el.offsetParent !== null || el.getClientRects().length);
+  const a = d.contains(document.activeElement) ? document.activeElement : null;
+  if (k === 'back') { d.close(); return; }
+  if (k === 'ok') { if (a) a.click(); else if (items[0]) items[0].focus(); return; }
+  if (!a) { if (items[0]) items[0].focus(); return; }
+  const n = spatialNext(a, k, items);
+  if (n) { n.focus(); n.scrollIntoView({ block: 'nearest' }); sfx.play('move', { gesture: false }); }
+}
+layoutDialog.addEventListener('keydown', e => {
+  const k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[e.key];
+  if (!k || !e.target.closest('.layout-card')) return;
+  e.preventDefault();
+  const n = spatialNext(e.target, k, [...layoutDialog.querySelectorAll('.layout-card')]);
+  if (n) { n.focus(); n.scrollIntoView({ block: 'nearest' }); }
+});
 
 let autosaveOn = true, autosaveMs = 5000, lastAutosave = 0, autosaveBusy = false;
 async function saveState(isAuto = false) {
@@ -2733,7 +2907,7 @@ function loadFile(f) {
 }
 function openRomPicker() { resumeAudio(); $('romFile').click(); }
 $('romFile').addEventListener('change', e => { loadFile(e.target.files[0]); e.target.value = ''; });
-['emptyOpenBtn', 'importRomBtn'].forEach(id => $(id).addEventListener('click', openRomPicker));
+$('emptyOpenBtn').addEventListener('click', openRomPicker);
 let dragDepth = 0;
 stage.addEventListener('dragenter', e => { e.preventDefault(); dragDepth++; stage.classList.add('drag-active'); });
 stage.addEventListener('dragover', e => { e.preventDefault(); });
@@ -2869,7 +3043,7 @@ window.addEventListener('keydown', e => {
     keybinds[listeningFor] = e.key; pref.setJson('keybinds', keybinds); stopListening('Saved.');
     return;
   }
-  if (settingsDialog.open || gameDialog.open || sgdbDialog.open || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (anyDialogOpen() || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
   if ((view !== 'play' && !isFullscreen()) || qmOpen) return;
   const id = norm(e.key);
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { e.preventDefault(); if (!e.repeat) { zapperDown = true; zapperAt(null, true); } return; }
@@ -3016,14 +3190,12 @@ zapperToggle.addEventListener('change', () => setZapper(zapperToggle.checked, tr
    ------------------------------------------------------------------ */
 $('pauseBtn').addEventListener('click', () => { resumeAudio(); togglePause(); });
 $('pauseVeil').addEventListener('click', () => { resumeAudio(); sfx.play('resume'); setPaused(false); });
-$('resetBtn').addEventListener('click', () => {
+function resetGame() {
   if (!nes || !romLoaded) return;
   releaseAllInput(); clearAudio(); nes.reset();
   for (const c of genieCheats) c.injected = c.original = null;
   setPaused(false); toast('Console reset');
-});
-$('saveBtn').addEventListener('click', quickSave);
-$('loadStateBtn').addEventListener('click', quickLoad);
+}
 $('exportStatesBtn').addEventListener('click', async () => { try { await exportAllStates(); } catch (e) { toast(errMsg(e), 'error'); } });
 $('importStateBtn').addEventListener('click', () => $('stateFile').click());
 $('stateFile').addEventListener('change', async e => {
@@ -3031,25 +3203,20 @@ $('stateFile').addEventListener('change', async e => {
   try { await importStateFile(f); } catch (err) { toast('Import failed: ' + errMsg(err), 'error'); }
 });
 
-const speedSelect = $('speed');
 function setSpeed(v, announce) {
   speed = clamp(Number(v) || 1, 0.25, 4);
-  if (![...speedSelect.options].some(o => Number(o.value) === speed)) speed = 1;
-  speedSelect.value = String(speed); pref.set('speed', speed); acc = 0;
+  if (!SPEED_OPTIONS.includes(speed)) speed = 1;
+  pref.set('speed', speed); acc = 0;
   if (announce) toast('Speed ' + speed + '×', 'info', 'speed', 1400);
 }
 setSpeed(pref.get('speed', 1), false);
-speedSelect.addEventListener('change', () => { setSpeed(speedSelect.value, true); speedSelect.blur(); });
 
 function setSound(on) {
   soundToggle.checked = on; pref.set('sound', on ? '1' : '0');
-  $('muteBtn').innerHTML = `<svg class="i"><use href="#i-${on ? 'vol' : 'mute'}"/></svg>`;
-  $('muteBtn').setAttribute('aria-label', on ? 'Mute' : 'Unmute');
   if (on) { if (!resumeAudio()) toast('Web Audio isn’t available in this browser.', 'error'); }
   else clearAudio();
 }
 setSound(soundToggle.checked);
-$('muteBtn').addEventListener('click', () => setSound(!soundToggle.checked));
 soundToggle.addEventListener('change', () => setSound(soundToggle.checked));
 function paintRange(r) { const min = Number(r.min) || 0, max = Number(r.max) || 1; r.style.setProperty('--p', ((Number(r.value) - min) / (max - min) * 100) + '%'); }
 volumeInput.addEventListener('input', () => { pref.set('volume', volumeInput.value); $('volumeOut').textContent = volumeInput.value; paintRange(volumeInput); applyVolume(); });
@@ -3067,11 +3234,8 @@ function toggleFullscreen() {
 }
 function onFullscreenChange() {
   const on = isFullscreen();
-  $('fullscreenBtn').innerHTML = `<svg class="i"><use href="#i-${on ? 'full-exit' : 'full'}"/></svg>`;
-  $('fullscreenBtn').setAttribute('aria-label', on ? 'Exit fullscreen' : 'Fullscreen');
   layoutScreen();
 }
-$('fullscreenBtn').addEventListener('click', toggleFullscreen);
 document.addEventListener('fullscreenchange', onFullscreenChange);
 document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
@@ -3079,7 +3243,6 @@ document.addEventListener('webkitfullscreenchange', onFullscreenChange);
    Settings drawer
    ------------------------------------------------------------------ */
 const openSettings = () => { $('app').classList.remove('nav-open'); settingsDialog.showModal(); releaseAllInput(); };
-$('settingsBtn').addEventListener('click', openSettings);
 $('topSettingsBtn').addEventListener('click', openSettings);
 $('closeSettings').addEventListener('click', () => settingsDialog.close());
 settingsDialog.addEventListener('click', e => { if (e.target === settingsDialog) settingsDialog.close(); });
@@ -3291,7 +3454,7 @@ applyTheme();
     if (e.target.closest && e.target.closest('button, [role=button], select, input, summary, a[href]') && !e.target.closest('.stage')) sfx.play('move');
   });
   // Panels opening and closing.
-  for (const d of [settingsDialog, gameDialog, sgdbDialog]) {
+  for (const d of [settingsDialog, gameDialog, sgdbDialog, layoutDialog]) {
     const show = d.showModal.bind(d);
     d.showModal = () => { show(); sfx.play('open'); };
     d.addEventListener('close', () => sfx.play('close'));

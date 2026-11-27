@@ -15,7 +15,9 @@ webgpu display pipeline: the game screen is drawn by a WGSL shader on the GPU. i
 
 effect presets: clean, soft crt, crt and arcade, each with sliders to fine-tune.
 
-console-style interface (playstation 5 + nintendo switch + retroarch): a home screen with a row of square game tiles, the selected one glowing and lifted, while its art fills the background and its title, info and a big play button sit below. round switch-style buttons along the bottom (add rom, save states, search, sort, themes, controllers, settings), a status bar with a clock, battery and controller indicator, and retroarch's animated xmb ribbon behind everything. save states use a retroarch xmb browser (games across, saves down). while playing, esc (or start+select / the home button on a gamepad) opens a retroarch-style quick menu: resume, save, load, reset, screen effect, speed, audio, game details, fullscreen, home. the whole interface works with arrow keys, enter and esc, or a gamepad (d-pad, a = ok, b = back, x = details, start = settings). leaving a game pauses it; coming back resumes it.
+console-style interface (playstation 5 + nintendo switch + retroarch): a home screen of game tiles whose art fills the background, a big play button, and retroarch's animated xmb ribbon. save states use a retroarch xmb browser (games across, saves down). while playing, esc (or start+select / the home button on a gamepad) opens a retroarch-style quick menu with resume, save, load, reset, screen effect, speed, audio, game details, fullscreen and home. everything works with arrow keys, enter and esc, or a gamepad (d-pad, a = ok, b = back, x = details, y = layouts, start = settings). leaving a game pauses it; coming back resumes it.
+
+layouts: the layouts button on the home screen opens a menu of 14 home-screen layouts with live previews: console, switch, playstation, xmb, cover flow, library grid, shelf, big picture, list, sidebar, spotlight, compact, minimal and arcade. keyboard and gamepad navigation work in every one.
 
 save states with thumbnails, relative timestamps and one-key shortcuts (F2 save, F4 load).
 

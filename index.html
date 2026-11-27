@@ -309,6 +309,32 @@ dialog.modal::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-web
 .hero-art.banner{filter:none;inset:0;transform:none;opacity:1}
 @media (max-width:640px){.gd-grid{grid-template-columns:1fr}.gd-cover-col{max-width:220px;margin:0 auto;width:100%}.field-row{grid-template-columns:1fr 90px}}
 
+/* SteamGridDB */
+.drawer-tabs{grid-auto-columns:auto}
+.drawer-tabs button{padding:0 8px;font-size:12.5px}
+.text-input.plain{text-transform:none;font:500 13px var(--mono)}
+.note a{color:var(--accent-2)}
+.note code{font:12px var(--mono);background:var(--surface-3);padding:1px 5px;border-radius:5px}
+.ok-text{color:var(--ok)!important}.err-text{color:var(--err)!important}
+dialog.modal.sgdb{width:min(980px,calc(100vw - 24px));height:min(760px,calc(100vh - 24px));flex-direction:column}
+dialog.modal.sgdb[open]{display:flex}
+.sgdb .modal-body{flex:1;min-height:0}
+.sgdb-games{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.sgdb-game{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:99px;border:1px solid var(--border-2);background:var(--surface-2);font-weight:600;font-size:12.5px;color:var(--muted)}
+.sgdb-game small{color:var(--faint);font-weight:500}
+.sgdb-game:hover{color:var(--text)}
+.sgdb-game[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--text)}
+.sgdb-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);color:var(--muted);font-size:13px;margin-bottom:14px}
+.sgdb-results{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.sgdb-results.banner{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.sgdb-art{position:relative;display:block;padding:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface-2);transition:transform .15s,border-color .15s,box-shadow .15s}
+.sgdb-art img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:var(--surface-3)}
+.sgdb-results.banner .sgdb-art img{aspect-ratio:96/31}
+.sgdb-art span{position:absolute;left:0;right:0;bottom:0;padding:16px 8px 6px;font-size:11px;color:#fff;text-align:left;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .15s}
+.sgdb-art:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 0 24px -6px var(--accent)}
+.sgdb-art:hover span{opacity:1}
+.sgdb-art.loading{opacity:.5;pointer-events:none}
+
 /* Theme picker */
 .theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 0}
 .theme-card{display:grid;gap:7px;padding:7px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);text-align:left;font-size:12px;font-weight:650;color:var(--muted);transition:border-color .15s,color .15s}
@@ -752,6 +778,7 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
     <button role="tab" data-tab="controls" aria-selected="false">Controls</button>
     <button role="tab" data-tab="cheats" aria-selected="false">Cheats</button>
     <button role="tab" data-tab="look" aria-selected="false">Themes</button>
+    <button role="tab" data-tab="artwork" aria-selected="false">Artwork</button>
     <button role="tab" data-tab="about" aria-selected="false">About</button>
   </div>
   <div class="drawer-body">
@@ -853,6 +880,27 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
       <div class="gtitle">Theme</div>
       <div class="theme-grid" id="themeGrid"></div>
     </section>
+    <!-- Artwork -->
+    <section data-pane="artwork" hidden>
+      <div class="gtitle">SteamGridDB</div>
+      <div class="group">
+        <div class="field" style="padding-top:12px"><span>API key</span>
+          <div class="cheat-form" style="padding:0"><input class="text-input plain" id="sgdbKey" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key"><button class="btn btn-sm" type="button" id="sgdbShowKey" style="height:36px">Show</button></div>
+        </div>
+        <div class="field"><span>Proxy URL</span>
+          <input class="text-input plain" id="sgdbProxy" type="url" autocomplete="off" spellcheck="false" placeholder="https://chimines-sgdb-proxy.you.workers.dev">
+        </div>
+        <div style="display:flex;gap:8px;padding-bottom:12px"><button class="btn btn-sm" type="button" id="sgdbTest">Test connection</button><button class="btn btn-sm" type="button" id="sgdbBulk">Find artwork for all games</button></div>
+      </div>
+      <p class="note" id="sgdbTestResult"></p>
+      <p class="note">Get a free key at <a href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">steamgriddb.com → Preferences → API</a>. It is stored only in this browser and sent only to SteamGridDB (or your proxy).</p>
+      <p class="note">SteamGridDB doesn’t allow direct calls from web pages, so requests go through a small proxy. Deploy the free Cloudflare Worker in the <code>steamgriddb-proxy</code> folder of the chimiNES repo (<code>npx wrangler deploy</code>) and paste its URL above. If the key is stored on the Worker, you can leave the key field empty.</p>
+      <div class="gtitle">Automatic artwork</div>
+      <div class="group">
+        <div class="row"><label for="sgdbAuto">Fetch artwork for new games<span class="desc">Uses the best SteamGridDB match when you add a ROM.</span></label><input class="switch" type="checkbox" id="sgdbAuto"></div>
+        <div class="row"><label for="sgdbBannersToggle">Include banners<span class="desc">Also grabs a hero banner for the library.</span></label><input class="switch" type="checkbox" id="sgdbBannersToggle"></div>
+      </div>
+    </section>
     <!-- About -->
     <section data-pane="about" hidden>
       <div class="about">
@@ -879,6 +927,20 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
 <input type="file" id="stateFile" accept=".json,application/json">
 <input type="file" id="imageFile" accept="image/*">
 
+<dialog class="modal sgdb" id="sgdbDialog" aria-labelledby="sgdbTitle">
+  <div class="modal-head">
+    <h2 id="sgdbTitle">SteamGridDB <span class="tag" id="sgdbKind">covers</span></h2>
+    <button type="button" class="btn icon-btn btn-ghost" id="sgdbClose" aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="modal-body">
+    <form id="sgdbForm" style="display:flex;gap:8px;padding:0 0 12px"><label class="search" style="flex:1"><svg class="i"><use href="#i-search"/></svg><input type="search" id="sgdbQuery" placeholder="Search for a game" autocomplete="off" spellcheck="false" aria-label="Search SteamGridDB"></label><button class="btn btn-primary" type="submit">Search</button></form>
+    <div class="sgdb-games" id="sgdbGames"></div>
+    <div class="sgdb-status" id="sgdbStatus" hidden></div>
+    <div class="sgdb-results" id="sgdbResults"></div>
+  </div>
+  <div class="modal-foot"><span class="hint" style="margin:0">Artwork by the SteamGridDB community. Hover a tile to see its author.</span></div>
+</dialog>
+
 <dialog class="modal" id="gameDialog" aria-labelledby="gdTitle">
   <form id="gameForm" novalidate>
     <div class="modal-head">
@@ -891,6 +953,7 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
           <div class="flabel" style="margin-bottom:8px">Cover art</div>
           <div class="cover gd-cover" id="gdCover" title="Click or drop an image"></div>
           <div class="gd-btns">
+            <button type="button" class="btn btn-sm btn-primary wide" id="gdCoverSgdb"><svg class="i"><use href="#i-search"/></svg>SteamGridDB</button>
             <button type="button" class="btn btn-sm" id="gdCoverUpload"><svg class="i"><use href="#i-image"/></svg>Upload</button>
             <button type="button" class="btn btn-sm" id="gdCoverScreen"><svg class="i"><use href="#i-screen"/></svg>Screen</button>
             <button type="button" class="btn btn-sm" id="gdCoverSave"><svg class="i"><use href="#i-save"/></svg>Latest save</button>
@@ -911,7 +974,8 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
       </div>
       <div class="flabel" style="margin-top:20px">Banner</div>
       <div class="gd-banner" id="gdBanner" title="Click or drop an image"><span id="gdBannerEmpty">No banner — the library uses a blurred cover or screenshot</span></div>
-      <div class="gd-btns" style="max-width:420px">
+      <div class="gd-btns" style="max-width:560px">
+        <button type="button" class="btn btn-sm btn-primary" id="gdBannerSgdb"><svg class="i"><use href="#i-search"/></svg>SteamGridDB</button>
         <button type="button" class="btn btn-sm" id="gdBannerUpload"><svg class="i"><use href="#i-image"/></svg>Upload banner</button>
         <button type="button" class="btn btn-sm" id="gdBannerScreen"><svg class="i"><use href="#i-screen"/></svg>Use screen</button>
         <button type="button" class="btn btn-sm btn-ghost" id="gdBannerReset">Reset</button>
@@ -1553,6 +1617,8 @@ const romByName = name => (roms || []).find(r => sameRom(r.name, name));
 const titleOf = name => { const r = romByName(name); return r ? displayName(r) : stripExt(name); };
 const THUMB_RE = /^data:image\/(webp|jpeg|png);base64,/;
 const thumbOk = t => typeof t === 'string' && THUMB_RE.test(t);
+const SGDB_CDN = /^https:\/\/cdn\d*\.steamgriddb\.com\/[\w\-./%]+$/;
+const artOk = t => thumbOk(t) || (typeof t === 'string' && SGDB_CDN.test(t));
 const byNewest = (a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
 const statesOf = name => states.filter(s => sameRom(s.romName, name));
 function coverFor(name) {
@@ -1573,7 +1639,7 @@ function renderAll() { renderSidebar(); renderLibrary(); renderSaves(); renderPl
 function coverEl(name, cls) {
   const el = document.createElement('div'); el.className = 'cover ' + (cls || '');
   const r = romByName(name);
-  if (r && thumbOk(r.cover)) { el.classList.add('has-art'); el.style.backgroundImage = `url("${r.cover}")`; return el; }
+  if (r && artOk(r.cover)) { el.classList.add('has-art'); el.style.backgroundImage = `url("${r.cover}")`; return el; }
   const t = states ? coverFor(name) : null;
   if (t) { el.classList.add('has-thumb'); el.style.backgroundImage = `url("${t}")`; }
   else { el.classList.add('gen'); el.style.setProperty('--h', hueOf(name)); const s = document.createElement('span'); s.className = 'cover-initials'; s.textContent = initials(titleOf(name)); el.append(s); }
@@ -1641,11 +1707,11 @@ function renderLibrary() {
   } else {
     heroName = featured.name;
     const thumb = states ? coverFor(featured.name) : null;
-    const bg = thumbOk(featured.banner) ? featured.banner : thumbOk(featured.cover) ? featured.cover : thumb;
-    art.className = 'hero-art' + (thumbOk(featured.banner) ? ' banner' : '');
+    const bg = artOk(featured.banner) ? featured.banner : artOk(featured.cover) ? featured.cover : thumb;
+    art.className = 'hero-art' + (artOk(featured.banner) ? ' banner' : '');
     if (bg) art.style.backgroundImage = `url("${bg}")`;
     else { art.className = 'hero-art gen'; art.style.backgroundImage = ''; art.style.setProperty('--h', hueOf(featured.name)); }
-    shot.hidden = !thumb || thumbOk(featured.banner);
+    shot.hidden = !thumb || artOk(featured.banner);
     if (thumb) shot.style.backgroundImage = `url("${thumb}")`;
     $('heroInfo').hidden = false;
     $('heroDesc').hidden = !featured.description; $('heroDesc').textContent = featured.description || '';
@@ -1817,12 +1883,12 @@ function paintDraft() {
   const cov = $('gdCover');
   cov.className = 'cover gd-cover'; cov.style.backgroundImage = ''; cov.replaceChildren();
   const thumb = coverFor(editing.name);
-  if (thumbOk(d.cover)) { cov.classList.add('has-art'); cov.style.backgroundImage = `url("${d.cover}")`; }
+  if (artOk(d.cover)) { cov.classList.add('has-art'); cov.style.backgroundImage = `url("${d.cover}")`; }
   else if (thumb) { cov.classList.add('has-thumb'); cov.style.backgroundImage = `url("${thumb}")`; }
   else { cov.classList.add('gen'); cov.style.setProperty('--h', hueOf(editing.name)); const s = document.createElement('span'); s.className = 'cover-initials'; s.textContent = initials($('gdName').value || stripExt(editing.name)); cov.append(s); }
   const ban = $('gdBanner');
-  ban.style.backgroundImage = thumbOk(d.banner) ? `url("${d.banner}")` : '';
-  $('gdBannerEmpty').hidden = thumbOk(d.banner);
+  ban.style.backgroundImage = artOk(d.banner) ? `url("${d.banner}")` : '';
+  $('gdBannerEmpty').hidden = artOk(d.banner);
   $('gdCoverReset').disabled = !d.cover; $('gdBannerReset').disabled = !d.banner;
   const cur = isCurrent(editing.name);
   $('gdCoverScreen').disabled = $('gdBannerScreen').disabled = !cur;
@@ -1832,7 +1898,7 @@ function paintDraft() {
 function openGameDialog(name) {
   const item = romByName(name);
   if (!item) { toast('Add this game to your library first.'); return; }
-  editing = { name: item.name, draft: { cover: item.cover || null, banner: item.banner || null } };
+  editing = { name: item.name, draft: { cover: item.cover || null, banner: item.banner || null, sgdbId: item.sgdbId || null } };
   $('gdName').value = item.title || '';
   $('gdName').placeholder = stripExt(item.name);
   $('gdDev').value = item.developer || '';
@@ -1894,7 +1960,8 @@ $('gameForm').addEventListener('submit', async e => {
     description: $('gdDesc').value.trim().slice(0, 600) || null,
     favorite: $('gdFav').checked,
     cover: editing.draft.cover || null,
-    banner: editing.draft.banner || null
+    banner: editing.draft.banner || null,
+    sgdbId: editing.draft.sgdbId || null
   };
   closeGameDialog();
   try {
@@ -1905,6 +1972,180 @@ $('gameForm').addEventListener('submit', async e => {
 });
 $('heroInfo').addEventListener('click', () => { if (heroName) openGameDialog(heroName); });
 $('gameInfoBtn').addEventListener('click', () => { if (romLoaded) openGameDialog(currentName); });
+
+/* ---------------- SteamGridDB artwork ---------------- */
+const SGDB_API = 'https://www.steamgriddb.com/api/v2';
+const sgdb = { key: pref.get('sgdbKey', ''), proxy: pref.get('sgdbProxy', '') };
+const proxyBase = () => sgdb.proxy.trim().replace(/\/+$/, '');
+const sgdbBase = () => sgdb.proxy.trim() ? proxyBase() + '/api/v2' : SGDB_API;
+const sgdbReady = () => !!(sgdb.key.trim() || sgdb.proxy.trim());
+async function sgdbGet(path) {
+  if (!sgdbReady()) throw new Error('Add your SteamGridDB API key in Settings → Artwork first.');
+  let r;
+  try { r = await fetch(sgdbBase() + path, { headers: sgdb.key.trim() ? { Authorization: 'Bearer ' + sgdb.key.trim() } : {} }); }
+  catch (_) {
+    throw new Error(sgdb.proxy.trim() ? 'Couldn’t reach your SteamGridDB proxy. Check the URL in Settings → Artwork.'
+      : 'Your browser blocked the request: SteamGridDB doesn’t allow direct calls from web pages. Add a proxy URL in Settings → Artwork.');
+  }
+  let body = null; try { body = await r.json(); } catch (_) {}
+  if (r.status === 401 || r.status === 403) throw new Error('SteamGridDB didn’t accept the API key. Check it in Settings → Artwork.');
+  if (r.status === 404) return [];
+  if (!r.ok || !body || body.success === false) throw new Error('SteamGridDB error' + (body && body.errors ? ': ' + body.errors.join(', ') : ' (' + r.status + ')'));
+  return Array.isArray(body.data) ? body.data : [];
+}
+const sgdbSearch = term => sgdbGet('/search/autocomplete/' + encodeURIComponent(term));
+const sgdbArt = (kind, id) => sgdbGet(kind === 'banner'
+  ? `/heroes/game/${id}?types=static&nsfw=false&humor=false`
+  : `/grids/game/${id}?dimensions=600x900,342x482,660x930&types=static&nsfw=false&humor=false`);
+// "Super Mario Bros. 3 (USA) (Rev 1)" -> "Super Mario Bros. 3"
+const cleanTitle = t => String(t || '').replace(/\.nes$/i, '').replace(/\s*[([][^)\]]*[)\]]/g, '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim();
+const yearOf = g => g && g.release_date ? String(new Date(g.release_date * 1000).getUTCFullYear()) : '';
+// Keep an embedded copy when possible (works offline); otherwise keep the CDN link.
+async function fetchArt(url, kind) {
+  if (!SGDB_CDN.test(url)) throw new Error('Unexpected artwork address.');
+  const src = sgdb.proxy.trim() ? proxyBase() + '/img?url=' + encodeURIComponent(url) : url;
+  try {
+    const r = await fetch(src); if (!r.ok) throw new Error();
+    const blob = await r.blob();
+    return await readImage(new File([blob], 'art', { type: blob.type || 'image/png' }), kind === 'banner' ? 1800 : 600, kind === 'banner' ? 700 : 900);
+  } catch (_) { return url; }
+}
+
+/* Picker */
+const sgdbDialog = $('sgdbDialog');
+let picker = null; // { kind, games, gameId }
+function sgdbStatus(msg, action) {
+  const el = $('sgdbStatus'); el.replaceChildren(); el.hidden = !msg;
+  if (!msg) return;
+  const t = document.createElement('span'); t.textContent = msg; el.append(t);
+  if (action) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-sm'; b.textContent = action[0]; b.addEventListener('click', action[1]); el.append(b); }
+}
+const openArtworkSettings = () => { sgdbDialog.close(); if (gameDialog.open) gameDialog.close(); openSettings(); document.querySelector('#settingsTabs [data-tab=artwork]').click(); };
+function openSgdbPicker(kind) {
+  if (!editing) return;
+  const item = romByName(editing.name);
+  picker = { kind, games: [], gameId: item && item.sgdbId || null };
+  $('sgdbKind').textContent = kind === 'banner' ? 'banners' : 'covers';
+  $('sgdbQuery').value = cleanTitle($('gdName').value || editing.name);
+  $('sgdbGames').replaceChildren(); $('sgdbResults').replaceChildren();
+  $('sgdbResults').className = 'sgdb-results ' + kind;
+  sgdbDialog.showModal();
+  if (!sgdbReady()) { sgdbStatus('Connect SteamGridDB first: add a free API key (and a proxy URL) in Settings → Artwork.', ['Open Artwork settings', openArtworkSettings]); return; }
+  sgdbStatus('');
+  runSgdbSearch();
+}
+async function runSgdbSearch() {
+  const term = $('sgdbQuery').value.trim();
+  if (!term) return;
+  $('sgdbResults').replaceChildren(); $('sgdbGames').replaceChildren();
+  sgdbStatus('Searching SteamGridDB…');
+  try {
+    const games = await sgdbSearch(term);
+    if (!picker) return;
+    picker.games = games.slice(0, 8);
+    if (!games.length) { sgdbStatus('No games found for “' + term + '”. Try a shorter or different name.'); return; }
+    const pick = picker.games.find(g => g.id === picker.gameId) || picker.games[0];
+    renderSgdbGames(pick.id);
+    loadSgdbArt(pick.id);
+  } catch (e) { sgdbStatus(errMsg(e), sgdbReady() ? null : ['Open Artwork settings', openArtworkSettings]); }
+}
+function renderSgdbGames(activeId) {
+  $('sgdbGames').replaceChildren(...picker.games.map(g => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sgdb-game';
+    b.setAttribute('aria-pressed', String(g.id === activeId));
+    b.textContent = g.name; const y = yearOf(g);
+    if (y) { const s = document.createElement('small'); s.textContent = y; b.append(s); }
+    b.addEventListener('click', () => { renderSgdbGames(g.id); loadSgdbArt(g.id); });
+    return b;
+  }));
+}
+async function loadSgdbArt(gameId) {
+  picker.gameId = gameId;
+  $('sgdbResults').replaceChildren();
+  sgdbStatus('Loading ' + (picker.kind === 'banner' ? 'banners' : 'covers') + '…');
+  try {
+    const art = (await sgdbArt(picker.kind, gameId)).filter(a => SGDB_CDN.test(a.url) && SGDB_CDN.test(a.thumb || a.url));
+    if (!picker || picker.gameId !== gameId) return;
+    if (!art.length) { sgdbStatus('No ' + (picker.kind === 'banner' ? 'banners' : 'covers') + ' for this game yet.'); return; }
+    sgdbStatus('');
+    $('sgdbResults').replaceChildren(...art.slice(0, 48).map(a => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'sgdb-art';
+      b.title = (a.style ? a.style + ' · ' : '') + a.width + '×' + a.height + (a.author && a.author.name ? ' · by ' + a.author.name : '');
+      const img = document.createElement('img'); img.src = a.thumb || a.url; img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
+      const cap = document.createElement('span'); cap.textContent = a.author && a.author.name ? a.author.name : (a.style || '');
+      b.append(img, cap);
+      b.addEventListener('click', () => chooseSgdbArt(a, b));
+      return b;
+    }));
+  } catch (e) { sgdbStatus(errMsg(e)); }
+}
+async function chooseSgdbArt(a, btn) {
+  if (!editing || !picker) return;
+  btn.classList.add('loading'); sgdbStatus('Downloading artwork…');
+  const kind = picker.kind, game = picker.games.find(g => g.id === picker.gameId);
+  const data = await fetchArt(a.url, kind);
+  if (!editing) return;
+  editing.draft[kind] = data;
+  editing.draft.sgdbId = picker.gameId;
+  if (game && !$('gdName').value.trim() && game.name) $('gdName').value = game.name;
+  if (game && !$('gdYear').value.trim() && yearOf(game)) $('gdYear').value = yearOf(game);
+  paintDraft();
+  sgdbDialog.close(); picker = null;
+  toast((kind === 'banner' ? 'Banner' : 'Cover') + ' selected — press Save to keep it', 'ok');
+}
+$('sgdbForm').addEventListener('submit', e => { e.preventDefault(); if (sgdbReady()) runSgdbSearch(); });
+$('sgdbClose').addEventListener('click', () => { sgdbDialog.close(); picker = null; });
+sgdbDialog.addEventListener('click', e => { if (e.target === sgdbDialog) { sgdbDialog.close(); picker = null; } });
+$('gdCoverSgdb').addEventListener('click', () => openSgdbPicker('cover'));
+$('gdBannerSgdb').addEventListener('click', () => openSgdbPicker('banner'));
+
+/* Automatic lookup: best match's top-rated cover (and banner) */
+async function autoArtwork(name, { quiet = false } = {}) {
+  const item = romByName(name);
+  if (!item || !sgdbReady()) return false;
+  const games = await sgdbSearch(cleanTitle(item.title || item.name));
+  if (!games.length) return false;
+  const g = games.find(x => x.id === item.sgdbId) || games[0];
+  const patch = { sgdbId: g.id };
+  if (!item.title && g.name) patch.title = g.name;
+  if (!item.year && yearOf(g)) patch.year = yearOf(g);
+  if (!item.cover) { const grids = (await sgdbArt('cover', g.id)).filter(a => SGDB_CDN.test(a.url)); if (grids[0]) patch.cover = await fetchArt(grids[0].url, 'cover'); }
+  if (!item.banner && pref.bool('sgdbBanners', true)) { const heroes = (await sgdbArt('banner', g.id)).filter(a => SGDB_CDN.test(a.url)); if (heroes[0]) patch.banner = await fetchArt(heroes[0].url, 'banner'); }
+  await updateRom(name, patch);
+  if (isCurrent(name)) { $('gameTitle').textContent = titleOf(name); document.title = titleOf(name) + ' · chimiNES'; if (view === 'play') $('viewTitle').textContent = titleOf(name); }
+  if (!quiet) toast('Artwork added for ' + titleOf(name), 'ok');
+  return !!patch.cover;
+}
+
+/* Settings → Artwork */
+{
+  const key = $('sgdbKey'), proxy = $('sgdbProxy');
+  key.value = sgdb.key; proxy.value = sgdb.proxy;
+  key.addEventListener('input', () => { sgdb.key = key.value.trim(); pref.set('sgdbKey', sgdb.key); });
+  proxy.addEventListener('input', () => { sgdb.proxy = proxy.value.trim(); pref.set('sgdbProxy', sgdb.proxy); });
+  $('sgdbShowKey').addEventListener('click', () => { const show = key.type === 'password'; key.type = show ? 'text' : 'password'; $('sgdbShowKey').textContent = show ? 'Hide' : 'Show'; });
+  bindPrefSwitch('sgdbAuto', 'sgdbAuto', true);
+  bindPrefSwitch('sgdbBannersToggle', 'sgdbBanners', true);
+  $('sgdbTest').addEventListener('click', async () => {
+    const out = $('sgdbTestResult'); out.textContent = 'Testing…'; out.className = 'note';
+    try { const r = await sgdbSearch('Super Mario Bros'); out.textContent = '✓ Connected — SteamGridDB returned ' + r.length + ' result' + (r.length === 1 ? '' : 's') + '.'; out.className = 'note ok-text'; }
+    catch (e) { out.textContent = errMsg(e); out.className = 'note err-text'; }
+  });
+  $('sgdbBulk').addEventListener('click', async () => {
+    const btn = $('sgdbBulk'), out = $('sgdbTestResult');
+    if (!sgdbReady()) { out.textContent = 'Add an API key or proxy URL first.'; out.className = 'note err-text'; return; }
+    const todo = (roms || []).filter(r => !r.cover);
+    if (!todo.length) { out.textContent = 'Every game already has cover art.'; out.className = 'note'; return; }
+    btn.disabled = true; let found = 0, i = 0;
+    for (const r of todo) {
+      out.className = 'note'; out.textContent = `Looking up ${++i} of ${todo.length}: ${displayName(r)}…`;
+      try { if (await autoArtwork(r.name, { quiet: true })) found++; }
+      catch (e) { out.textContent = errMsg(e); out.className = 'note err-text'; btn.disabled = false; return; }
+    }
+    btn.disabled = false;
+    out.textContent = `Done — found covers for ${found} of ${todo.length} game${todo.length === 1 ? '' : 's'}.`; out.className = 'note ok-text';
+  });
+}
 
 /* Views */
 let autoPaused = false;
@@ -2058,12 +2299,14 @@ async function loadBytes(bytes, name, save, skipAutoRestore = false) {
     if (paused) $('veilText').textContent = 'Ready — press play';
     if (save) {
       const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-      try { await dbOp('readwrite', s => { const g = s.get(name); g.onsuccess = () => s.put({ ...(g.result || {}), name, bytes: buf, savedAt: Date.now() }); }); }
+      let isNew = false;
+      try { await dbOp('readwrite', s => { const g = s.get(name); g.onsuccess = () => { isNew = !g.result; s.put({ ...(g.result || {}), name, bytes: buf, savedAt: Date.now() }); }; }); }
       catch (e) { toast('Game loaded, but it couldn’t be saved to your library: ' + errMsg(e), 'error'); }
     }
     autoPaused = false;
     await refreshData();
     showView('play');
+    if (save && sgdbReady() && pref.bool('sgdbAuto', true) && !(romByName(name) || {}).cover) autoArtwork(name).catch(e => toast('Couldn’t fetch artwork: ' + errMsg(e), 'error'));
     if (!skipAutoRestore && pref.bool('resumeAutosave', true)) {
       const auto = (await statesFor(name)).filter(r => r.autosave).sort((a, b) => (Number(b.autosaveVersion) || 0) - (Number(a.autosaveVersion) || 0))[0];
       if (auto && token === loadToken) {
@@ -2222,7 +2465,7 @@ window.addEventListener('keydown', e => {
     keybinds[listeningFor] = e.key; pref.setJson('keybinds', keybinds); stopListening('Saved.');
     return;
   }
-  if (settingsDialog.open || gameDialog.open || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (settingsDialog.open || gameDialog.open || sgdbDialog.open || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
   if (view !== 'play' && !isFullscreen()) return;
   const id = norm(e.key);
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { e.preventDefault(); if (!e.repeat) { zapperDown = true; zapperAt(null, true); } return; }

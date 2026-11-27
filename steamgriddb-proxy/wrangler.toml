@@ -1,0 +1,7 @@
+name = "chimines-sgdb-proxy"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+
+# Optional: only allow your own chimiNES site(s) to use this proxy.
+# [vars]
+# ALLOWED_ORIGINS = "https://your-name.github.io"

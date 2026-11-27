@@ -15,11 +15,11 @@ webgpu display pipeline: the game screen is drawn by a WGSL shader on the GPU. i
 
 effect presets: clean, soft crt, crt and arcade, each with sliders to fine-tune.
 
-simpler layout: one big screen with a control dock under it, a library / saves panel on the side, and everything else in a settings drawer you can keep open while watching the effect change live.
+launcher layout (steam / epic style): a sidebar with navigation, a searchable game list and a "now playing" card; a library page with a featured-game banner and a grid of cover cards (covers come from your latest save screenshot); a now playing page with the screen, control dock and that game's save states; and a save states page grouped by game. leaving a game pauses it, coming back resumes it. settings live in a drawer you can keep open while watching effects change live.
 
 save states with thumbnails, relative timestamps and one-key shortcuts (F2 save, F4 load).
 
-ambient glow, accent colors and auto / dark / light / black modes replace the long theme list.
+28 full themes: every original chimiNES theme (neon blue is still the default) plus steam deck, epic night, synthwave, famicom, pocket green, paper and snow. each theme recolors the whole interface, not just the accent. the classic glowing-panel look is back as the "glow" style, with a "flat" style as an option. ambient glow lights the page with the game's colors.
 
 bug fixes: typing in the cheat boxes no longer triggers game buttons (letters like A, S, Z, X were blocked), keys no longer get stuck when the window loses focus, the "auto-start" toggle actually works now, audio latency stays capped at high speeds, the emulator no longer spirals when it falls behind, autosave no longer reads the whole database every second, a failed rom load no longer leaves the previous game half-broken, and switching games autosaves the one you were playing.
 

@@ -4,120 +4,282 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>chimiNES</title>
-<meta name="description" content="chimiNES — a browser NES emulator with a WebGPU display pipeline.">
-<link id="siteFavicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0b0e'/%3E%3Crect x='10' y='22' width='44' height='22' rx='6' fill='%23ff4d5a'/%3E%3Cpath d='M19 28v10M14 33h10' stroke='%230a0b0e' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='40' cy='35' r='3.4' fill='%230a0b0e'/%3E%3Ccircle cx='47' cy='31' r='3.4' fill='%230a0b0e'/%3E%3C/svg%3E">
-<meta name="theme-color" content="#0a0b0e">
+<meta name="description" content="chimiNES — a browser NES emulator and game launcher with a WebGPU display pipeline.">
+<link id="siteFavicon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23030916'/%3E%3Crect x='10' y='22' width='44' height='22' rx='6' fill='%23078cff'/%3E%3Cpath d='M19 28v10M14 33h10' stroke='%23030916' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='40' cy='35' r='3.4' fill='%23e8323f'/%3E%3Ccircle cx='47' cy='31' r='3.4' fill='%23e8323f'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#030916">
 <style>
 /* ============================================================
-   Tokens
+   Theme tokens. JS sets the base palette (--bg, --panel, --line,
+   --accent, --accent-2, --text, --muted); everything else derives.
    ============================================================ */
 :root{
   color-scheme:dark;
-  --bg:#0a0b0e;
-  --surface:#121419;
-  --surface-2:#181b21;
-  --surface-3:#21252d;
-  --border:rgba(255,255,255,.07);
-  --border-2:rgba(255,255,255,.12);
-  --text:#eceef2;
-  --muted:#8d93a1;
-  --faint:#5f6572;
-  --accent:#ff4d5a;
+  --bg:#030916;--panel:#06172a;--line:#075ba9;--accent:#078cff;--accent-2:#00c8ff;--text:#edf6ff;--muted:#83b5ef;
   --accent-ink:#fff;
-  --accent-soft:color-mix(in srgb,var(--accent) 15%,transparent);
-  --accent-line:color-mix(in srgb,var(--accent) 40%,transparent);
+  --surface:var(--panel);
+  --surface-2:color-mix(in srgb,var(--panel) 93%,var(--text));
+  --surface-3:color-mix(in srgb,var(--panel) 85%,var(--text));
+  --border:color-mix(in srgb,var(--line) 45%,transparent);
+  --border-2:color-mix(in srgb,var(--line) 70%,transparent);
+  --faint:color-mix(in srgb,var(--muted) 62%,var(--bg));
+  --side:color-mix(in srgb,var(--bg) 62%,var(--panel));
+  --accent-soft:color-mix(in srgb,var(--accent) 16%,transparent);
+  --accent-line:color-mix(in srgb,var(--accent) 45%,transparent);
   --ok:#3ddc84;--warn:#f5b82e;--err:#ff5c5c;
   --radius:16px;--radius-sm:10px;
-  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 14px 34px -16px rgba(0,0,0,.7);
+  --shadow:0 14px 34px -16px rgba(0,0,0,.7);
+  /* "Glow" style (the original chimiNES look): gradient panels, lit borders */
+  --panel-bg:linear-gradient(145deg,color-mix(in srgb,var(--panel) 94%,transparent),color-mix(in srgb,var(--bg) 80%,var(--panel)));
+  --panel-border:color-mix(in srgb,var(--line) 85%,transparent);
+  --glow:0 0 26px color-mix(in srgb,var(--accent) 13%,transparent);
   --font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --ambient:transparent;
   --stage-w:768px;
 }
-:root[data-mode="light"]{
-  color-scheme:light;
-  --bg:#eef0f4;--surface:#fff;--surface-2:#f5f6f8;--surface-3:#e8eaef;
-  --border:rgba(16,20,30,.08);--border-2:rgba(16,20,30,.15);
-  --text:#15171c;--muted:#5d6370;--faint:#989eaa;
-  --shadow:0 1px 2px rgba(16,20,30,.05),0 14px 34px -18px rgba(16,20,30,.25);
-}
-:root[data-mode="oled"]{--bg:#000;--surface:#0a0a0b;--surface-2:#111113;--surface-3:#1a1a1d}
+:root[data-style="flat"]{--panel-bg:var(--panel);--panel-border:var(--border);--glow:0 0 0 transparent}
+:root[data-light]{color-scheme:light;--shadow:0 14px 34px -18px rgba(16,20,30,.28)}
 
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
 body{
-  background:radial-gradient(1100px 520px at 50% -260px,color-mix(in srgb,var(--accent) 13%,transparent),transparent 72%),var(--bg);
+  background:radial-gradient(ellipse 1100px 520px at 60% -220px,color-mix(in srgb,var(--accent-2) 14%,transparent),transparent 70%),var(--bg);
   background-attachment:fixed;
-  color:var(--text);font:14px/1.5 var(--font);
-  -webkit-font-smoothing:antialiased;
-  min-height:100vh;
+  color:var(--text);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased;min-height:100vh;
+  transition:background-color .2s,color .2s;
 }
+:root[data-style="flat"] body{background:var(--bg)}
 button,select,input{font:inherit;color:inherit}
 button{cursor:pointer}
 [hidden]{display:none!important}
 ::selection{background:var(--accent);color:var(--accent-ink)}
-*{scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+*{scrollbar-width:thin;scrollbar-color:var(--border-2) transparent}
+:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
 input[type=file]{display:none}
 
-/* ============================================================
-   Icons & buttons
-   ============================================================ */
+/* Icons & buttons */
 .i{width:18px;height:18px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .i.fill{fill:currentColor;stroke:none}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   height:38px;padding:0 14px;border-radius:var(--radius-sm);
   border:1px solid var(--border-2);background:var(--surface-2);
-  font-weight:600;font-size:13.5px;white-space:nowrap;
-  transition:background .15s,border-color .15s,transform .1s,filter .15s,color .15s;
+  font-weight:650;font-size:13.5px;white-space:nowrap;
+  transition:background .15s,border-color .15s,transform .1s,filter .15s,color .15s,box-shadow .15s;
 }
-.btn:hover{background:var(--surface-3)}
+.btn:hover{background:var(--surface-3);border-color:var(--accent-line)}
 .btn:active{transform:translateY(1px)}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
-.btn-primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
-.btn-primary:hover{background:var(--accent);filter:brightness(1.08)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 70%,var(--accent-2)));color:var(--accent-ink);border-color:transparent;box-shadow:0 6px 18px -8px var(--accent)}
+.btn-primary:hover{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 70%,var(--accent-2)));filter:brightness(1.1);border-color:transparent}
+:root[data-style="flat"] .btn-primary{background:var(--accent);box-shadow:none}
 .btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
-.btn-ghost:hover{color:var(--text);background:var(--surface-3)}
+.btn-ghost:hover{color:var(--text);background:var(--surface-3);border-color:transparent}
 .btn-sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}
+.btn-lg{height:50px;padding:0 30px;font-size:16px;border-radius:12px;letter-spacing:.02em}
+.btn-lg .i{width:20px;height:20px}
 .icon-btn{width:38px;padding:0}
 .icon-btn.btn-sm{width:30px}
 .wide{width:100%}
-
-/* ============================================================
-   Top bar
-   ============================================================ */
-.topbar{
-  position:sticky;top:0;z-index:20;
-  display:flex;align-items:center;gap:12px;
-  height:62px;padding:0 max(20px,env(safe-area-inset-left));
-  background:color-mix(in srgb,var(--bg) 78%,transparent);
-  backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);
-  border-bottom:1px solid var(--border);
-}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
-.brand-logo{width:44px;height:28px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
-.wordmark{font-weight:800;font-size:21px;letter-spacing:-.03em}
-.wordmark b{color:#e8323f;font-weight:900}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:4px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)}
+.seg button{height:32px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-weight:600;font-size:13px;padding:0 10px;white-space:nowrap;transition:background .15s,color .15s}
+.seg button:hover{color:var(--text)}
+.seg button[aria-selected="true"],.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--text);box-shadow:inset 0 0 0 1px var(--accent-line)}
 .badge{
   display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:99px;
-  font:600 11px/1 var(--mono);letter-spacing:.02em;color:var(--muted);
-  background:var(--surface-2);border:1px solid var(--border);
+  font:600 11px/1 var(--mono);letter-spacing:.02em;color:var(--muted);background:var(--surface-2);border:1px solid var(--border);
 }
 .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--faint)}
 .badge.gpu::before{background:var(--ok);box-shadow:0 0 8px var(--ok)}
 .badge.cpu::before{background:var(--warn)}
 .grow{flex:1}
+.tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:99px;background:var(--accent-soft);color:var(--accent-2);font:700 9.5px/1.5 var(--font);letter-spacing:.06em;text-transform:uppercase;vertical-align:1px}
+.empty-list{display:grid;justify-items:center;gap:6px;padding:34px 14px;text-align:center;color:var(--muted);font-size:13px}
+.empty-list .i{width:28px;height:28px;color:var(--faint)}
 
 /* ============================================================
-   Layout
+   App shell: sidebar + main (launcher layout)
    ============================================================ */
-.layout{
-  display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;
-  max-width:1520px;margin:0 auto;padding:22px max(22px,env(safe-area-inset-right)) 28px max(22px,env(safe-area-inset-left));
-  align-items:start;
+.app{display:grid;grid-template-columns:268px minmax(0,1fr);min-height:100vh}
+.sidebar{
+  position:sticky;top:0;height:100vh;z-index:40;
+  display:flex;flex-direction:column;gap:14px;padding:18px 12px 14px;
+  background:var(--side);border-right:1px solid var(--panel-border);
+  box-shadow:var(--glow);
 }
-.player{display:flex;flex-direction:column;align-items:center;gap:14px;min-width:0}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 6px}
+.brand-logo{width:48px;height:30px;object-fit:contain;filter:drop-shadow(0 2px 8px color-mix(in srgb,var(--accent) 30%,transparent))}
+.wordmark{font-weight:900;font-size:23px;letter-spacing:-.04em}
+.wordmark b{color:#e8323f;font-weight:900}
+.nav{display:grid;gap:2px}
+.nav button{
+  display:flex;align-items:center;gap:12px;height:42px;padding:0 12px;border:0;border-radius:10px;
+  background:transparent;color:var(--muted);font-weight:650;font-size:14px;text-align:left;
+  transition:background .15s,color .15s,box-shadow .15s;
+}
+.nav button:hover{background:var(--surface-2);color:var(--text)}
+.nav button[aria-current="page"]{background:var(--accent-soft);color:var(--text);box-shadow:inset 3px 0 0 var(--accent-2)}
+.nav button[aria-current="page"] .i{color:var(--accent-2)}
+.nav .count{margin-left:auto}
+.count{display:inline-grid;place-items:center;min-width:20px;height:18px;padding:0 6px;border-radius:99px;background:var(--surface-3);color:var(--muted);font:700 10.5px/1 var(--mono)}
+.side-head{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 0;color:var(--faint);font:800 11px/1 var(--font);letter-spacing:.1em;text-transform:uppercase}
+.search{position:relative}
+.search .i{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);pointer-events:none}
+.search input{
+  width:100%;height:36px;padding:0 10px 0 34px;border-radius:9px;border:1px solid var(--border);
+  background:color-mix(in srgb,var(--bg) 60%,var(--panel));font-size:13px;
+}
+.search input:focus{border-color:var(--accent-line);outline:0;box-shadow:0 0 0 3px var(--accent-soft)}
+.side-games{flex:1;min-height:0;overflow:auto;display:grid;align-content:start;gap:1px;margin:0 -4px;padding:0 4px}
+.sg{
+  display:flex;align-items:center;gap:10px;padding:5px 8px;border-radius:8px;border:0;background:transparent;
+  color:var(--muted);font-size:13px;font-weight:550;text-align:left;width:100%;
+}
+.sg:hover{background:var(--surface-2);color:var(--text)}
+.sg.current{color:var(--text);background:var(--accent-soft)}
+.sg .mini{width:26px;height:26px;border-radius:6px;flex:0 0 auto;font-size:10px}
+.sg span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sg .live{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);flex:0 0 auto}
+.sg .live.paused{background:var(--warn);box-shadow:none}
+.side-empty{padding:8px 10px;color:var(--faint);font-size:12.5px}
+.now-card{
+  display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px;align-items:center;padding:8px;border-radius:12px;
+  background:var(--panel-bg);border:1px solid var(--panel-border);box-shadow:var(--glow);cursor:pointer;
+}
+.now-card canvas{width:70px;aspect-ratio:256/240;border-radius:6px;background:#000;display:block;image-rendering:pixelated}
+.now-card .eyebrow{color:var(--accent-2);font:800 10px/1 var(--font);letter-spacing:.1em;text-transform:uppercase}
+.now-card .t{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:3px 0 6px}
+.side-foot{display:grid;gap:8px}
+.side-foot-row{display:flex;align-items:center;gap:8px}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;height:64px;padding:0 28px;
+  background:color-mix(in srgb,var(--bg) 78%,transparent);
+  backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);
+  border-bottom:1px solid var(--panel-border);
+}
+.topbar h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.crumb{color:var(--muted);font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+.crumb button{border:0;background:transparent;color:var(--muted);font-weight:600;padding:0}
+.crumb button:hover{color:var(--accent-2)}
+.menu-btn{display:none}
+.view{width:100%;max-width:1640px;margin:0 auto;padding:26px 28px 40px}
+.footer{margin-top:auto;padding:0 20px 22px;text-align:center;color:var(--faint);font-size:12px}
+
+/* Library: hero banner */
+.hero{
+  position:relative;isolation:isolate;overflow:hidden;border-radius:20px;min-height:320px;
+  display:flex;align-items:flex-end;padding:34px;
+  border:1px solid var(--panel-border);box-shadow:var(--glow),var(--shadow);background:#05070c;
+}
+.hero-art{position:absolute;inset:-40px;z-index:-2;background:center/cover no-repeat;filter:blur(22px) saturate(1.35);transform:scale(1.08);opacity:.85}
+.hero-art.gen{filter:none;opacity:1;inset:0;transform:none;background:linear-gradient(120deg,hsl(var(--h) 70% 32%),hsl(calc(var(--h) + 60) 70% 16%))}
+.hero::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(90deg,rgba(3,5,10,.92) 0,rgba(3,5,10,.65) 45%,rgba(3,5,10,.05) 100%),linear-gradient(0deg,rgba(3,5,10,.75),transparent 55%);
+}
+.hero-shot{
+  position:absolute;right:34px;top:50%;transform:translateY(-50%) perspective(900px) rotateY(-8deg);
+  width:min(330px,32%);aspect-ratio:256/240;border-radius:12px;background:#000 center/cover no-repeat;image-rendering:pixelated;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.12),0 0 50px -10px var(--accent);
+}
+.hero-content{max-width:600px;color:#fff}
+.hero-eyebrow{color:var(--accent-2);font:800 11.5px/1 var(--font);letter-spacing:.14em;text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.hero h2{margin:10px 0 12px;font-size:clamp(28px,4vw,46px);line-height:1.04;letter-spacing:-.035em;font-weight:900;text-shadow:0 2px 20px rgba(0,0,0,.5);overflow-wrap:anywhere}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:99px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);color:#dfe5ee;font-size:12px;font-weight:600;backdrop-filter:blur(6px)}
+.hero-actions{display:flex;flex-wrap:wrap;gap:10px}
+.hero .btn:not(.btn-primary){background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(6px)}
+.hero .btn:not(.btn-primary):hover{background:rgba(255,255,255,.18)}
+
+/* Library: shelf header + grid */
+.shelf-head{display:flex;align-items:center;gap:12px;margin:34px 0 14px}
+.shelf-head h3{margin:0;font:800 13px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.shelf-head h3 b{color:var(--text)}
+.select{
+  appearance:none;-webkit-appearance:none;height:34px;max-width:200px;padding:0 30px 0 11px;border-radius:9px;
+  border:1px solid var(--border-2);
+  background:var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%238d93a1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 11px center;
+  cursor:pointer;font-size:13px;
+}
+.select option{background:var(--panel);color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:20px}
+.card{
+  position:relative;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;cursor:pointer;
+  background:var(--panel-bg);border:1px solid var(--panel-border);
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,border-color .2s;
+}
+.card:hover,.card:focus-visible{transform:translateY(-5px);border-color:var(--accent-line);box-shadow:0 22px 40px -18px rgba(0,0,0,.85),0 0 30px -6px color-mix(in srgb,var(--accent) 40%,transparent)}
+.card.current{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--glow)}
+.cover{position:relative;background:#000 center/cover no-repeat;image-rendering:pixelated;overflow:hidden}
+.card .cover{aspect-ratio:3/4}
+.cover.gen{
+  image-rendering:auto;display:grid;place-items:center;
+  background:
+    radial-gradient(120% 80% at 30% 0%,rgba(255,255,255,.22),transparent 55%),
+    linear-gradient(160deg,hsl(var(--h) 72% 48%),hsl(calc(var(--h) + 50) 66% 20%));
+}
+.cover.gen::before{content:"";position:absolute;top:0;left:14%;right:14%;height:9%;border-radius:0 0 6px 6px;background:repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 3px,transparent 3px 8px)}
+.cover.gen::after{content:"chimiNES";position:absolute;left:0;right:0;bottom:0;padding:7px 0;text-align:center;font:800 9px/1 var(--font);letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.8);background:rgba(0,0,0,.28)}
+.cover-initials{font:900 clamp(30px,4vw,48px)/1 var(--font);letter-spacing:-.05em;color:rgba(255,255,255,.95);text-shadow:0 4px 18px rgba(0,0,0,.35)}
+.mini.cover.gen::before,.mini.cover.gen::after{display:none}
+.mini .cover-initials{font-size:10px;letter-spacing:0}
+.cover.has-thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.45),transparent 40%)}
+.card-play{
+  position:absolute;left:50%;top:50%;z-index:2;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;
+  display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);
+  box-shadow:0 10px 30px -6px var(--accent);opacity:0;transform:scale(.8);transition:opacity .18s,transform .18s;
+}
+.card-play .i{width:24px;height:24px;margin-left:3px}
+.card:hover .card-play,.card:focus-visible .card-play{opacity:1;transform:none}
+.card-badge{position:absolute;top:8px;left:8px;z-index:2;padding:3px 8px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font:800 9.5px/1.3 var(--font);letter-spacing:.08em;text-transform:uppercase}
+.card-del{position:absolute;top:6px;right:6px;z-index:3;opacity:0;background:rgba(0,0,0,.55)!important;color:#fff!important;backdrop-filter:blur(6px)}
+.card:hover .card-del,.card:focus-within .card-del{opacity:1}
+@media (hover:none){.card-del{opacity:1}.card-play{opacity:.9;transform:none}}
+.card-body{padding:10px 12px 12px;min-width:0}
+.card-title{font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-meta{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.add-card{border-style:dashed;background:transparent;color:var(--muted)}
+.add-card .cover{background:transparent;display:grid;place-items:center}
+.add-card .cover .i{width:40px;height:40px;stroke-width:1.5}
+.add-card:hover{color:var(--text)}
+
+/* Save cards (Saves page + Now Playing shelf) */
+.save-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.save-row{display:grid;grid-auto-flow:column;grid-auto-columns:190px;gap:14px;overflow-x:auto;padding:2px 2px 10px}
+.save-card{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;cursor:pointer;background:var(--panel-bg);border:1px solid var(--panel-border);transition:transform .18s,border-color .18s,box-shadow .18s}
+.save-card:hover,.save-card:focus-visible{transform:translateY(-3px);border-color:var(--accent-line);box-shadow:0 0 24px -6px color-mix(in srgb,var(--accent) 35%,transparent)}
+.save-card .cover{aspect-ratio:256/240}
+.save-body{display:flex;align-items:center;gap:6px;padding:8px 8px 8px 11px;min-width:0}
+.save-body .info{flex:1;min-width:0}
+.save-body .t{font-weight:650;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.save-body .m{color:var(--muted);font-size:11.5px}
+.new-save{display:grid;place-items:center;gap:6px;align-content:center;border:1px dashed var(--border-2);border-radius:12px;color:var(--muted);background:transparent;font-weight:650;min-height:150px}
+.new-save:hover{color:var(--text);border-color:var(--accent)}
+.new-save .i{width:28px;height:28px}
+.group-title{display:flex;align-items:center;gap:10px;margin:28px 0 12px;font-weight:800;font-size:15px}
+.group-title:first-child{margin-top:4px}
+.group-title .mini{width:28px;height:28px;border-radius:7px}
+
+/* Now Playing page */
+.play-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.player{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;min-width:0}
+.play-saves{width:100%;max-width:max(var(--stage-w),600px)}
+.play-saves .shelf-head{margin-top:16px}
+
+/* Theme picker */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px 0}
+.theme-card{display:grid;gap:7px;padding:7px;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);text-align:left;font-size:12px;font-weight:650;color:var(--muted);transition:border-color .15s,color .15s}
+.theme-card:hover{color:var(--text);border-color:var(--accent-line)}
+.theme-card[aria-pressed="true"]{border-color:var(--accent);color:var(--text);box-shadow:0 0 0 1px var(--accent)}
+.tprev{display:grid;grid-template-columns:28% 1fr;height:56px;border-radius:8px;overflow:hidden;background:var(--tbg);border:1px solid var(--tline)}
+.tprev i{background:var(--tpanel);border-right:1px solid var(--tline)}
+.tprev span{display:grid;gap:4px;align-content:start;padding:8px 7px}
+.tprev b{display:block;height:5px;width:75%;border-radius:3px;background:var(--ttext);opacity:.55}
+.tprev b+b{width:48%;opacity:.3}
+.tprev em{display:block;margin-top:4px;height:11px;width:46%;border-radius:4px;background:linear-gradient(90deg,var(--tacc),var(--tacc2))}
+.tname{padding:0 3px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Stage: the game screen */
 .stage{
@@ -183,51 +345,6 @@ input[type=file]{display:none}
   font:600 13px var(--mono);cursor:pointer;
 }
 .chip-select:hover{background-color:var(--surface-3)}
-
-/* ============================================================
-   Side panel
-   ============================================================ */
-.side{
-  position:sticky;top:84px;
-  display:flex;flex-direction:column;max-height:calc(100vh - 106px);min-height:320px;
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
-  overflow:hidden;
-}
-.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:4px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)}
-.seg button{height:32px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-weight:600;font-size:13px;padding:0 10px;white-space:nowrap;transition:background .15s,color .15s}
-.seg button:hover{color:var(--text)}
-.seg button[aria-selected="true"],.seg button[aria-pressed="true"]{background:var(--surface-3);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.25)}
-:root[data-mode="light"] .seg button[aria-selected="true"],:root[data-mode="light"] .seg button[aria-pressed="true"]{background:var(--surface)}
-.side .seg{margin:12px 12px 6px}
-.side-body{overflow:auto;padding:6px 12px 14px;flex:1;min-height:0}
-.side-foot{padding:10px 12px 12px;border-top:1px solid var(--border);display:flex;gap:8px}
-.side-foot .btn{flex:1}
-.hint{color:var(--faint);font-size:12px;margin:10px 4px 0;line-height:1.45}
-.count{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:99px;background:var(--surface);color:var(--muted);font:700 10.5px/1 var(--mono)}
-
-.list{display:grid;gap:4px}
-.item{
-  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;
-  padding:8px;border-radius:12px;border:1px solid transparent;cursor:pointer;
-  transition:background .15s,border-color .15s;
-}
-.item:hover{background:var(--surface-2)}
-.item.active{background:var(--accent-soft);border-color:var(--accent-line)}
-.item-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-meta{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
-.item:hover .item-actions,.item:focus-within .item-actions{opacity:1}
-@media (hover:none){.item-actions{opacity:1}}
-.rom-art{
-  width:40px;height:40px;border-radius:10px;display:grid;place-items:center;
-  font:800 13px/1 var(--font);color:#fff;letter-spacing:-.02em;text-shadow:0 1px 2px rgba(0,0,0,.35);
-  background:linear-gradient(135deg,hsl(var(--h) 72% 58%),hsl(calc(var(--h) + 45) 70% 38%));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.25);
-}
-.thumb{width:68px;aspect-ratio:256/240;border-radius:7px;background:#000 center/cover no-repeat;box-shadow:0 0 0 1px var(--border);image-rendering:pixelated}
-.tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font:700 9.5px/1.5 var(--font);letter-spacing:.06em;text-transform:uppercase;vertical-align:1px}
-.empty-list{display:grid;justify-items:center;gap:6px;padding:34px 14px;text-align:center;color:var(--muted);font-size:13px}
-.empty-list .i{width:28px;height:28px;color:var(--faint)}
 
 /* ============================================================
    Settings drawer
@@ -371,26 +488,41 @@ kbd{display:inline-block;min-width:26px;padding:2px 7px;border-radius:6px;backgr
 .t-sys{position:absolute;left:50%;bottom:clamp(10px,4%,24px);transform:translateX(-50%);display:flex;gap:10px}
 .t-sys .tk{height:26px;padding:0 14px;border-radius:99px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase}
 
+
+
+/* Overrides for kept component styles */
+.dock{background:var(--panel-bg);border-color:var(--panel-border);box-shadow:var(--glow),var(--shadow)}
+dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
+.group{background:var(--surface-2)}
+.stage{box-shadow:0 0 0 1px var(--panel-border),0 0 140px 6px var(--ambient),var(--glow),0 40px 80px -40px rgba(0,0,0,.9)}
+
 /* ============================================================
    Responsive
    ============================================================ */
-@media (max-width:980px){
-  .layout{grid-template-columns:minmax(0,1fr);gap:16px}
-  .side{position:static;max-height:none}
-  .side-body{max-height:420px}
+.scrim{display:none}
+@media (max-width:1000px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(290px,86vw);transform:translateX(-105%);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+  .app.nav-open .sidebar{transform:none}
+  .app.nav-open .scrim{display:block;position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.5)}
+  .menu-btn{display:inline-flex}
+  .hero-shot{display:none}
 }
 @media (max-width:640px){
-  .topbar{height:56px;gap:8px;padding:0 12px}
-  .wordmark{font-size:19px}
-  .brand-logo{width:36px}
+  .topbar{height:58px;padding:0 12px;gap:8px}
+  .topbar h1{font-size:17px}
   .hide-sm{display:none!important}
-  .layout{padding:12px 12px 20px}
+  .view{padding:14px 12px 24px}
+  .hero{min-height:260px;padding:22px;border-radius:16px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+  .save-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
   .stage{border-radius:10px}
   .dock{flex-wrap:wrap;padding:10px 12px}
   .controls{width:100%;justify-content:space-between}
   .vsep{display:none}
   .row.slider{grid-template-columns:1fr 1.3fr 34px}
   .presets{grid-template-columns:repeat(2,1fr)}
+  .theme-grid{grid-template-columns:repeat(2,1fr)}
   .t-sys{bottom:auto;top:10px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -416,91 +548,151 @@ kbd{display:inline-block;min-width:26px;padding:2px 7px;border-radius:6px;backgr
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 20h14"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-cart" viewBox="0 0 24 24"><path d="M5 3.5h14v17H5z"/><path d="M8 3.5v5h8v-5M8 13h8M8 16h8"/></symbol>
-  <symbol id="i-history" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-pad" viewBox="0 0 24 24"><path d="M6.5 8h11a4 4 0 0 1 4 4.4l-.5 3.6a2.6 2.6 0 0 1-4.6 1.3L15 15.5H9l-1.4 1.8A2.6 2.6 0 0 1 3 16l-.5-3.6a4 4 0 0 1 4-4.4z"/><path d="M7.5 11v3M6 12.5h3"/><circle cx="15.5" cy="12" r=".6" fill="currentColor"/><circle cx="17.5" cy="13.5" r=".6" fill="currentColor"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
 </svg>
 
-<header class="topbar">
-  <a class="brand" href="#" aria-label="chimiNES home" onclick="return false">
-    <img class="brand-logo" src="controller.png" alt="" onerror="this.remove()">
-    <span class="wordmark">chimi<b>NES</b></span>
-  </a>
-  <span class="badge hide-sm" id="rendererBadge" title="Display renderer">starting…</span>
-  <div class="grow"></div>
-  <button class="btn btn-primary" id="openRomBtn"><svg class="i"><use href="#i-folder"/></svg><span class="hide-sm">Open ROM</span></button>
-  <button class="btn icon-btn" id="settingsBtn" aria-label="Settings" title="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
-</header>
-
-<main class="layout">
-  <section class="player" id="player">
-    <div class="stage" id="stage">
-      <canvas id="screen" width="256" height="240" aria-label="NES game screen"></canvas>
-      <div class="fallback-fx"></div>
-      <div class="touch" id="touchControls" hidden aria-label="Touch controls">
-        <div class="t-dpad">
-          <button type="button" class="tk t-up" data-touch="up" aria-label="Up"><svg class="i"><use href="#i-chev"/></svg></button>
-          <button type="button" class="tk t-left" data-touch="left" aria-label="Left"><svg class="i" style="transform:rotate(-90deg)"><use href="#i-chev"/></svg></button>
-          <button type="button" class="tk t-right" data-touch="right" aria-label="Right"><svg class="i" style="transform:rotate(90deg)"><use href="#i-chev"/></svg></button>
-          <button type="button" class="tk t-down" data-touch="down" aria-label="Down"><svg class="i" style="transform:rotate(180deg)"><use href="#i-chev"/></svg></button>
-        </div>
-        <div class="t-sys"><button type="button" class="tk" data-touch="select">Select</button><button type="button" class="tk" data-touch="start">Start</button></div>
-        <div class="t-ab"><button type="button" class="tk t-b" data-touch="b">B</button><button type="button" class="tk t-a" data-touch="a">A</button></div>
-      </div>
-      <div class="fps" id="fpsOverlay" hidden>-- fps</div>
-      <div class="overlay veil" id="pauseVeil" hidden>
-        <div><button class="veil-btn" type="button" aria-label="Resume" tabindex="-1"><svg class="i fill"><use href="#i-play"/></svg></button><small id="veilText">Paused</small></div>
-      </div>
-      <div class="overlay empty" id="emptyState">
-        <div class="empty-inner">
-          <img src="controller.png" alt="" onerror="this.remove()">
-          <h2>Drop a ROM to start playing</h2>
-          <p>.nes files are saved in this browser for next time.</p>
-          <button class="btn btn-primary" id="emptyOpenBtn"><svg class="i"><use href="#i-folder"/></svg>Choose ROM</button>
-        </div>
+<div class="app" id="app">
+  <div class="scrim" id="scrim"></div>
+  <aside class="sidebar" aria-label="Navigation">
+    <div class="brand">
+      <img class="brand-logo" src="controller.png" alt="" onerror="this.remove()">
+      <span class="wordmark">chimi<b>NES</b></span>
+    </div>
+    <nav class="nav" aria-label="Main">
+      <button data-view="library" aria-current="page"><svg class="i"><use href="#i-grid"/></svg>Library<span class="count" id="libCount">0</span></button>
+      <button data-view="play"><svg class="i"><use href="#i-pad"/></svg>Now Playing</button>
+      <button data-view="saves"><svg class="i"><use href="#i-save"/></svg>Save States<span class="count" id="saveCount">0</span></button>
+    </nav>
+    <div class="side-head"><span>Games</span></div>
+    <label class="search"><svg class="i"><use href="#i-search"/></svg><input type="search" id="sideSearch" placeholder="Search library" autocomplete="off" spellcheck="false" aria-label="Search games"></label>
+    <div class="side-games" id="sideGames"></div>
+    <div class="now-card" id="nowCard" hidden role="button" tabindex="0" title="Return to your game">
+      <canvas id="nowCanvas" width="256" height="240"></canvas>
+      <div style="min-width:0">
+        <div class="eyebrow" id="nowStatus">Paused</div>
+        <div class="t" id="nowTitle">—</div>
+        <button class="btn btn-primary btn-sm" id="nowResume" type="button"><svg class="i fill" style="width:13px;height:13px"><use href="#i-play"/></svg>Resume</button>
       </div>
     </div>
-
-    <div class="dock">
-      <div class="now">
-        <div class="now-title" id="gameTitle">No game loaded</div>
-        <div class="now-sub"><span class="dot" id="statusDot"></span><span id="statusText">Waiting for ROM</span></div>
+    <div class="side-foot">
+      <button class="btn btn-primary wide" id="importRomBtn"><svg class="i"><use href="#i-plus"/></svg>Add ROM</button>
+      <div class="side-foot-row">
+        <button class="btn btn-ghost btn-sm" id="settingsBtn"><svg class="i"><use href="#i-sliders"/></svg>Settings</button>
+        <div class="grow"></div>
+        <span class="badge" id="rendererBadge" title="Display renderer">starting…</span>
       </div>
-      <div class="controls">
-        <button class="btn btn-primary play-btn" id="pauseBtn" aria-label="Play" title="Play / pause (Space)"><svg class="i fill"><use href="#i-play"/></svg></button>
-        <button class="btn icon-btn btn-ghost" id="resetBtn" aria-label="Reset" title="Reset console"><svg class="i"><use href="#i-reset"/></svg></button>
-        <span class="vsep"></span>
-        <button class="btn icon-btn btn-ghost" id="saveBtn" aria-label="Save state" title="Save state (F2)"><svg class="i"><use href="#i-save"/></svg></button>
-        <button class="btn icon-btn btn-ghost" id="loadStateBtn" aria-label="Load latest state" title="Load latest state (F4)"><svg class="i"><use href="#i-load"/></svg></button>
-        <span class="vsep"></span>
-        <select class="chip-select" id="speed" aria-label="Playback speed" title="Playback speed">
-          <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option>
-        </select>
-        <button class="btn icon-btn btn-ghost" id="muteBtn" aria-label="Mute" title="Sound on / off (M)"><svg class="i"><use href="#i-vol"/></svg></button>
-        <button class="btn icon-btn btn-ghost" id="fullscreenBtn" aria-label="Fullscreen" title="Fullscreen (F)"><svg class="i"><use href="#i-full"/></svg></button>
-      </div>
-    </div>
-  </section>
-
-  <aside class="side" aria-label="Library and save states">
-    <div class="seg" role="tablist">
-      <button role="tab" id="tabLibrary" aria-selected="true" aria-controls="paneLibrary">Library<span class="count" id="romCount">0</span></button>
-      <button role="tab" id="tabSaves" aria-selected="false" aria-controls="paneSaves">Saves<span class="count" id="saveCount">0</span></button>
-    </div>
-    <div class="side-body" id="paneLibrary" role="tabpanel">
-      <div class="list" id="savedRoms"></div>
-    </div>
-    <div class="side-body" id="paneSaves" role="tabpanel" hidden>
-      <div class="list" id="saveStateLog"></div>
-    </div>
-    <div class="side-foot" id="footLibrary">
-      <button class="btn" id="importRomBtn"><svg class="i"><use href="#i-folder"/></svg>Add ROM</button>
-    </div>
-    <div class="side-foot" id="footSaves" hidden>
-      <button class="btn" id="exportStatesBtn"><svg class="i"><use href="#i-download"/></svg>Export all</button>
-      <button class="btn" id="importStateBtn"><svg class="i"><use href="#i-upload"/></svg>Import</button>
     </div>
   </aside>
-</main>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="btn icon-btn btn-ghost menu-btn" id="menuBtn" aria-label="Open menu"><svg class="i"><use href="#i-menu"/></svg></button>
+      <h1 id="viewTitle">Library</h1>
+      <div class="grow"></div>
+      <button class="btn hide-sm" id="openRomBtn"><svg class="i"><use href="#i-folder"/></svg>Open ROM</button>
+      <button class="btn icon-btn" id="topSettingsBtn" aria-label="Settings" title="Settings"><svg class="i"><use href="#i-sliders"/></svg></button>
+    </header>
+
+    <!-- Library -->
+    <section class="view" data-viewpane="library">
+      <div class="hero" id="hero">
+        <div class="hero-art" id="heroArt"></div>
+        <div class="hero-shot" id="heroShot" hidden></div>
+        <div class="hero-content">
+          <div class="hero-eyebrow" id="heroEyebrow">Get started</div>
+          <h2 id="heroTitle">Welcome to chimiNES</h2>
+          <div class="chips" id="heroMeta"></div>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-lg" id="heroPlay"><svg class="i fill"><use href="#i-play"/></svg><span id="heroPlayLabel">Play</span></button>
+            <button class="btn btn-lg" id="heroSave" hidden><svg class="i"><use href="#i-load"/></svg>Latest save</button>
+          </div>
+        </div>
+      </div>
+      <div class="shelf-head">
+        <h3>All games <b id="gridCount">(0)</b></h3>
+        <div class="grow"></div>
+        <select class="select" id="sortSelect" aria-label="Sort games"><option value="recent">Recently played</option><option value="name">Name</option></select>
+      </div>
+      <div class="grid" id="gameGrid"></div>
+    </section>
+
+    <!-- Now Playing -->
+    <section class="view" data-viewpane="play" hidden>
+      <div class="play-wrap">
+        <div class="player" id="player">
+          <div class="stage" id="stage">
+            <canvas id="screen" width="256" height="240" aria-label="NES game screen"></canvas>
+            <div class="fallback-fx"></div>
+            <div class="touch" id="touchControls" hidden aria-label="Touch controls">
+              <div class="t-dpad">
+                <button type="button" class="tk t-up" data-touch="up" aria-label="Up"><svg class="i"><use href="#i-chev"/></svg></button>
+                <button type="button" class="tk t-left" data-touch="left" aria-label="Left"><svg class="i" style="transform:rotate(-90deg)"><use href="#i-chev"/></svg></button>
+                <button type="button" class="tk t-right" data-touch="right" aria-label="Right"><svg class="i" style="transform:rotate(90deg)"><use href="#i-chev"/></svg></button>
+                <button type="button" class="tk t-down" data-touch="down" aria-label="Down"><svg class="i" style="transform:rotate(180deg)"><use href="#i-chev"/></svg></button>
+              </div>
+              <div class="t-sys"><button type="button" class="tk" data-touch="select">Select</button><button type="button" class="tk" data-touch="start">Start</button></div>
+              <div class="t-ab"><button type="button" class="tk t-b" data-touch="b">B</button><button type="button" class="tk t-a" data-touch="a">A</button></div>
+            </div>
+            <div class="fps" id="fpsOverlay" hidden>-- fps</div>
+            <div class="overlay veil" id="pauseVeil" hidden>
+              <div><button class="veil-btn" type="button" aria-label="Resume" tabindex="-1"><svg class="i fill"><use href="#i-play"/></svg></button><small id="veilText">Paused</small></div>
+            </div>
+            <div class="overlay empty" id="emptyState">
+              <div class="empty-inner">
+                <img src="controller.png" alt="" onerror="this.remove()">
+                <h2>Ready when you are</h2>
+                <p>Drop a .nes ROM here or pick a game from your library.</p>
+                <button class="btn btn-primary" id="emptyOpenBtn"><svg class="i"><use href="#i-folder"/></svg>Choose ROM</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dock">
+            <div class="now">
+              <div class="now-title" id="gameTitle">No game loaded</div>
+              <div class="now-sub"><span class="dot" id="statusDot"></span><span id="statusText">Waiting for ROM</span></div>
+            </div>
+            <div class="controls">
+              <button class="btn btn-primary play-btn" id="pauseBtn" aria-label="Play" title="Play / pause (Space)"><svg class="i fill"><use href="#i-play"/></svg></button>
+              <button class="btn icon-btn btn-ghost" id="resetBtn" aria-label="Reset" title="Reset console"><svg class="i"><use href="#i-reset"/></svg></button>
+              <span class="vsep"></span>
+              <button class="btn icon-btn btn-ghost" id="saveBtn" aria-label="Save state" title="Save state (F2)"><svg class="i"><use href="#i-save"/></svg></button>
+              <button class="btn icon-btn btn-ghost" id="loadStateBtn" aria-label="Load latest state" title="Load latest state (F4)"><svg class="i"><use href="#i-load"/></svg></button>
+              <span class="vsep"></span>
+              <select class="chip-select" id="speed" aria-label="Playback speed" title="Playback speed">
+                <option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option>
+              </select>
+              <button class="btn icon-btn btn-ghost" id="muteBtn" aria-label="Mute" title="Sound on / off (M)"><svg class="i"><use href="#i-vol"/></svg></button>
+              <button class="btn icon-btn btn-ghost" id="fullscreenBtn" aria-label="Fullscreen" title="Fullscreen (F)"><svg class="i"><use href="#i-full"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="play-saves" id="playSaves" hidden>
+          <div class="shelf-head"><h3>Save states <b id="playSaveCount"></b></h3></div>
+          <div class="save-row" id="playSaveRow"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Save states -->
+    <section class="view" data-viewpane="saves" hidden>
+      <div class="shelf-head" style="margin-top:0">
+        <h3>Checkpoints stored in this browser</h3>
+        <div class="grow"></div>
+        <button class="btn btn-sm" id="exportStatesBtn"><svg class="i"><use href="#i-download"/></svg>Export all</button>
+        <button class="btn btn-sm" id="importStateBtn"><svg class="i"><use href="#i-upload"/></svg>Import</button>
+      </div>
+      <div id="saveGroups"></div>
+    </section>
+
+    <div class="footer">chimiNES · made for your browser · load roms you have the right to use.</div>
+  </div>
+</div>
 
 <dialog class="drawer" id="settings" aria-labelledby="settingsTitle">
   <div class="drawer-head">
@@ -512,7 +704,7 @@ kbd{display:inline-block;min-width:26px;padding:2px 7px;border-radius:6px;backgr
     <button role="tab" data-tab="audio" aria-selected="false">Play</button>
     <button role="tab" data-tab="controls" aria-selected="false">Controls</button>
     <button role="tab" data-tab="cheats" aria-selected="false">Cheats</button>
-    <button role="tab" data-tab="look" aria-selected="false">Theme</button>
+    <button role="tab" data-tab="look" aria-selected="false">Themes</button>
     <button role="tab" data-tab="about" aria-selected="false">About</button>
   </div>
   <div class="drawer-body">
@@ -604,19 +796,16 @@ kbd{display:inline-block;min-width:26px;padding:2px 7px;border-radius:6px;backgr
       <p class="note">Writes a byte (hex) to internal RAM ($0000–$07FF) every frame. Cheats are cleared when you load another game.</p>
     </section>
 
-    <!-- Theme -->
+    <!-- Themes -->
     <section data-pane="look" hidden>
-      <div class="gtitle">Mode</div>
-      <div class="seg mode-seg" id="modeSeg">
-        <button data-mode="auto" aria-pressed="false">Auto</button>
-        <button data-mode="dark" aria-pressed="false">Dark</button>
-        <button data-mode="light" aria-pressed="false">Light</button>
-        <button data-mode="oled" aria-pressed="false">Black</button>
+      <div class="gtitle">Interface style</div>
+      <div class="seg" id="styleSeg" style="margin:4px 0">
+        <button data-style="glow" aria-pressed="false">Glow (classic)</button>
+        <button data-style="flat" aria-pressed="false">Flat</button>
       </div>
-      <div class="gtitle">Accent</div>
-      <div class="swatches" id="swatches"></div>
+      <div class="gtitle">Theme</div>
+      <div class="theme-grid" id="themeGrid"></div>
     </section>
-
     <!-- About -->
     <section data-pane="about" hidden>
       <div class="about">
@@ -650,6 +839,7 @@ kbd{display:inline-block;min-width:26px;padding:2px 7px;border-radius:6px;backgr
 const $ = id => document.getElementById(id);
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const NES_W = 256, NES_H = 240, NES_FPS = 60.0988;
+let view = 'library';
 
 /* ------------------------------------------------------------------
    Preferences (localStorage, always wrapped: storage can be blocked)
@@ -974,6 +1164,7 @@ async function initRenderer(allowGPU = true) {
    ------------------------------------------------------------------ */
 const isFullscreen = () => (document.fullscreenElement || document.webkitFullscreenElement) === stage;
 function layoutScreen() {
+  if (!isFullscreen() && !player.clientWidth) return;
   const par = display.aspect === 'tv' ? 8 / 7 : 1;
   const aspect = (NES_W * par) / NES_H;
   let w, h;
@@ -1097,6 +1288,7 @@ function syncPlayUI() {
   if (!romLoaded) setStatus('Waiting for ROM', '');
   else setStatus(paused ? 'Paused' : 'Running', paused ? 'paused' : 'on');
   ['resetBtn', 'saveBtn'].forEach(id => $(id).disabled = !romLoaded);
+  if (typeof renderNowCard === 'function' && roms !== undefined) { renderNowCard(); renderSidebar(); }
 }
 function setPaused(p) {
   if (!romLoaded) return;
@@ -1148,7 +1340,7 @@ function tick(t) {
   }
   const idle = !romLoaded;
   if (idle && renderer && renderer.kind === 'webgpu' && t - lastIdleDraw > 50) { lastIdleDraw = t; needsDraw = true; }
-  if (needsDraw && renderer) {
+  if (needsDraw && renderer && (view === 'play' || isFullscreen())) {
     needsDraw = false;
     renderer.draw({ ...display, time: (t / 1000) % 1000, idle });
   }
@@ -1231,40 +1423,6 @@ function emptyList(icon, text) {
   return d;
 }
 
-/* ---------------- ROM library ---------------- */
-async function listRoms() {
-  const box = $('savedRoms');
-  let items = [];
-  try { items = await dbOp('readonly', s => s.getAll()); }
-  catch (e) { box.replaceChildren(emptyList('cart', 'Browser storage is unavailable, so ROMs can’t be saved here.')); return; }
-  items.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
-  $('romCount').textContent = items.length;
-  if (!items.length) { box.replaceChildren(emptyList('cart', 'No ROMs yet. Add a .nes file and it will be kept here.')); return; }
-  box.replaceChildren(...items.map(item => {
-    const row = document.createElement('div');
-    row.className = 'item' + (romLoaded && sameRom(item.name, currentName) ? ' active' : '');
-    row.tabIndex = 0; row.setAttribute('role', 'button'); row.title = 'Play ' + stripExt(item.name);
-    const art = document.createElement('div'); art.className = 'rom-art'; art.style.setProperty('--h', hueOf(item.name)); art.textContent = initials(item.name);
-    const info = document.createElement('div'); info.style.minWidth = '0';
-    const name = document.createElement('div'); name.className = 'item-name'; name.textContent = stripExt(item.name);
-    const meta = document.createElement('div'); meta.className = 'item-meta';
-    const size = item.bytes ? Math.round(item.bytes.byteLength / 1024) + ' KB' : '';
-    meta.textContent = [size, item.savedAt ? 'played ' + ago(item.savedAt) : ''].filter(Boolean).join(' · ');
-    info.append(name, meta);
-    const actions = document.createElement('div'); actions.className = 'item-actions';
-    actions.append(iconBtn('trash', 'Remove from library', async () => {
-      if (!confirm('Remove ' + stripExt(item.name) + ' from this browser? Its save states are kept.')) return;
-      try { await dbOp('readwrite', s => s.delete(item.name)); listRoms(); toast('Removed ' + stripExt(item.name)); }
-      catch (e) { toast('Could not remove ROM: ' + errMsg(e), 'error'); }
-    }));
-    row.append(art, info, actions);
-    const play = () => loadBytes(new Uint8Array(item.bytes), item.name, true);
-    row.addEventListener('click', play);
-    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); } });
-    return row;
-  }));
-}
-
 /* ---------------- Save states ---------------- */
 function portableState(r) { return { format: 'chimiNES-save-state', formatVersion: 1, romName: r.romName, createdAt: r.createdAt, state: r.state, thumb: r.thumb }; }
 function downloadJSON(filename, data) {
@@ -1290,49 +1448,243 @@ function parseState(state) {
   return s;
 }
 
-async function listSaveStates() {
-  const box = $('saveStateLog');
-  let records = [];
-  try { records = await dbOp('readonly', s => s.getAll(), STATE_STORE); }
-  catch (e) { box.replaceChildren(emptyList('save', 'Browser storage is unavailable, so save states can’t be kept here.')); return; }
-  const manual = records.filter(r => !r.autosave);
-  // Show only the newest autosave per game.
-  const latestAuto = new Map();
-  for (const r of records) if (r.autosave) { const k = String(r.romName).toLowerCase(); const cur = latestAuto.get(k); if (!cur || (r.createdAt || 0) > (cur.createdAt || 0)) latestAuto.set(k, r); }
-  const shown = [...manual, ...latestAuto.values()].sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
-  $('saveCount').textContent = manual.length;
-  if (!shown.length) { box.replaceChildren(emptyList('save', 'No save states yet. Press F2 or the save button while playing.')); return; }
-  const rows = shown.slice(0, 40).map(record => {
-    const row = document.createElement('div');
-    row.className = 'item' + (romLoaded && sameRom(record.romName, currentName) ? ' active' : '');
-    row.tabIndex = 0; row.setAttribute('role', 'button'); row.title = 'Load this save state';
-    const th = document.createElement('div'); th.className = 'thumb';
-    if (typeof record.thumb === 'string' && /^data:image\/(webp|jpeg|png);base64,/.test(record.thumb)) th.style.backgroundImage = `url("${record.thumb}")`;
-    const info = document.createElement('div'); info.style.minWidth = '0';
-    const name = document.createElement('div'); name.className = 'item-name'; name.textContent = stripExt(record.romName || 'Unknown game');
-    const meta = document.createElement('div'); meta.className = 'item-meta'; meta.textContent = ago(Number(record.createdAt));
-    if (record.autosave) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'auto'; meta.append(tag); }
-    info.append(name, meta);
-    const actions = document.createElement('div'); actions.className = 'item-actions';
-    actions.append(
-      iconBtn('download', 'Export', () => {
-        try { downloadJSON(fileBase(record.romName) + '-save-' + new Date(record.createdAt || Date.now()).toISOString().replace(/[:.]/g, '-') + '.json', portableState(record)); }
-        catch (e) { toast('Could not export: ' + errMsg(e), 'error'); }
-      }),
-      iconBtn('trash', 'Delete', async () => {
-        if (!confirm('Delete this save state for ' + stripExt(record.romName) + '?')) return;
-        try { await dbOp('readwrite', s => s.delete(record.id), STATE_STORE); listSaveStates(); }
-        catch (e) { toast('Could not delete: ' + errMsg(e), 'error'); }
-      })
-    );
-    row.append(th, info, actions);
-    const load = async () => { try { await restoreState(record); } catch (e) { toast(errMsg(e), 'error'); } };
-    row.addEventListener('click', load);
-    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); load(); } });
-    return row;
-  });
-  box.replaceChildren(...rows);
+/* ---------------- Library, saves & views ---------------- */
+let roms = [], states = [];
+let libQuery = '', libSort = pref.get('sort', 'recent') === 'name' ? 'name' : 'recent';
+const THUMB_RE = /^data:image\/(webp|jpeg|png);base64,/;
+const thumbOk = t => typeof t === 'string' && THUMB_RE.test(t);
+const byNewest = (a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
+const statesOf = name => states.filter(s => sameRom(s.romName, name));
+function coverFor(name) {
+  let best = null;
+  for (const s of states) if (sameRom(s.romName, name) && thumbOk(s.thumb) && (!best || (s.createdAt || 0) > (best.createdAt || 0))) best = s;
+  return best ? best.thumb : null;
 }
+// Keep only lightweight metadata in memory; full snapshots are read on demand.
+const meta = r => ({ id: r.id, romName: r.romName, createdAt: r.createdAt, autosave: !!r.autosave, autosaveVersion: r.autosaveVersion, thumb: r.thumb });
+async function fullState(rec) { return rec.state ? rec : await dbOp('readonly', s => s.get(rec.id), STATE_STORE); }
+async function refreshData() {
+  try { roms = await dbOp('readonly', s => s.getAll()); } catch (e) { roms = null; }
+  try { states = (await dbOp('readonly', s => s.getAll(), STATE_STORE)).map(meta); } catch (e) { states = null; }
+  renderAll();
+}
+function renderAll() { renderSidebar(); renderLibrary(); renderSaves(); renderPlaySaves(); renderNowCard(); }
+
+function coverEl(name, cls) {
+  const el = document.createElement('div'); el.className = 'cover ' + (cls || '');
+  const t = states ? coverFor(name) : null;
+  if (t) { el.classList.add('has-thumb'); el.style.backgroundImage = `url("${t}")`; }
+  else { el.classList.add('gen'); el.style.setProperty('--h', hueOf(name)); const s = document.createElement('span'); s.className = 'cover-initials'; s.textContent = initials(name); el.append(s); }
+  return el;
+}
+function visibleRoms() {
+  if (!roms) return [];
+  const q = libQuery.trim().toLowerCase();
+  const list = roms.filter(r => !q || stripExt(r.name).toLowerCase().includes(q));
+  return list.sort(libSort === 'name' ? (a, b) => stripExt(a.name).localeCompare(stripExt(b.name), undefined, { sensitivity: 'base' }) : (a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+}
+const isCurrent = name => romLoaded && sameRom(name, currentName);
+function playRom(item) {
+  if (isCurrent(item.name)) { autoPaused = true; showView('play'); return; }
+  loadBytes(new Uint8Array(item.bytes), item.name, true);
+}
+async function removeRom(item) {
+  if (!confirm('Remove ' + stripExt(item.name) + ' from this browser? Its save states are kept.')) return;
+  try { await dbOp('readwrite', s => s.delete(item.name)); await refreshData(); toast('Removed ' + stripExt(item.name)); }
+  catch (e) { toast('Could not remove ROM: ' + errMsg(e), 'error'); }
+}
+function activate(el, fn) {
+  el.tabIndex = 0; el.setAttribute('role', 'button');
+  el.addEventListener('click', fn);
+  el.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === el) { e.preventDefault(); fn(); } });
+}
+
+function renderSidebar() {
+  const box = $('sideGames');
+  $('libCount').textContent = roms ? roms.length : 0;
+  $('saveCount').textContent = states ? states.filter(s => !s.autosave).length : 0;
+  if (!roms) { box.innerHTML = '<div class="side-empty">Browser storage is unavailable.</div>'; return; }
+  const list = visibleRoms();
+  if (!list.length) { const d = document.createElement('div'); d.className = 'side-empty'; d.textContent = roms.length ? 'No matches.' : 'Your games will appear here.'; box.replaceChildren(d); return; }
+  box.replaceChildren(...list.map(item => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'sg' + (isCurrent(item.name) ? ' current' : ''); b.title = stripExt(item.name);
+    const name = document.createElement('span'); name.textContent = stripExt(item.name);
+    b.append(coverEl(item.name, 'mini'), name);
+    if (isCurrent(item.name)) { const l = document.createElement('i'); l.className = 'live' + (paused ? ' paused' : ''); b.append(l); }
+    b.addEventListener('click', () => playRom(item));
+    return b;
+  }));
+}
+
+function renderLibrary() {
+  const grid = $('gameGrid');
+  const all = roms || [];
+  // Hero: the game in progress, else the most recently played.
+  const featured = all.find(r => isCurrent(r.name)) || [...all].sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0))[0];
+  const art = $('heroArt'), shot = $('heroShot'), metaBox = $('heroMeta');
+  metaBox.replaceChildren();
+  const chip = text => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = text; metaBox.append(c); };
+  if (!featured) {
+    art.className = 'hero-art gen'; art.style.backgroundImage = ''; art.style.setProperty('--h', 215);
+    shot.hidden = true;
+    $('heroEyebrow').textContent = roms ? 'Get started' : 'Storage unavailable';
+    $('heroTitle').textContent = 'Welcome to chimiNES';
+    chip('Classic NES gaming in your browser'); chip('Saves stay on this device');
+    $('heroPlayLabel').textContent = 'Add your first ROM';
+    $('heroPlay').onclick = openRomPicker; $('heroSave').hidden = true;
+  } else {
+    const thumb = states ? coverFor(featured.name) : null;
+    if (thumb) { art.className = 'hero-art'; art.style.backgroundImage = `url("${thumb}")`; shot.style.backgroundImage = `url("${thumb}")`; shot.hidden = false; }
+    else { art.className = 'hero-art gen'; art.style.backgroundImage = ''; art.style.setProperty('--h', hueOf(featured.name)); shot.hidden = true; }
+    const cur = isCurrent(featured.name);
+    $('heroEyebrow').textContent = cur ? (paused ? 'Paused' : 'Now playing') : 'Jump back in';
+    $('heroTitle').textContent = stripExt(featured.name);
+    if (featured.savedAt) chip('Last played ' + ago(featured.savedAt));
+    const fs = states ? statesOf(featured.name) : [];
+    const manual = fs.filter(s => !s.autosave).length;
+    chip(manual + ' save state' + (manual === 1 ? '' : 's'));
+    if (featured.bytes) chip(Math.round(featured.bytes.byteLength / 1024) + ' KB');
+    $('heroPlayLabel').textContent = cur ? 'Resume' : 'Play';
+    $('heroPlay').onclick = () => playRom(featured);
+    const latest = fs.filter(s => !s.autosave).sort(byNewest)[0];
+    $('heroSave').hidden = !latest;
+    $('heroSave').onclick = () => latest && loadSaveMeta(latest);
+  }
+  const list = visibleRoms();
+  $('gridCount').textContent = '(' + list.length + ')';
+  const cards = list.map(item => {
+    const card = document.createElement('div'); card.className = 'card' + (isCurrent(item.name) ? ' current' : ''); card.title = stripExt(item.name);
+    const cover = coverEl(item.name);
+    const play = document.createElement('span'); play.className = 'card-play'; play.innerHTML = '<svg class="i fill"><use href="#i-play"/></svg>';
+    cover.append(play);
+    if (isCurrent(item.name)) { const b = document.createElement('span'); b.className = 'card-badge'; b.textContent = paused ? 'Paused' : 'Playing'; cover.append(b); }
+    const del = iconBtn('trash', 'Remove from library', () => removeRom(item), 'card-del');
+    const body = document.createElement('div'); body.className = 'card-body';
+    const t = document.createElement('div'); t.className = 'card-title'; t.textContent = stripExt(item.name);
+    const m = document.createElement('div'); m.className = 'card-meta';
+    const n = states ? statesOf(item.name).filter(s => !s.autosave).length : 0;
+    m.textContent = item.savedAt ? 'Played ' + ago(item.savedAt) : (n + ' saves');
+    body.append(t, m);
+    card.append(cover, del, body);
+    activate(card, () => playRom(item));
+    return card;
+  });
+  const add = document.createElement('div'); add.className = 'card add-card';
+  const ac = document.createElement('div'); ac.className = 'cover'; ac.innerHTML = '<svg class="i"><use href="#i-plus"/></svg>';
+  const ab = document.createElement('div'); ab.className = 'card-body'; ab.innerHTML = '<div class="card-title">Add ROM</div><div class="card-meta">.nes files</div>';
+  add.append(ac, ab); activate(add, openRomPicker);
+  if (!list.length && roms && roms.length) { const d = emptyList('search', 'No games match “' + libQuery + '”.'); d.style.gridColumn = '1/-1'; grid.replaceChildren(d); return; }
+  grid.replaceChildren(...cards, add);
+}
+
+function saveCard(rec) {
+  const card = document.createElement('div'); card.className = 'save-card'; card.title = 'Load this save state';
+  const cover = document.createElement('div'); cover.className = 'cover';
+  if (thumbOk(rec.thumb)) cover.style.backgroundImage = `url("${rec.thumb}")`;
+  const body = document.createElement('div'); body.className = 'save-body';
+  const info = document.createElement('div'); info.className = 'info';
+  const t = document.createElement('div'); t.className = 't'; t.textContent = ago(Number(rec.createdAt));
+  if (rec.autosave) { const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'auto'; t.append(tag); }
+  const m = document.createElement('div'); m.className = 'm'; m.textContent = new Date(Number(rec.createdAt) || 0).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  info.append(t, m);
+  body.append(info,
+    iconBtn('download', 'Export', async () => {
+      try { const full = await fullState(rec); downloadJSON(fileBase(rec.romName) + '-save-' + new Date(rec.createdAt || Date.now()).toISOString().replace(/[:.]/g, '-') + '.json', portableState(full)); }
+      catch (e) { toast('Could not export: ' + errMsg(e), 'error'); }
+    }),
+    iconBtn('trash', 'Delete', async () => {
+      if (!confirm('Delete this save state for ' + stripExt(rec.romName) + '?')) return;
+      try { await dbOp('readwrite', s => s.delete(rec.id), STATE_STORE); await refreshData(); }
+      catch (e) { toast('Could not delete: ' + errMsg(e), 'error'); }
+    }));
+  card.append(cover, body);
+  activate(card, () => loadSaveMeta(rec));
+  return card;
+}
+// Manual saves plus only the newest autosave per game.
+function shownStates(list) {
+  const manual = list.filter(s => !s.autosave);
+  const auto = new Map();
+  for (const s of list) if (s.autosave) { const k = String(s.romName).toLowerCase(); const c = auto.get(k); if (!c || (s.createdAt || 0) > (c.createdAt || 0)) auto.set(k, s); }
+  return [...manual, ...auto.values()].sort(byNewest);
+}
+function renderSaves() {
+  const box = $('saveGroups');
+  if (!states) { box.replaceChildren(emptyList('save', 'Browser storage is unavailable, so save states can’t be kept here.')); return; }
+  const shown = shownStates(states);
+  if (!shown.length) { box.replaceChildren(emptyList('save', 'No save states yet. Press F2 or the save button while playing.')); return; }
+  const groups = new Map();
+  for (const s of shown) { const k = String(s.romName).toLowerCase(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(s); }
+  const out = [];
+  for (const list of groups.values()) {
+    const h = document.createElement('div'); h.className = 'group-title';
+    const name = document.createElement('span'); name.textContent = stripExt(list[0].romName);
+    const c = document.createElement('span'); c.className = 'count'; c.textContent = list.length;
+    h.append(coverEl(list[0].romName, 'mini'), name, c);
+    const g = document.createElement('div'); g.className = 'save-grid';
+    g.append(...list.slice(0, 40).map(saveCard));
+    out.push(h, g);
+  }
+  box.replaceChildren(...out);
+}
+function renderPlaySaves() {
+  const wrap = $('playSaves');
+  wrap.hidden = !romLoaded || !states;
+  if (wrap.hidden) return;
+  const list = shownStates(statesOf(currentName));
+  $('playSaveCount').textContent = '(' + list.filter(s => !s.autosave).length + ')';
+  const add = document.createElement('button'); add.type = 'button'; add.className = 'new-save';
+  add.innerHTML = '<svg class="i"><use href="#i-save"/></svg><span>Save now <kbd>F2</kbd></span>';
+  add.addEventListener('click', quickSave);
+  $('playSaveRow').replaceChildren(add, ...list.slice(0, 30).map(saveCard));
+}
+async function loadSaveMeta(rec) {
+  try { await restoreState(await fullState(rec)); } catch (e) { toast(errMsg(e), 'error'); }
+}
+
+/* Views */
+let autoPaused = false;
+const VIEW_TITLES = { library: 'Library', play: 'Now Playing', saves: 'Save States' };
+function showView(v) {
+  if (!VIEW_TITLES[v]) v = 'library';
+  const leaving = view;
+  view = v;
+  document.querySelectorAll('[data-viewpane]').forEach(p => p.hidden = p.dataset.viewpane !== v);
+  document.querySelectorAll('.nav [data-view]').forEach(b => { if (b.dataset.view === v) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  $('viewTitle').textContent = v === 'play' && romLoaded ? stripExt(currentName) : VIEW_TITLES[v];
+  $('app').classList.remove('nav-open');
+  if (v !== 'play' && leaving === 'play' && romLoaded) {
+    snapshotNow();
+    if (!paused) { setPaused(true); autoPaused = true; }
+  }
+  if (v === 'play') {
+    layoutScreen();
+    if (autoPaused && romLoaded && paused) setPaused(false);
+    autoPaused = false;
+  }
+  if (v !== leaving) window.scrollTo(0, 0);
+  renderAll();
+}
+function snapshotNow() {
+  try { $('nowCanvas').getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(frame.buffer.slice(0)), NES_W, NES_H), 0, 0); } catch (_) {}
+}
+function renderNowCard() {
+  const show = romLoaded && view !== 'play';
+  $('nowCard').hidden = !show;
+  if (!show) return;
+  $('nowTitle').textContent = stripExt(currentName);
+  $('nowStatus').textContent = paused ? 'Paused' : 'Now playing';
+}
+const resumeGame = () => { autoPaused = true; showView('play'); };
+$('nowResume').addEventListener('click', e => { e.stopPropagation(); resumeGame(); });
+$('nowCard').addEventListener('click', resumeGame);
+$('nowCard').addEventListener('keydown', e => { if (e.key === 'Enter') resumeGame(); });
+document.querySelectorAll('.nav [data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+$('menuBtn').addEventListener('click', () => $('app').classList.toggle('nav-open'));
+$('scrim').addEventListener('click', () => $('app').classList.remove('nav-open'));
+$('sideSearch').addEventListener('input', e => { libQuery = e.target.value; renderSidebar(); renderLibrary(); if (view !== 'library' && libQuery) showView('library'); });
+$('sortSelect').value = libSort;
+$('sortSelect').addEventListener('change', e => { libSort = e.target.value; pref.set('sort', libSort); renderSidebar(); renderLibrary(); });
 
 let autosaveOn = true, autosaveMs = 5000, lastAutosave = 0, autosaveBusy = false;
 async function saveState(isAuto = false) {
@@ -1343,12 +1695,13 @@ async function saveState(isAuto = false) {
   if (isAuto) {
     const prev = (await statesFor(currentName)).filter(r => r.autosave).sort((a, b) => (Number(b.autosaveVersion) || 0) - (Number(a.autosaveVersion) || 0));
     record.autosaveVersion = (prev[0] ? Number(prev[0].autosaveVersion) || 0 : 0) + 1;
+    record.thumb = makeThumb();
     await dbOp('readwrite', s => { const r = s.add(record); for (const old of prev.slice(2)) s.delete(old.id); return r; }, STATE_STORE);
   } else {
     record.thumb = makeThumb();
     await dbOp('readwrite', s => s.add(record), STATE_STORE);
   }
-  await listSaveStates();
+  await refreshData();
 }
 async function restoreState(record) {
   if (!record || !record.state) throw new Error('This save state is missing its emulator data.');
@@ -1369,6 +1722,7 @@ async function restoreState(record) {
   clearAudio(); releaseAllInput();
   paused = false; lastTick = 0; acc = 0; lastAutosave = performance.now();
   resumeAudio(); syncPlayUI();
+  if (view !== 'play') { autoPaused = false; showView('play'); }
   toast(record.autosave ? 'Resumed from autosave' : 'Save state loaded', 'ok', 'state');
 }
 async function quickSave() {
@@ -1405,8 +1759,8 @@ async function importStateFile(file) {
     return rec;
   });
   await dbOp('readwrite', s => { let r; for (const rec of clean) r = s.add(rec); return r; }, STATE_STORE);
-  await listSaveStates();
-  showSideTab('saves');
+  await refreshData();
+  showView('saves');
   toast('Imported ' + clean.length + ' save state' + (clean.length === 1 ? '' : 's'), 'ok');
 }
 
@@ -1441,7 +1795,9 @@ async function loadBytes(bytes, name, save, skipAutoRestore = false) {
       try { await dbOp('readwrite', s => s.put({ name, bytes: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), savedAt: Date.now() })); }
       catch (e) { toast('Game loaded, but it couldn’t be saved to your library: ' + errMsg(e), 'error'); }
     }
-    listRoms(); listSaveStates();
+    autoPaused = false;
+    await refreshData();
+    showView('play');
     if (!skipAutoRestore && pref.bool('resumeAutosave', true)) {
       const auto = (await statesFor(name)).filter(r => r.autosave).sort((a, b) => (Number(b.autosaveVersion) || 0) - (Number(a.autosaveVersion) || 0))[0];
       if (auto && token === loadToken) {
@@ -1601,6 +1957,7 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (settingsDialog.open || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (view !== 'play' && !isFullscreen()) return;
   const id = norm(e.key);
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { e.preventDefault(); if (!e.repeat) { zapperDown = true; zapperAt(null, true); } return; }
   if (zapperOn && id === norm(keybinds.zapperReload)) { e.preventDefault(); zapperDown = false; zapperAt(null, false, true); return; }
@@ -1806,21 +2163,11 @@ document.addEventListener('fullscreenchange', onFullscreenChange);
 document.addEventListener('webkitfullscreenchange', onFullscreenChange);
 
 /* ------------------------------------------------------------------
-   Side panel tabs
-   ------------------------------------------------------------------ */
-function showSideTab(which) {
-  const lib = which === 'library';
-  $('tabLibrary').setAttribute('aria-selected', String(lib)); $('tabSaves').setAttribute('aria-selected', String(!lib));
-  $('paneLibrary').hidden = !lib; $('paneSaves').hidden = lib;
-  $('footLibrary').hidden = !lib; $('footSaves').hidden = lib;
-}
-$('tabLibrary').addEventListener('click', () => showSideTab('library'));
-$('tabSaves').addEventListener('click', () => showSideTab('saves'));
-
-/* ------------------------------------------------------------------
    Settings drawer
    ------------------------------------------------------------------ */
-$('settingsBtn').addEventListener('click', () => { settingsDialog.showModal(); releaseAllInput(); });
+const openSettings = () => { $('app').classList.remove('nav-open'); settingsDialog.showModal(); releaseAllInput(); };
+$('settingsBtn').addEventListener('click', openSettings);
+$('topSettingsBtn').addEventListener('click', openSettings);
 $('closeSettings').addEventListener('click', () => settingsDialog.close());
 settingsDialog.addEventListener('click', e => { if (e.target === settingsDialog) settingsDialog.close(); });
 settingsDialog.addEventListener('close', () => { if (listeningFor) stopListening(); });
@@ -1905,43 +2252,70 @@ autosaveOn = bindPrefSwitch('autosaveToggle', 'autosave', true, on => { autosave
 }
 
 /* ------------------------------------------------------------------
-   Theme
+   Themes: full palettes (the original chimiNES set plus new ones)
+   [id, name, bg, panel, line, accent, accent2, text, muted, light]
    ------------------------------------------------------------------ */
-const ACCENTS = [['crimson', '#ff4d5a'], ['orange', '#ff7a2f'], ['amber', '#f5b82e'], ['green', '#2fd17a'], ['teal', '#1ec8c0'], ['blue', '#4b8dff'], ['violet', '#9a6bff'], ['pink', '#ff5fae'], ['mono', null]];
-const darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
-let themeMode = pref.get('mode', 'dark'), accentName = pref.get('accent', 'crimson');
+const THEMES = [
+  ['default', 'Neon Blue', '#030916', '#06172a', '#075ba9', '#078cff', '#00c8ff', '#edf6ff', '#83b5ef'],
+  ['steam', 'Steam Deck', '#171a21', '#1b2838', '#2a475e', '#1a9fff', '#66c0f4', '#e6edf3', '#8f98a0'],
+  ['epic', 'Epic Night', '#0f0f12', '#18181c', '#2d2d33', '#26bbff', '#ffffff', '#f5f5f5', '#a0a0a8'],
+  ['synthwave', 'Synthwave', '#0d0221', '#1b0a3a', '#6b2c91', '#ff2a6d', '#05d9e8', '#f9f1ff', '#c2a6e6'],
+  ['famicom', 'Famicom', '#17110f', '#2a1f1b', '#7a2a2e', '#c8102e', '#e8c58a', '#f6ecdc', '#c9b7a0'],
+  ['gameboy', 'Pocket Green', '#0f1a0f', '#1b2e1b', '#41692f', '#8bac0f', '#c7e86f', '#e8f5cc', '#a3c18a'],
+  ['purple', 'Purple Haze', '#10091b', '#29143f', '#7543a6', '#9a5cff', '#d09aff', '#f7efff', '#c2a4e8'],
+  ['forest', 'Forest', '#07130d', '#0d2a1b', '#28764b', '#20a85b', '#6bf0a2', '#edfff3', '#9bd6b1'],
+  ['sunset', 'Sunset', '#1b0c0b', '#3c1b16', '#a64c32', '#f06c3d', '#ffc06b', '#fff4e9', '#e8b49a'],
+  ['red', 'Arcade Red', '#190608', '#40101a', '#a3293a', '#ff334f', '#ff687b', '#fff0f2', '#e5a2ac'],
+  ['orange', 'Electric Orange', '#1b1005', '#422509', '#a85a13', '#ff8b1f', '#ffd080', '#fff7eb', '#e8bf91'],
+  ['pink', 'Hot Pink', '#1a0715', '#3b1240', '#a33b87', '#ed4fc2', '#ff9be6', '#fff0fb', '#e3a9d4'],
+  ['ocean', 'Deep Ocean', '#04131c', '#0a3546', '#167d91', '#00a9cf', '#70f1ff', '#eaffff', '#92d2dc'],
+  ['gold', 'Retro Gold', '#171105', '#3b2b0b', '#9a7620', '#d4a52c', '#ffe28a', '#fff9e6', '#d9c58b'],
+  ['teal', 'Neon Teal', '#041513', '#0b3934', '#16877e', '#00b9a7', '#72ffe6', '#eafffa', '#9bd8ce'],
+  ['amber', 'Amber Glow', '#191105', '#402b0b', '#a87518', '#e59b18', '#ffe09a', '#fff8e8', '#dec18b'],
+  ['matrix', 'Matrix Green', '#020b04', '#09240e', '#17652a', '#20d84a', '#7dff91', '#e9ffec', '#8ccf98'],
+  ['lavender', 'Soft Lavender', '#110e1b', '#2b2342', '#8976b8', '#aa92ff', '#e0d5ff', '#faf7ff', '#c1b4e6'],
+  ['slate', 'Slate Gray', '#10151c', '#273442', '#526779', '#7b9bb6', '#c5e5ff', '#f0f6fb', '#a9bdce'],
+  ['ice', 'Arctic Ice', '#07131d', '#14384b', '#397d9b', '#5ccaff', '#d5f4ff', '#f0fbff', '#9dc8d9'],
+  ['copper', 'Copper Forge', '#1a0d08', '#482718', '#9c5738', '#d67d4e', '#ffc29b', '#fff3ec', '#d8a58e'],
+  ['ultraviolet', 'Ultraviolet', '#10051c', '#39185b', '#7742b0', '#b66cff', '#e4c2ff', '#fbf3ff', '#c5a5df'],
+  ['cream', 'Warm Cream', '#19170f', '#403b28', '#9c9163', '#d4c17e', '#fff0bd', '#fffbed', '#d2c9a7'],
+  ['black', 'Midnight Black', '#050505', '#18181c', '#42424a', '#a8a8b8', '#f5f5ff', '#f5f5f7', '#b0b0bb'],
+  ['vantablack', 'Vantablack', '#000000', '#080808', '#1c1c1c', '#d0d0d0', '#ffffff', '#f4f4f4', '#888888'],
+  ['light', 'Light', '#eaf1f8', '#ffffff', '#9db6ce', '#2466c5', '#0758a8', '#172b40', '#4c6882', 1],
+  ['paper', 'Paper', '#f3ede3', '#fffaf2', '#d6c6ab', '#d1492e', '#8a5a2b', '#2b2118', '#7a6a58', 1],
+  ['snow', 'Snow', '#f2f4f7', '#ffffff', '#cfd5de', '#16181d', '#4b8dff', '#16181d', '#5f6573', 1]
+];
+let themeId = pref.get('theme', 'default');
+let uiStyle = pref.get('uiStyle', 'gradient') === 'solid' ? 'flat' : 'glow';
 function inkFor(hex) {
   const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
   const lin = c => c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4);
-  return (0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)) > 0.42 ? '#111' : '#fff';
+  return (0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)) > 0.4 ? '#111' : '#fff';
 }
 function applyTheme() {
-  const mode = themeMode === 'auto' ? (darkMQ.matches ? 'dark' : 'light') : themeMode;
+  const t = THEMES.find(x => x[0] === themeId) || THEMES[0];
+  themeId = t[0];
   const root = document.documentElement;
-  if (mode === 'dark') root.removeAttribute('data-mode'); else root.setAttribute('data-mode', mode);
-  const entry = ACCENTS.find(a => a[0] === accentName) || ACCENTS[0];
-  const color = entry[1] || (mode === 'light' ? '#22252b' : '#e9ebef');
-  root.style.setProperty('--accent', color);
-  root.style.setProperty('--accent-ink', inkFor(color));
-  document.querySelector('meta[name=theme-color]').content = mode === 'light' ? '#eef0f4' : mode === 'oled' ? '#000000' : '#0a0b0e';
-  document.querySelectorAll('#modeSeg [data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === themeMode)));
-  document.querySelectorAll('.swatch').forEach(s => s.setAttribute('aria-pressed', String(s.dataset.accent === entry[0])));
+  ['--bg', '--panel', '--line', '--accent', '--accent-2', '--text', '--muted'].forEach((v, i) => root.style.setProperty(v, t[i + 2]));
+  root.style.setProperty('--accent-ink', inkFor(t[5]));
+  if (t[9]) root.setAttribute('data-light', ''); else root.removeAttribute('data-light');
+  root.setAttribute('data-style', uiStyle);
+  document.querySelector('meta[name=theme-color]').content = t[2];
+  document.querySelectorAll('.theme-card').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.theme === themeId)));
+  document.querySelectorAll('#styleSeg [data-style]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.style === uiStyle)));
 }
 {
-  const box = $('swatches');
-  for (const [name, color] of ACCENTS) {
-    const s = document.createElement('button'); s.type = 'button'; s.className = 'swatch'; s.dataset.accent = name;
-    s.style.setProperty('--c', color || '#9aa0aa');
-    if (!color) s.style.background = 'linear-gradient(135deg,#f1f2f4 50%,#2a2d33 50%)';
-    s.title = name[0].toUpperCase() + name.slice(1); s.setAttribute('aria-label', s.title + ' accent');
-    s.addEventListener('click', () => { accentName = name; pref.set('accent', name); applyTheme(); });
-    box.append(s);
+  const grid = $('themeGrid');
+  for (const t of THEMES) {
+    const c = document.createElement('button'); c.type = 'button'; c.className = 'theme-card'; c.dataset.theme = t[0];
+    [['--tbg', 2], ['--tpanel', 3], ['--tline', 4], ['--tacc', 5], ['--tacc2', 6], ['--ttext', 7]].forEach(([v, i]) => c.style.setProperty(v, t[i]));
+    c.innerHTML = '<span class="tprev"><i></i><span><b></b><b></b><em></em></span></span><span class="tname"></span>';
+    c.querySelector('.tname').textContent = t[1];
+    c.addEventListener('click', () => { themeId = t[0]; pref.set('theme', themeId); applyTheme(); });
+    grid.append(c);
   }
 }
-document.querySelectorAll('#modeSeg [data-mode]').forEach(b => b.addEventListener('click', () => { themeMode = b.dataset.mode; pref.set('mode', themeMode); applyTheme(); }));
-darkMQ.addEventListener && darkMQ.addEventListener('change', () => { if (themeMode === 'auto') applyTheme(); });
-if (!['auto', 'dark', 'light', 'oled'].includes(themeMode)) themeMode = 'dark';
-if (pref.get('mode', null) === null && pref.get('theme', '') === 'light') themeMode = 'light';
+document.querySelectorAll('#styleSeg [data-style]').forEach(b => b.addEventListener('click', () => { uiStyle = b.dataset.style; pref.set('uiStyle', uiStyle === 'flat' ? 'solid' : 'gradient'); applyTheme(); }));
 applyTheme();
 
 // Prefer the bundled favicon.png when it's available.
@@ -1951,7 +2325,8 @@ applyTheme();
    Boot
    ------------------------------------------------------------------ */
 syncPlayUI();
-listRoms(); listSaveStates();
+showView('library');
+refreshData();
 if (!window.jsnes) toast('The emulator core couldn’t load. Check your connection and reload.', 'error', null, 8000);
 initRenderer(true).then(() => requestAnimationFrame(tick));
 })();

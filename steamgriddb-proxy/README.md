@@ -12,14 +12,20 @@ npx wrangler deploy
 ```
 
 Wrangler prints a URL like `https://chimines-sgdb-proxy.<you>.workers.dev`.
-Paste it into chimiNES → Settings → Artwork → Proxy URL.
+Put it in `DEFAULT_SGDB_PROXY` in `index.html` (search for that name) and
+publish. Players then only need to paste their own API key in
+Settings → Artwork. Each player's key is sent with their own requests; the
+Worker stores nothing.
+
+(Players can also point chimiNES at a different relay under
+Settings → Artwork → Advanced.)
 
 ## API key
 
 Get a free key at https://www.steamgriddb.com/profile/preferences/api, then either:
 
-- paste it into chimiNES → Settings → Artwork (stored only in your browser), or
-- keep it on the Worker so the page never sees it:
+- each player pastes their own key into chimiNES → Settings → Artwork (normal setup), or
+- for a private copy, keep one key on the Worker so nobody has to enter one:
 
   ```bash
   npx wrangler secret put SGDB_KEY

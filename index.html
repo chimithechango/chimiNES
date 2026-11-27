@@ -310,8 +310,11 @@ dialog.modal::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-web
 @media (max-width:640px){.gd-grid{grid-template-columns:1fr}.gd-cover-col{max-width:220px;margin:0 auto;width:100%}.field-row{grid-template-columns:1fr 90px}}
 
 /* SteamGridDB */
-.drawer-tabs{grid-auto-columns:auto}
-.drawer-tabs button{padding:0 8px;font-size:12.5px}
+.adv{margin:14px 6px 0;color:var(--muted);font-size:12.5px}
+.adv summary{cursor:pointer;font-weight:650;color:var(--muted)}
+.adv summary:hover{color:var(--text)}
+.drawer-tabs{display:flex;flex-wrap:wrap;overflow:visible}
+.drawer-tabs button{flex:1 1 auto;padding:0 8px;font-size:12.5px}
 .text-input.plain{text-transform:none;font:500 13px var(--mono)}
 .note a{color:var(--accent-2)}
 .note code{font:12px var(--mono);background:var(--surface-3);padding:1px 5px;border-radius:5px}
@@ -887,14 +890,15 @@ dialog.drawer{background:var(--panel);border-left-color:var(--panel-border)}
         <div class="field" style="padding-top:12px"><span>API key</span>
           <div class="cheat-form" style="padding:0"><input class="text-input plain" id="sgdbKey" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your key"><button class="btn btn-sm" type="button" id="sgdbShowKey" style="height:36px">Show</button></div>
         </div>
-        <div class="field"><span>Proxy URL</span>
-          <input class="text-input plain" id="sgdbProxy" type="url" autocomplete="off" spellcheck="false" placeholder="https://chimines-sgdb-proxy.you.workers.dev">
-        </div>
         <div style="display:flex;gap:8px;padding-bottom:12px"><button class="btn btn-sm" type="button" id="sgdbTest">Test connection</button><button class="btn btn-sm" type="button" id="sgdbBulk">Find artwork for all games</button></div>
       </div>
       <p class="note" id="sgdbTestResult"></p>
-      <p class="note">Get a free key at <a href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">steamgriddb.com → Preferences → API</a>. It is stored only in this browser and sent only to SteamGridDB (or your proxy).</p>
-      <p class="note">SteamGridDB doesn’t allow direct calls from web pages, so requests go through a small proxy. Deploy the free Cloudflare Worker in the <code>steamgriddb-proxy</code> folder of the chimiNES repo (<code>npx wrangler deploy</code>) and paste its URL above. If the key is stored on the Worker, you can leave the key field empty.</p>
+      <p class="note">That’s all you need. Get a free key at <a href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">steamgriddb.com → Preferences → API</a> (sign in with Steam), paste it above and press <b>Test connection</b>. The key is stored only in this browser.</p>
+      <details class="adv">
+        <summary>Advanced: custom relay</summary>
+        <p class="note">chimiNES reaches SteamGridDB through a small relay, because SteamGridDB doesn’t accept calls straight from web pages. A relay is built in; to use your own instead, deploy the Worker in the repo’s <code>steamgriddb-proxy</code> folder and paste its URL here. Leave empty to use the built-in one.</p>
+        <div class="field" style="margin:10px 0 0"><input class="text-input plain" id="sgdbProxy" type="url" autocomplete="off" spellcheck="false" placeholder="https://your-relay.workers.dev"></div>
+      </details>
       <div class="gtitle">Automatic artwork</div>
       <div class="group">
         <div class="row"><label for="sgdbAuto">Fetch artwork for new games<span class="desc">Uses the best SteamGridDB match when you add a ROM.</span></label><input class="switch" type="checkbox" id="sgdbAuto"></div>
@@ -1974,18 +1978,21 @@ $('heroInfo').addEventListener('click', () => { if (heroName) openGameDialog(her
 $('gameInfoBtn').addEventListener('click', () => { if (romLoaded) openGameDialog(currentName); });
 
 /* ---------------- SteamGridDB artwork ---------------- */
-const SGDB_API = 'https://www.steamgriddb.com/api/v2';
+// SteamGridDB can't be called directly from a web page (no CORS headers), so
+// requests go through a tiny relay. The site owner deploys steamgriddb-proxy/
+// once and puts its URL here; players then only need their own API key.
+const DEFAULT_SGDB_PROXY = '';
 const sgdb = { key: pref.get('sgdbKey', ''), proxy: pref.get('sgdbProxy', '') };
-const proxyBase = () => sgdb.proxy.trim().replace(/\/+$/, '');
-const sgdbBase = () => sgdb.proxy.trim() ? proxyBase() + '/api/v2' : SGDB_API;
+const proxyBase = () => (sgdb.proxy.trim() || DEFAULT_SGDB_PROXY).replace(/\/+$/, '');
 const sgdbReady = () => !!(sgdb.key.trim() || sgdb.proxy.trim());
 async function sgdbGet(path) {
-  if (!sgdbReady()) throw new Error('Add your SteamGridDB API key in Settings → Artwork first.');
+  if (!sgdbReady()) throw new Error('Add your free SteamGridDB API key in Settings → Artwork first.');
+  if (!proxyBase()) throw new Error('This copy of chimiNES has no SteamGridDB relay set up yet. The site owner needs to deploy steamgriddb-proxy (or add your own relay under Settings → Artwork → Advanced).');
   let r;
-  try { r = await fetch(sgdbBase() + path, { headers: sgdb.key.trim() ? { Authorization: 'Bearer ' + sgdb.key.trim() } : {} }); }
+  try { r = await fetch(proxyBase() + '/api/v2' + path, { headers: sgdb.key.trim() ? { Authorization: 'Bearer ' + sgdb.key.trim() } : {} }); }
   catch (_) {
-    throw new Error(sgdb.proxy.trim() ? 'Couldn’t reach your SteamGridDB proxy. Check the URL in Settings → Artwork.'
-      : 'Your browser blocked the request: SteamGridDB doesn’t allow direct calls from web pages. Add a proxy URL in Settings → Artwork.');
+    throw new Error(sgdb.proxy.trim() ? 'Couldn’t reach your custom SteamGridDB relay. Check the URL under Settings → Artwork → Advanced.'
+      : 'Couldn’t reach SteamGridDB. Check your connection and try again.');
   }
   let body = null; try { body = await r.json(); } catch (_) {}
   if (r.status === 401 || r.status === 403) throw new Error('SteamGridDB didn’t accept the API key. Check it in Settings → Artwork.');
@@ -2003,7 +2010,7 @@ const yearOf = g => g && g.release_date ? String(new Date(g.release_date * 1000)
 // Keep an embedded copy when possible (works offline); otherwise keep the CDN link.
 async function fetchArt(url, kind) {
   if (!SGDB_CDN.test(url)) throw new Error('Unexpected artwork address.');
-  const src = sgdb.proxy.trim() ? proxyBase() + '/img?url=' + encodeURIComponent(url) : url;
+  const src = proxyBase() ? proxyBase() + '/img?url=' + encodeURIComponent(url) : url;
   try {
     const r = await fetch(src); if (!r.ok) throw new Error();
     const blob = await r.blob();
@@ -2030,7 +2037,7 @@ function openSgdbPicker(kind) {
   $('sgdbGames').replaceChildren(); $('sgdbResults').replaceChildren();
   $('sgdbResults').className = 'sgdb-results ' + kind;
   sgdbDialog.showModal();
-  if (!sgdbReady()) { sgdbStatus('Connect SteamGridDB first: add a free API key (and a proxy URL) in Settings → Artwork.', ['Open Artwork settings', openArtworkSettings]); return; }
+  if (!sgdbReady()) { sgdbStatus('Add your free SteamGridDB API key in Settings → Artwork to browse covers.', ['Open Artwork settings', openArtworkSettings]); return; }
   sgdbStatus('');
   runSgdbSearch();
 }
@@ -2133,7 +2140,7 @@ async function autoArtwork(name, { quiet = false } = {}) {
   });
   $('sgdbBulk').addEventListener('click', async () => {
     const btn = $('sgdbBulk'), out = $('sgdbTestResult');
-    if (!sgdbReady()) { out.textContent = 'Add an API key or proxy URL first.'; out.className = 'note err-text'; return; }
+    if (!sgdbReady()) { out.textContent = 'Add your SteamGridDB API key first.'; out.className = 'note err-text'; return; }
     const todo = (roms || []).filter(r => !r.cover);
     if (!todo.length) { out.textContent = 'Every game already has cover art.'; out.className = 'note'; return; }
     btn.disabled = true; let found = 0, i = 0;

@@ -2520,6 +2520,7 @@ const QM = [
   { id: 'speed', icon: 'load', label: 'Speed', value: () => speed + '×', step: d => setSpeed(SPEEDS[clamp(SPEEDS.indexOf(speed) + d, 0, SPEEDS.length - 1)], false) },
   { id: 'sound', icon: 'vol', label: 'Game audio', value: () => soundToggle.checked ? 'On' : 'Off', step: () => setSound(!soundToggle.checked) },
   { id: 'details', icon: 'edit', label: 'Game details', run: () => { closeQuickMenu(false); openGameDialog(currentName); } },
+  { id: 'settings', icon: 'sliders', label: 'Settings', run: () => openSettings() }, // Quick Menu stays open underneath
   { id: 'full', icon: 'full', label: 'Fullscreen', run: () => { closeQuickMenu(true); toggleFullscreen(); } },
   { id: 'home', icon: 'home', label: 'Back to Home', run: () => { closeQuickMenu(false); autoPaused = qmWasRunning; showView('library'); } }
 ];

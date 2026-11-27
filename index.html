@@ -327,8 +327,11 @@ dialog.modal::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(4px);-web
 .gd-file{margin:14px 0 6px;color:var(--faint);font:12px var(--mono);overflow-wrap:anywhere}
 .danger{color:var(--err)!important}
 .hint{color:var(--faint);font-size:12px;line-height:1.45;margin:10px 2px 0}
-.cover.has-art{image-rendering:auto}
-.cover.has-art::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.35),transparent 35%)}
+/* Custom cover art is shown whole (never cropped): the full image sits on a blurred copy of itself. */
+.cover.has-art{image-rendering:auto;background:#000;isolation:isolate}
+.cover.has-art::before,.cover.has-art::after{content:"";position:absolute;inset:0;background:var(--art) center/cover no-repeat;pointer-events:none}
+.cover.has-art::before{inset:-15%;filter:blur(16px) saturate(1.25) brightness(.55)}
+.cover.has-art::after{background-size:contain}
 .card-tools{position:absolute;top:6px;right:6px;z-index:3;display:flex;gap:4px;opacity:0;transition:opacity .15s}
 .card-tools .btn{background:rgba(0,0,0,.6)!important;color:#fff!important;backdrop-filter:blur(6px)}
 .card:hover .card-tools,.card:focus-within .card-tools{opacity:1}
@@ -1898,7 +1901,7 @@ function renderAll() { renderLibrary(); renderSaves(); renderNowCard(); }
 function coverEl(name, cls) {
   const el = document.createElement('div'); el.className = 'cover ' + (cls || '');
   const r = romByName(name);
-  if (r && artOk(r.cover)) { el.classList.add('has-art'); el.style.backgroundImage = `url("${r.cover}")`; return el; }
+  if (r && artOk(r.cover)) { el.classList.add('has-art'); el.style.setProperty('--art', `url("${r.cover}")`); return el; }
   const t = states ? coverFor(name) : null;
   if (t) { el.classList.add('has-thumb'); el.style.backgroundImage = `url("${t}")`; }
   else { el.classList.add('gen'); el.style.setProperty('--h', hueOf(name)); const s = document.createElement('span'); s.className = 'cover-initials'; s.textContent = initials(titleOf(name)); el.append(s); }
@@ -2169,7 +2172,8 @@ function paintDraft() {
   const cov = $('gdCover');
   cov.className = 'cover gd-cover'; cov.style.backgroundImage = ''; cov.replaceChildren();
   const thumb = coverFor(editing.name);
-  if (artOk(d.cover)) { cov.classList.add('has-art'); cov.style.backgroundImage = `url("${d.cover}")`; }
+  cov.style.removeProperty('--art');
+  if (artOk(d.cover)) { cov.classList.add('has-art'); cov.style.setProperty('--art', `url("${d.cover}")`); }
   else if (thumb) { cov.classList.add('has-thumb'); cov.style.backgroundImage = `url("${thumb}")`; }
   else { cov.classList.add('gen'); cov.style.setProperty('--h', hueOf(editing.name)); const s = document.createElement('span'); s.className = 'cover-initials'; s.textContent = initials($('gdName').value || stripExt(editing.name)); cov.append(s); }
   const ban = $('gdBanner');

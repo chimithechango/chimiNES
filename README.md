@@ -9,6 +9,30 @@ chimiNES is a lightweight, browser-based NES emulator built with HTML, CSS, and 
 
 the frontend provides an interactive interface for loading ROMs, configuring controls, adjusting display settings, and managing experimental features. JSNES handles the core NES emulation, while chimiNES builds on top of it with additional interface customization, rendering options, and input functionality.
 
+what's new in the remaster
+
+webgpu display pipeline: the game screen is drawn by a WGSL shader on the GPU. it handles sharp pixel scaling, scanlines, screen curvature, a phosphor mask, bloom, vignette, color fringing and every color mode in one pass. browsers without webgpu fall back to canvas 2d automatically (with scanlines, vignette and color modes).
+
+effect presets: clean, soft crt, crt and arcade, each with sliders to fine-tune.
+
+console-style interface (playstation 5 + nintendo switch + retroarch): a home screen of game tiles whose art fills the background, a big play button, and retroarch's animated xmb ribbon. save states use a retroarch xmb browser (games across, saves down). while playing, esc (or start+select / the home button on a gamepad) opens a retroarch-style quick menu with resume, save, load, reset, screen effect, speed, audio, game details, fullscreen and home. everything works with arrow keys, enter and esc, or a gamepad (d-pad, a = ok, b = back, x = details, y = layouts, start = settings). leaving a game pauses it; coming back resumes it.
+
+layouts: the layouts button on the home screen opens a menu of 14 home-screen layouts with live previews: console, switch, playstation, xmb, cover flow, library grid, shelf, big picture, list, sidebar, spotlight, compact, minimal and arcade. keyboard and gamepad navigation work in every one.
+
+save states with thumbnails, relative timestamps and one-key shortcuts (F2 save, F4 load).
+
+game details (steam-style properties): click the pencil on a game card, the banner, or "game details" while playing, or right-click a game. set a custom title, cover art, banner, developer, year, genre, description and favorite. cover and banner images can be uploaded, dropped in, or captured from the game screen or a save screenshot; you can also drop an image straight onto a game card. favorites get a star and a "favorites first" sort, and search matches titles, genres, developers and years.
+
+steamgriddb artwork: search steamgriddb right from game details and pick a cover or banner from community artwork. new games can get their cover, banner, official title and year automatically, and settings → artwork has a "find artwork for all games" button. players only need a free steamgriddb api key (steamgriddb.com → preferences → api).
+
+site owner, one-time setup: steamgriddb doesn't accept calls straight from web pages, so chimiNES talks to it through a tiny relay. deploy it once with `npx wrangler deploy` inside steamgriddb-proxy/ and put the printed url in `DEFAULT_SGDB_PROXY` near the top of the steamgriddb section in index.html. see steamgriddb-proxy/README.md.
+
+menu sound effects: clicks, blips and chimes for navigating, selecting, going back, opening and closing panels, toggles, sliders, launching a game, pausing, saving and errors. they're synthesized live (no sound files), come in "8-bit" and "soft" styles, and can be turned off or turned down in settings → play → menu sounds.
+
+28 full themes: every original chimiNES theme (neon blue is still the default) plus steam deck, epic night, synthwave, famicom, pocket green, paper and snow. each theme recolors the whole interface, not just the accent. the classic glowing-panel look is back as the "glow" style, with a "flat" style as an option. ambient glow lights the page with the game's colors.
+
+bug fixes: typing in the cheat boxes no longer triggers game buttons (letters like A, S, Z, X were blocked), keys no longer get stuck when the window loses focus, the "auto-start" toggle actually works now, audio latency stays capped at high speeds, the emulator no longer spirals when it falls behind, autosave no longer reads the whole database every second, a failed rom load no longer leaves the previous game half-broken, and switching games autosaves the one you were playing.
+
 features
 
 JSNES integration: uses the JSNES JavaScript library to emulate NES hardware and run compatible games in the browser.

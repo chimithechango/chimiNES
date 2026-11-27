@@ -113,6 +113,9 @@ input[type=file]{display:none}
     linear-gradient(90deg,color-mix(in srgb,var(--bg) 75%,transparent),transparent 75%);
 }
 body[data-view="play"] .scene,body[data-view="saves"] .scene{--scene-o:.22}
+/* The ribbon's lines crossed the middle of the page behind the game; hide it while playing. */
+.xmb-bg{transition:opacity .4s}
+body[data-view="play"] .xmb-bg{opacity:0}
 :root[data-light] .scene{--scene-o:.35}
 
 .app{min-height:100vh;display:flex;flex-direction:column}
@@ -415,6 +418,10 @@ dialog.modal.sgdb[open]{display:flex}
 
 /* CSS effects used only by the Canvas 2D fallback renderer */
 .stage .fallback-fx{position:absolute;inset:0;pointer-events:none;display:none}
+.stage.cpu-fx.fx-anim .fallback-fx::before{content:"";position:absolute;left:0;right:0;height:22%;background:linear-gradient(180deg,transparent,rgba(255,255,255,var(--fx-roll,.03)),transparent);animation:fxRoll 7s linear infinite}
+@keyframes fxRoll{from{top:-25%}to{top:105%}}
+.stage.cpu-fx.fx-anim canvas{animation:fxFlick .1s steps(2) infinite}
+@keyframes fxFlick{50%{opacity:calc(1 - var(--fx-flick,.02))}}
 .stage.cpu-fx .fallback-fx{display:block;
   background:repeating-linear-gradient(to bottom,transparent 0 2px,rgba(0,0,0,var(--fx-scan,0)) 2px 4px);
   box-shadow:inset 0 0 90px rgba(0,0,0,var(--fx-vig,0));
@@ -969,6 +976,11 @@ body[data-layout="arcade"] :is(.round,.orb-c,.btn,.pill,.chip,.cats,.cats button
       <div class="gtitle">Fine-tune <span id="customTag" class="tag" hidden>custom</span></div>
       <div class="group" id="fxSliders"></div>
       <p class="note" id="fxNote" hidden></p>
+      <div class="gtitle">Animation</div>
+      <div class="group">
+        <div class="row"><label for="fxAnimate">Animate CRT effects<span class="desc">Flicker, a rolling refresh band, signal noise and wobble, like a real tube TV.</span></label><input class="switch" type="checkbox" id="fxAnimate"></div>
+        <div id="animSliders"></div>
+      </div>
       <div class="gtitle">Picture</div>
       <div class="group">
         <div class="row"><label for="filter">Pixel filter</label><select class="select" id="filter"><option value="sharp">Sharp pixels</option><option value="smooth">Smooth</option></select></div>
@@ -1330,7 +1342,8 @@ const PRESETS = {
 const FX = [['scan', 'Scanlines'], ['curve', 'Curvature'], ['mask', 'Phosphor mask'], ['bloom', 'Bloom'], ['vignette', 'Vignette'], ['aberr', 'Color fringing']];
 const ADJUST = [['bright', 'Brightness', .5, 1.5], ['sat', 'Saturation', 0, 2]];
 const COLOR_MODES = ['normal', 'protanopia', 'deuteranopia', 'tritanopia', 'monochrome', 'sepia', 'highcontrast', 'invert', 'handheld'];
-const DEFAULT_DISPLAY = { preset: 'soft', ...PRESETS.soft, bright: 1, sat: 1, filter: 'sharp', color: 'normal', scale: 'fit', aspect: 'square', ambient: true, fps: false };
+const ANIM = [['aFlicker', 'Flicker'], ['aRoll', 'Rolling band'], ['aNoise', 'Signal noise'], ['aJitter', 'Signal wobble']];
+const DEFAULT_DISPLAY = { preset: 'soft', ...PRESETS.soft, animate: false, aFlicker: .35, aRoll: .4, aNoise: .25, aJitter: .15, bright: 1, sat: 1, filter: 'sharp', color: 'normal', scale: 'fit', aspect: 'square', ambient: true, fps: false };
 
 function loadDisplay() {
   const saved = pref.json('display', null);
@@ -1345,6 +1358,8 @@ function loadDisplay() {
   }
   for (const [k] of FX) d[k] = clamp(Number(d[k]) || 0, 0, 1);
   d.bright = clamp(Number(d.bright) || 1, .5, 1.5);
+  d.animate = !!d.animate;
+  for (const [k] of ANIM) d[k] = clamp(Number.isFinite(Number(d[k])) ? Number(d[k]) : DEFAULT_DISPLAY[k], 0, 1);
   d.sat = clamp(Number.isFinite(Number(d.sat)) ? Number(d.sat) : 1, 0, 2);
   if (!COLOR_MODES.includes(d.color)) d.color = 'normal';
   if (!['fit', '1', '2', '3', '4', '5', '6'].includes(String(d.scale))) d.scale = 'fit';
@@ -1366,6 +1381,7 @@ struct Params {
   time: f32, color_mode: f32, scan: f32, curve: f32,
   mask: f32, bloom: f32, vignette: f32, smooth_on: f32,
   bright: f32, sat: f32, idle: f32, aberr: f32,
+  a_flicker: f32, a_roll: f32, a_noise: f32, a_jitter: f32,
 };
 @group(0) @binding(0) var<uniform> P: Params;
 @group(0) @binding(1) var tex: texture_2d<f32>;
@@ -1437,7 +1453,13 @@ fn color_mode(c: vec3f, m: i32) -> vec3f {
   let edgePx = select(1.0, 2.5, k > 0.0) / P.out_size;
   let e = smoothstep(vec2f(0.0), edgePx, uv) * smoothstep(vec2f(0.0), edgePx, 1.0 - uv);
   let inside = e.x * e.y;
-  let suv = clamp(uv, vec2f(0.0), vec2f(1.0));
+  var suv = clamp(uv, vec2f(0.0), vec2f(1.0));
+  // Animated: per-scanline signal wobble.
+  if (P.a_jitter > 0.0) {
+    let line = floor(suv.y * P.src_size.y);
+    let w = sin(line * 0.73 + P.time * 41.0) * 0.6 + sin(line * 0.11 - P.time * 13.0) * 0.4;
+    suv.x = clamp(suv.x + w * P.a_jitter * 0.7 / P.src_size.x, 0.0, 1.0);
+  }
 
   let shift = (suv - 0.5) * P.aberr * 0.009;
   var col = vec3f(fetch(suv + shift).r, fetch(suv).g, fetch(suv - shift).b);
@@ -1469,6 +1491,18 @@ fn color_mode(c: vec3f, m: i32) -> vec3f {
   let v = suv * (1.0 - suv);
   col *= mix(1.0, pow(clamp(v.x * v.y * 18.0, 0.0, 1.0), 0.3), P.vignette);
 
+  // Animated: rolling refresh band, frame flicker and signal noise.
+  if (P.a_roll > 0.0) {
+    let band = fract(suv.y * 0.6 - P.time * 0.11);
+    let glow = smoothstep(0.0, 0.05, band) * (1.0 - smoothstep(0.05, 0.2, band));
+    col *= (1.0 + glow * P.a_roll * 0.22) * (1.0 - P.a_roll * 0.05 * smoothstep(0.2, 0.7, band));
+  }
+  if (P.a_flicker > 0.0) { col *= 1.0 - P.a_flicker * 0.08 * hash(vec2f(floor(P.time * 60.0), 7.0)); }
+  if (P.a_noise > 0.0) {
+    let g = hash(floor(in.pos.xy) * 0.731 + vec2f(fract(P.time * 1.37) * 413.0, fract(P.time * 0.71) * 191.0)) - 0.5;
+    col += vec3f(g * P.a_noise * 0.14);
+  }
+
   return vec4f(clamp(col, vec3f(0.0), vec3f(1.0)) * inside, 1.0);
 }`;
 
@@ -1491,7 +1525,7 @@ async function createGPURenderer(canvas) {
   });
   const texture = device.createTexture({ size: [NES_W, NES_H], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
   const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge' });
-  const ubuf = device.createBuffer({ size: 64, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const ubuf = device.createBuffer({ size: 80, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const bindGroup = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(0),
     entries: [{ binding: 0, resource: { buffer: ubuf } }, { binding: 1, resource: texture.createView() }, { binding: 2, resource: sampler }]
@@ -1499,7 +1533,7 @@ async function createGPURenderer(canvas) {
   const err = await device.popErrorScope();
   if (err) { device.destroy(); throw new Error('WebGPU setup failed: ' + err.message); }
   device.addEventListener('uncapturederror', e => console.warn('WebGPU error:', e.error && e.error.message));
-  const u = new Float32Array(16);
+  const u = new Float32Array(20);
   return {
     kind: 'webgpu', device, hiDPI: true, supportsAll: true,
     label: 'WebGPU' + (adapter.info && adapter.info.vendor ? ' · ' + adapter.info.vendor : ''),
@@ -1510,6 +1544,8 @@ async function createGPURenderer(canvas) {
       u[4] = o.time; u[5] = COLOR_MODES.indexOf(o.color); u[6] = o.scan; u[7] = o.curve;
       u[8] = o.mask; u[9] = o.bloom; u[10] = o.vignette; u[11] = o.filter === 'smooth' ? 1 : 0;
       u[12] = o.bright; u[13] = o.sat; u[14] = o.idle ? 1 : 0; u[15] = o.aberr;
+      const an = o.animate && !o.idle;
+      u[16] = an ? o.aFlicker : 0; u[17] = an ? o.aRoll : 0; u[18] = an ? o.aNoise : 0; u[19] = an ? o.aJitter : 0;
       device.queue.writeBuffer(ubuf, 0, u);
       const enc = device.createCommandEncoder();
       const pass = enc.beginRenderPass({ colorAttachments: [{ view: context.getCurrentTexture().createView(), loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
@@ -1522,7 +1558,7 @@ async function createGPURenderer(canvas) {
 
 function createCanvasRenderer(canvas) {
   canvas.width = NES_W; canvas.height = NES_H;
-  const ctx = canvas.getContext('2d', { alpha: false });
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
   if (!ctx) throw new Error('Canvas 2D is unavailable');
   const img = ctx.createImageData(NES_W, NES_H);
   const out = new Uint32Array(img.data.buffer);
@@ -1555,12 +1591,15 @@ function createCanvasRenderer(canvas) {
     },
     draw(o) {
       mode = o.color;
-      const key = [o.color, o.filter, o.scan, o.vignette, o.bright, o.sat].join();
+      const key = [o.color, o.filter, o.scan, o.vignette, o.bright, o.sat, o.animate, o.aFlicker, o.aRoll].join();
       if (key === lastKey) return; lastKey = key;
       canvas.style.imageRendering = o.filter === 'smooth' ? 'auto' : 'pixelated';
       canvas.style.filter = [CSS[o.color] || '', o.bright !== 1 ? `brightness(${o.bright})` : '', o.sat !== 1 ? `saturate(${o.sat})` : ''].join(' ').trim() || 'none';
       stage.style.setProperty('--fx-scan', (o.scan * .55).toFixed(3));
       stage.style.setProperty('--fx-vig', (o.vignette * .85).toFixed(3));
+      stage.classList.toggle('fx-anim', !!o.animate);
+      stage.style.setProperty('--fx-roll', (o.aRoll * .09).toFixed(3));
+      stage.style.setProperty('--fx-flick', (o.aFlicker * .06).toFixed(3));
     },
     destroy() {}
   };
@@ -1659,7 +1698,7 @@ function setupAudio() {
   if (!AC) return null;
   try {
     audioCtx = new AC({ latencyHint: 'interactive' });
-    aMax = Math.min(AUDIO_SIZE - 1, Math.round(audioCtx.sampleRate * 0.12));
+    aMax = Math.min(AUDIO_SIZE - 1, Math.round(audioCtx.sampleRate * 0.06));
     audioNode = audioCtx.createScriptProcessor(1024, 0, 2);
     audioGain = audioCtx.createGain();
     applyVolume();
@@ -1763,11 +1802,10 @@ function tick(t) {
     acc += dt * NES_FPS * speed / 1000;
     const maxSteps = Math.ceil(speed) + 2;
     if (acc > maxSteps) acc = maxSteps; // never spiral when the device can't keep up
-    pollGamepads();
     let n = 0;
     try {
       while (acc >= 1 && n < maxSteps) {
-        applyTurbo(); applyGameGenie(); applyRamCheats();
+        pollGamepads(); applyTurbo(); applyGameGenie(); applyRamCheats();
         nes.frame();
         applyRamCheats();
         acc--; n++; emuFrames++;
@@ -1788,6 +1826,7 @@ function tick(t) {
     if (display.ambient && ++ambientCounter >= 12) { ambientCounter = 0; updateAmbient(); }
   }
   const idle = !romLoaded;
+  if (display.animate && romLoaded && renderer && renderer.kind === 'webgpu' && (view === 'play' || isFullscreen())) needsDraw = true;
   if (idle && renderer && renderer.kind === 'webgpu' && t - lastIdleDraw > 50) { lastIdleDraw = t; needsDraw = true; }
   if (needsDraw && renderer && (view === 'play' || isFullscreen())) {
     needsDraw = false;
@@ -2523,6 +2562,7 @@ const QM = [
       const i = PRESET_ORDER.indexOf(display.preset); const n = PRESET_ORDER[(Math.max(0, i) + d + PRESET_ORDER.length) % PRESET_ORDER.length];
       document.querySelector(`[data-preset=${n}]`).click(); } },
   { id: 'speed', icon: 'load', label: 'Speed', value: () => speed + '×', step: d => setSpeed(SPEEDS[clamp(SPEEDS.indexOf(speed) + d, 0, SPEEDS.length - 1)], false) },
+  { id: 'anim', icon: 'screen', label: 'CRT animation', value: () => display.animate ? 'On' : 'Off', step: () => setAnimate(!display.animate) },
   { id: 'sound', icon: 'vol', label: 'Game audio', value: () => soundToggle.checked ? 'On' : 'Off', step: () => setSound(!soundToggle.checked) },
   { id: 'details', icon: 'edit', label: 'Game details', run: () => { closeQuickMenu(false); openGameDialog(currentName); } },
   { id: 'settings', icon: 'sliders', label: 'Settings', run: () => openSettings() }, // Quick Menu stays open underneath
@@ -2696,7 +2736,7 @@ const ribbon = (() => {
   }
   function loop(t) {
     requestAnimationFrame(loop);
-    const busy = document.hidden || (view === 'play' && romLoaded && !paused && !qmOpen);
+    const busy = document.hidden || view === 'play';
     if (busy || reduce.matches || t - last < 33) return;
     last = t; draw(t);
   }
@@ -2923,7 +2963,7 @@ async function loadBytes(bytes, name, save, skipAutoRestore = false) {
     next.loadROM(bin);
     if (token !== loadToken) return;
     releaseAllInput();
-    nes = next; romLoaded = true; currentName = name; currentSize = bytes.length;
+    nes = next; input.reset(); romLoaded = true; currentName = name; currentSize = bytes.length;
     clearAudio(); frame.fill(0xff000000); frameDirty = true; clearAmbient();
     resetCheats();
     lastAutosave = performance.now();
@@ -3104,13 +3144,13 @@ window.addEventListener('keydown', e => {
   }
   if (anyDialogOpen() || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
   if ((view !== 'play' && !isFullscreen()) || qmOpen) return;
-  const id = norm(e.key);
+  const id = norm(e.key), code = e.code || id;
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { e.preventDefault(); if (!e.repeat) { zapperDown = true; zapperAt(null, true); } return; }
   if (zapperOn && id === norm(keybinds.zapperReload)) { e.preventDefault(); zapperDown = false; zapperAt(null, false, true); return; }
   const b = bindingFor(e.key);
   if (b && b.button != null) {
     e.preventDefault();
-    if (nes && romLoaded && !paused && !heldKeys.has(id)) { heldKeys.set(id, b); nes.buttonDown(b.player, b.button); }
+    if (nes && romLoaded && !paused && !heldKeys.has(code)) { heldKeys.set(code, b); input.press(b.player, b.button, 'k:' + code); }
     return;
   }
   if (e.repeat) return;
@@ -3121,10 +3161,10 @@ window.addEventListener('keydown', e => {
   else if (id === 'm') { e.preventDefault(); setSound(!soundToggle.checked); }
 });
 window.addEventListener('keyup', e => {
-  const id = norm(e.key);
+  const id = norm(e.key), code = e.code || id;
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { zapperDown = false; zapperAt(null, false); }
-  const b = heldKeys.get(id);
-  if (b) { heldKeys.delete(id); if (nes) nes.buttonUp(b.player, b.button); }
+  const b = heldKeys.get(code);
+  if (b) { heldKeys.delete(code); input.release(b.player, b.button, 'k:' + code); }
 });
 // Stuck buttons were possible when focus left the page mid-press; release everything instead.
 window.addEventListener('blur', () => releaseAllInput());
@@ -3134,12 +3174,39 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pagehide', () => { if (romLoaded && !paused && autosaveOn) saveState(true).catch(() => {}); });
 
-function releaseAllInput() {
-  if (nes) {
-    for (const b of heldKeys.values()) nes.buttonUp(b.player, b.button);
-    for (const [, entry] of touchHeld) nes.buttonUp(1, entry.value);
-    for (const [key, set] of padPrev) { const player = Number(key.split(':')[1]); for (const a of set) { const c = btnCode(a); if (c != null) nes.buttonUp(player, c); } }
+/* Input manager: every source (keyboard, controller, touch, turbo) presses and releases
+   through here. A NES button stays down while any source holds it, and opposite directions
+   (left+right, up+down) resolve to the most recent one, like a real D-pad. */
+const input = (() => {
+  const held = { 1: new Map(), 2: new Map() };   // button -> Set of sources holding it
+  const applied = { 1: new Set(), 2: new Set() }; // buttons currently down on the NES
+  const since = { 1: new Map(), 2: new Map() };   // button -> time it was last pressed
+  function sync(p) {
+    if (!nes || !window.jsnes) return;
+    const C = jsnes.Controller, want = new Set(held[p].keys());
+    for (const [a, b] of [[C.BUTTON_LEFT, C.BUTTON_RIGHT], [C.BUTTON_UP, C.BUTTON_DOWN]])
+      if (want.has(a) && want.has(b)) want.delete((since[p].get(a) || 0) >= (since[p].get(b) || 0) ? b : a);
+    for (const b of [...applied[p]]) if (!want.has(b)) { nes.buttonUp(p, b); applied[p].delete(b); }
+    for (const b of want) if (!applied[p].has(b)) { nes.buttonDown(p, b); applied[p].add(b); }
   }
+  return {
+    press(p, button, src) {
+      if (button == null) return;
+      let set = held[p].get(button);
+      if (!set) { set = new Set(); held[p].set(button, set); since[p].set(button, performance.now()); }
+      set.add(src); sync(p);
+    },
+    release(p, button, src) {
+      const set = held[p].get(button); if (!set) return;
+      set.delete(src); if (!set.size) held[p].delete(button);
+      sync(p);
+    },
+    releaseAll() { for (const p of [1, 2]) { held[p].clear(); sync(p); } },
+    reset() { for (const p of [1, 2]) { held[p].clear(); applied[p].clear(); since[p].clear(); } } // new console instance
+  };
+})();
+function releaseAllInput() {
+  input.releaseAll();
   heldKeys.clear(); padPrev.clear(); releaseTurbo();
   for (const [pid, entry] of touchHeld) { entry.el.classList.remove('on'); try { entry.el.releasePointerCapture(pid); } catch (_) {} }
   touchHeld.clear();
@@ -3218,10 +3285,8 @@ function pollGamepads() {
       if (action === 'turboB') { turboHeld[player].b = on; continue; }
       if (on) next.add(action);
       const c = btnCode(action);
-      if (c != null && nes) {
-        if (on && !prev.has(action)) nes.buttonDown(player, c);
-        else if (!on && prev.has(action) && !turboOn[player][action]) nes.buttonUp(player, c);
-      }
+      if (on && !prev.has(action)) input.press(player, c, 'p:' + key + ':' + action);
+      else if (!on && prev.has(action)) input.release(player, c, 'p:' + key + ':' + action);
     }
     padPrev.set(key, next);
   });
@@ -3229,7 +3294,7 @@ function pollGamepads() {
   // A controller that disappears mid-press must not leave buttons stuck down.
   for (const [key, set] of padPrev) if (!seen.has(key)) {
     const player = Number(key.split(':')[1]);
-    for (const a of set) { const c = btnCode(a); if (c != null && nes) nes.buttonUp(player, c); }
+    for (const a of set) input.release(player, btnCode(a), 'p:' + key + ':' + a);
     padPrev.delete(key);
     turboHeld[player].a = turboHeld[player].b = false;
   }
@@ -3242,13 +3307,12 @@ function applyTurbo() {
     const want = turboHeld[p][k] && turboPhase < 2;
     if (want === turboOn[p][k]) continue;
     turboOn[p][k] = want;
-    const held = [...padPrev].some(([key, s]) => key.endsWith(':' + p) && s.has(k));
-    if (!held) { const c = btnCode(k); if (c != null) want ? nes.buttonDown(p, c) : nes.buttonUp(p, c); }
+    want ? input.press(p, btnCode(k), 'turbo:' + k) : input.release(p, btnCode(k), 'turbo:' + k);
   }
 }
 function releaseTurbo() {
   for (const p of [1, 2]) for (const k of ['a', 'b']) {
-    if (turboOn[p][k] && nes) { const c = btnCode(k); if (c != null) nes.buttonUp(p, c); }
+    if (turboOn[p][k]) input.release(p, btnCode(k), 'turbo:' + k);
     turboOn[p][k] = turboHeld[p][k] = false;
   }
 }
@@ -3313,13 +3377,13 @@ document.querySelectorAll('[data-touch]').forEach(el => {
     const value = btnCode(name); if (value == null) return;
     touchHeld.set(e.pointerId, { el, value });
     try { el.setPointerCapture(e.pointerId); } catch (_) {}
-    el.classList.add('on'); nes.buttonDown(1, value);
+    el.classList.add('on'); input.press(1, value, 't:' + e.pointerId);
     if (navigator.vibrate) try { navigator.vibrate(8); } catch (_) {}
   };
   const up = e => {
     const entry = touchHeld.get(e.pointerId); if (!entry) return;
     touchHeld.delete(e.pointerId);
-    if (nes) nes.buttonUp(1, entry.value);
+    input.release(1, entry.value, 't:' + e.pointerId);
     if (![...touchHeld.values()].some(x => x.el === el)) el.classList.remove('on');
   };
   el.addEventListener('pointerdown', down);
@@ -3479,6 +3543,15 @@ for (const [k, label, min, max] of ADJUST) {
   fxRows[k] = sliderRow(k, label, min, max, 0.01, display[k], v => { display[k] = v; saveDisplay(); needsDraw = true; });
   $('adjustSliders').append(fxRows[k]);
 }
+for (const [k, label] of ANIM) {
+  fxRows[k] = sliderRow(k, label, 0, 1, 0.01, display[k], v => { display[k] = v; saveDisplay(); needsDraw = true; });
+  $('animSliders').append(fxRows[k]);
+}
+function setAnimate(on) {
+  display.animate = !!on; $('fxAnimate').checked = display.animate; saveDisplay(); needsDraw = true; syncFxAvailability();
+}
+$('fxAnimate').checked = display.animate;
+$('fxAnimate').addEventListener('change', () => setAnimate($('fxAnimate').checked));
 function syncPresets() {
   document.querySelectorAll('[data-preset]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.preset === display.preset)));
   $('customTag').hidden = display.preset !== 'custom';
@@ -3493,6 +3566,7 @@ syncPresets();
 function syncFxAvailability() {
   const full = renderer && renderer.supportsAll;
   for (const k of ['curve', 'mask', 'bloom', 'aberr']) fxRows[k].classList.toggle('disabled', !full);
+  for (const [k] of ANIM) fxRows[k].classList.toggle('disabled', !display.animate || (!full && (k === 'aNoise' || k === 'aJitter')));
   $('fxNote').hidden = full;
   $('fxNote').textContent = 'Curvature, phosphor mask, bloom and color fringing need WebGPU. Your browser is using the Canvas 2D fallback; try a recent Chrome, Edge or Safari for the full effect set.';
 }

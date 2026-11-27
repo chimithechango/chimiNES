@@ -13,7 +13,7 @@ what's new in the remaster
 
 webgpu display pipeline: the game screen is drawn by a WGSL shader on the GPU. it handles sharp pixel scaling, scanlines, screen curvature, a phosphor mask, bloom, vignette, color fringing and every color mode in one pass. browsers without webgpu fall back to canvas 2d automatically (with scanlines, vignette and color modes).
 
-effect presets: clean, soft crt, crt and arcade, each with sliders to fine-tune.
+effect presets: clean, soft crt, crt and arcade, each with sliders to fine-tune. turn on "animate crt effects" (settings → display, or the quick menu) for flicker, a rolling refresh band, signal noise and wobble.
 
 console-style interface (playstation 5 + nintendo switch + retroarch): a home screen of game tiles whose art fills the background, a big play button, and retroarch's animated xmb ribbon. save states use a retroarch xmb browser (games across, saves down). while playing, esc (or start+select / the home button on a gamepad) opens a retroarch-style quick menu with resume, save, load, reset, screen effect, speed, audio, game details, fullscreen and home. everything works with arrow keys, enter and esc, or a gamepad (d-pad, a = ok, b = back, x = details, y = layouts, start = settings). leaving a game pauses it; coming back resumes it.
 

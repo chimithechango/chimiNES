@@ -295,6 +295,15 @@ kbd.k{min-width:22px;padding:1px 6px}
 .qm-list button.sel{color:#fff;background:rgba(255,255,255,.12);box-shadow:inset 3px 0 0 var(--accent-2)}
 .qm-hint{padding:6px 14px 0;color:rgba(255,255,255,.45)}
 .stage.qm-open .veil{display:none!important}
+/* Fullscreen: a Quick Menu button that appears when the mouse moves or the screen is tapped */
+.fs-menu{display:none;position:absolute;top:18px;right:18px;z-index:7;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:13px;
+  border:1px solid rgba(255,255,255,.22);background:rgba(10,12,18,.62);color:#fff;font-weight:750;font-size:14px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .25s}
+.fs-menu:hover,.fs-menu:focus-visible{border-color:var(--accent-2);box-shadow:0 0 0 2px var(--accent-2);outline:0}
+.stage.is-fs .fs-menu{display:inline-flex}
+.stage.is-fs.show-ui .fs-menu{opacity:1;pointer-events:auto}
+.stage.qm-open .fs-menu{display:none!important}
+.stage.is-fs.hide-cursor,.stage.is-fs.hide-cursor canvas{cursor:none}
 
 /* Game details dialog */
 dialog.modal{
@@ -879,11 +888,12 @@ body[data-layout="arcade"] :is(.round,.orb-c,.btn,.pill,.chip,.cats,.cats button
           <div class="overlay veil" id="pauseVeil" hidden>
             <div><button class="veil-btn" type="button" aria-label="Resume" tabindex="-1" data-sfx="none"><svg class="i fill"><use href="#i-play"/></svg></button><small id="veilText">Paused</small></div>
           </div>
+          <button class="fs-menu" id="fsMenuBtn" type="button" data-sfx="none" aria-label="Open Quick Menu"><svg class="i"><use href="#i-menu"/></svg><span>Quick Menu</span></button>
           <div class="qmenu" id="qmenu" hidden>
             <div class="qm-panel">
               <div class="qm-head"><div id="qmCover"></div><div style="min-width:0"><div class="qm-eyebrow">Quick Menu</div><div class="qm-title" id="qmTitle"></div></div></div>
               <div class="qm-list" id="qmList" role="menu"></div>
-              <div class="qm-hint"><span>↑↓ Select</span><span>←→ Change</span><span>Enter / A: OK</span><span>Esc / B: Back</span></div>
+              <div class="qm-hint"><span>↑↓ Select</span><span>←→ Change</span><span>Enter / A: OK</span><span>Esc / B: Back</span><span>` or F1: Menu</span></div>
             </div>
           </div>
           <div class="overlay empty" id="emptyState">
@@ -2497,7 +2507,7 @@ const QM = [
   { id: 'speed', icon: 'load', label: 'Speed', value: () => speed + '×', step: d => setSpeed(SPEEDS[clamp(SPEEDS.indexOf(speed) + d, 0, SPEEDS.length - 1)], false) },
   { id: 'sound', icon: 'vol', label: 'Game audio', value: () => soundToggle.checked ? 'On' : 'Off', step: () => setSound(!soundToggle.checked) },
   { id: 'details', icon: 'edit', label: 'Game details', run: () => { closeQuickMenu(false); openGameDialog(currentName); } },
-  { id: 'full', icon: 'full', label: 'Fullscreen', run: () => { toggleFullscreen(); } },
+  { id: 'full', icon: 'full', label: 'Fullscreen', run: () => { closeQuickMenu(true); toggleFullscreen(); } },
   { id: 'home', icon: 'home', label: 'Back to Home', run: () => { closeQuickMenu(false); autoPaused = qmWasRunning; showView('library'); } }
 ];
 function renderQuickMenu() {
@@ -2585,8 +2595,13 @@ const KEYMAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDow
 window.addEventListener('keydown', e => {
   if (listeningFor || e.ctrlKey || e.metaKey || e.altKey) return;
   if (anyDialogOpen()) return;
-  const k = KEYMAP[e.key]; if (!k) return;
   const t = e.target;
+  if ((e.key === 'F1' || e.code === 'Backquote') && view === 'play' && romLoaded && !isBound(e.key) && !isTyping(t)) {
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (qmOpen) { sfx.play('resume'); closeQuickMenu(true); } else openQuickMenu();
+    return;
+  }
+  const k = KEYMAP[e.key]; if (!k) return;
   if (isTyping(t) || (t && t.type === 'range')) return;
   if (!qmOpen && view === 'play' && k !== 'back' && k !== 'home') return; // the game owns the keyboard
   if (view === 'library' && k === 'ok' && t && t.closest && t.closest('button') && !t.closest('#tileRow')) return; // native button press
@@ -3235,8 +3250,31 @@ function toggleFullscreen() {
     else toast('Fullscreen isn’t available in this browser.', 'error');
   } catch (_) { toast('Fullscreen isn’t available here.', 'error'); }
 }
+let uiTimer = 0;
+function pokeFullscreenUI() {
+  if (!isFullscreen()) return;
+  stage.classList.add('show-ui'); stage.classList.remove('hide-cursor');
+  clearTimeout(uiTimer);
+  uiTimer = setTimeout(() => { stage.classList.remove('show-ui'); if (!qmOpen && !zapperOn) stage.classList.add('hide-cursor'); }, 2500);
+}
+stage.addEventListener('pointermove', pokeFullscreenUI);
+stage.addEventListener('pointerdown', pokeFullscreenUI);
+$('fsMenuBtn').addEventListener('click', e => { e.stopPropagation(); openQuickMenu(); });
 function onFullscreenChange() {
   const on = isFullscreen();
+  stage.classList.toggle('is-fs', on);
+  if (on) {
+    stage.append(toastBox); // notifications stay visible in fullscreen
+    pokeFullscreenUI();
+    // Keyboard Lock lets Esc open the Quick Menu instead of leaving fullscreen (hold Esc to exit).
+    const hint = locked => toast(locked ? 'Quick Menu: Esc · Hold Esc to leave fullscreen' : 'Quick Menu: ` or F1 · Esc leaves fullscreen', 'info', 'fs', 3500);
+    if (navigator.keyboard && navigator.keyboard.lock) navigator.keyboard.lock(['Escape']).then(() => hint(true), () => hint(false));
+    else hint(false);
+  } else {
+    document.body.append(toastBox);
+    if (navigator.keyboard && navigator.keyboard.unlock) try { navigator.keyboard.unlock(); } catch (_) {}
+    clearTimeout(uiTimer); stage.classList.remove('show-ui', 'hide-cursor');
+  }
   layoutScreen();
 }
 document.addEventListener('fullscreenchange', onFullscreenChange);

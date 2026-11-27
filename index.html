@@ -113,6 +113,9 @@ input[type=file]{display:none}
     linear-gradient(90deg,color-mix(in srgb,var(--bg) 75%,transparent),transparent 75%);
 }
 body[data-view="play"] .scene,body[data-view="saves"] .scene{--scene-o:.22}
+/* The ribbon's lines crossed the middle of the page behind the game; hide it while playing. */
+.xmb-bg{transition:opacity .4s}
+body[data-view="play"] .xmb-bg{opacity:0}
 :root[data-light] .scene{--scene-o:.35}
 
 .app{min-height:100vh;display:flex;flex-direction:column}
@@ -415,6 +418,10 @@ dialog.modal.sgdb[open]{display:flex}
 
 /* CSS effects used only by the Canvas 2D fallback renderer */
 .stage .fallback-fx{position:absolute;inset:0;pointer-events:none;display:none}
+.stage.cpu-fx.fx-anim .fallback-fx::before{content:"";position:absolute;left:0;right:0;height:22%;background:linear-gradient(180deg,transparent,rgba(255,255,255,var(--fx-roll,.03)),transparent);animation:fxRoll 7s linear infinite}
+@keyframes fxRoll{from{top:-25%}to{top:105%}}
+.stage.cpu-fx.fx-anim canvas{animation:fxFlick .1s steps(2) infinite}
+@keyframes fxFlick{50%{opacity:calc(1 - var(--fx-flick,.02))}}
 .stage.cpu-fx .fallback-fx{display:block;
   background:repeating-linear-gradient(to bottom,transparent 0 2px,rgba(0,0,0,var(--fx-scan,0)) 2px 4px);
   box-shadow:inset 0 0 90px rgba(0,0,0,var(--fx-vig,0));
@@ -493,13 +500,18 @@ dialog.drawer::backdrop{background:rgba(0,0,0,.3)}
   cursor:pointer;font-size:13px;
 }
 .select option{background:var(--surface);color:var(--text)}
-input[type=range]{
-  -webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;margin:0;
-  background:linear-gradient(var(--accent),var(--accent)) 0/var(--p,50%) 100% no-repeat,var(--surface-3);
-  cursor:pointer;
-}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.45),0 0 0 3px var(--accent-soft)}
-input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.45)}
+/* Sliders: a 26px-tall hit area (the old 4px element missed most clicks on the handle) with a thin track drawn inside. */
+input[type=range]{-webkit-appearance:none;appearance:none;display:block;width:100%;height:26px;margin:0;padding:0;background:transparent;cursor:pointer;touch-action:pan-y}
+input[type=range]:focus{outline:none}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:99px;background:linear-gradient(var(--accent),var(--accent)) 0/var(--p,50%) 100% no-repeat,var(--surface-3)}
+input[type=range]::-moz-range-track{height:5px;border-radius:99px;background:var(--surface-3)}
+input[type=range]::-moz-range-progress{height:5px;border-radius:99px;background:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-6.5px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.45),0 0 0 3px var(--accent-soft);transition:box-shadow .15s,transform .15s}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:0;box-shadow:0 1px 4px rgba(0,0,0,.45),0 0 0 3px var(--accent-soft)}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.1)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.18)}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent-2)}
+input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent-2)}
 input.switch{
   -webkit-appearance:none;appearance:none;flex:0 0 auto;margin:0;
   width:42px;height:24px;border-radius:99px;position:relative;cursor:pointer;
@@ -541,6 +553,8 @@ input.switch:checked::before{transform:translateX(18px)}
 .key:hover{border-color:var(--accent-line)}
 .key.listening{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);animation:pulse 1s ease-in-out infinite alternate}
 @keyframes pulse{to{box-shadow:0 0 0 5px var(--accent-soft)}}
+.pad-keys{grid-template-columns:minmax(0,1fr) auto}
+.pad-key{min-width:150px}
 .help{color:var(--muted);font-size:12px;line-height:1.45;padding:0 0 12px}
 
 .cheat-form{display:flex;gap:8px;padding:12px 0 4px}
@@ -962,6 +976,11 @@ body[data-layout="arcade"] :is(.round,.orb-c,.btn,.pill,.chip,.cats,.cats button
       <div class="gtitle">Fine-tune <span id="customTag" class="tag" hidden>custom</span></div>
       <div class="group" id="fxSliders"></div>
       <p class="note" id="fxNote" hidden></p>
+      <div class="gtitle">Animation</div>
+      <div class="group">
+        <div class="row"><label for="fxAnimate">Animate CRT effects<span class="desc">Flicker, a rolling refresh band, signal noise and wobble, like a real tube TV.</span></label><input class="switch" type="checkbox" id="fxAnimate"></div>
+        <div id="animSliders"></div>
+      </div>
       <div class="gtitle">Picture</div>
       <div class="group">
         <div class="row"><label for="filter">Pixel filter</label><select class="select" id="filter"><option value="sharp">Sharp pixels</option><option value="smooth">Smooth</option></select></div>
@@ -1017,10 +1036,18 @@ body[data-layout="arcade"] :is(.round,.orb-c,.btn,.pill,.chip,.cats,.cats button
         <div class="help" id="keybindHelp">Click a key, then press the new key. Esc cancels.</div>
       </div>
       <div style="margin-top:10px"><button class="btn btn-sm" id="resetKeybinds">Reset to defaults</button></div>
-      <div class="gtitle">Other inputs</div>
+      <div class="gtitle">Controller</div>
+      <div class="group">
+        <div class="row"><span class="lbl">Connected<span class="desc" id="gamepadStatus">Connect a controller and press any button.</span></span></div>
+        <div class="row"><label for="padPreset">Button layout<span class="desc">Which face button is NES A. The D-pad and left stick always steer.</span></label><select class="select" id="padPreset"><option value="xbox">Bottom = A, left = B</option><option value="nintendo">Right = A, bottom = B</option><option value="custom" id="padPresetCustom" hidden>Custom</option></select></div>
+        <div class="keys pad-keys" id="padTable"></div>
+        <div class="help" id="padHelp">Click a button, then press the controller button you want. Turbo buttons fire 15 times a second.</div>
+      </div>
+      <div style="margin-top:10px"><button class="btn btn-sm" id="resetPadBinds">Reset controller buttons</button></div>
+      <p class="note">Menus: D-pad to move, A/Cross to select, B/Circle to go back, X details, Y layouts, Start settings. In a game, Start+Select or Home opens the Quick Menu; Start resumes a paused game.</p>
+      <div class="gtitle">Touch</div>
       <div class="group">
         <div class="row"><label for="touchControlsToggle">On-screen touch controls</label><input class="switch" type="checkbox" id="touchControlsToggle"></div>
-        <div class="row"><span class="lbl">Gamepads<span class="desc" id="gamepadStatus">Connect a controller and press any button.</span></span></div>
       </div>
       <div class="gtitle">NES Zapper</div>
       <div class="group">
@@ -1315,7 +1342,8 @@ const PRESETS = {
 const FX = [['scan', 'Scanlines'], ['curve', 'Curvature'], ['mask', 'Phosphor mask'], ['bloom', 'Bloom'], ['vignette', 'Vignette'], ['aberr', 'Color fringing']];
 const ADJUST = [['bright', 'Brightness', .5, 1.5], ['sat', 'Saturation', 0, 2]];
 const COLOR_MODES = ['normal', 'protanopia', 'deuteranopia', 'tritanopia', 'monochrome', 'sepia', 'highcontrast', 'invert', 'handheld'];
-const DEFAULT_DISPLAY = { preset: 'soft', ...PRESETS.soft, bright: 1, sat: 1, filter: 'sharp', color: 'normal', scale: 'fit', aspect: 'square', ambient: true, fps: false };
+const ANIM = [['aFlicker', 'Flicker'], ['aRoll', 'Rolling band'], ['aNoise', 'Signal noise'], ['aJitter', 'Signal wobble']];
+const DEFAULT_DISPLAY = { preset: 'soft', ...PRESETS.soft, animate: false, aFlicker: .35, aRoll: .4, aNoise: .25, aJitter: .15, bright: 1, sat: 1, filter: 'sharp', color: 'normal', scale: 'fit', aspect: 'square', ambient: true, fps: false };
 
 function loadDisplay() {
   const saved = pref.json('display', null);
@@ -1330,6 +1358,8 @@ function loadDisplay() {
   }
   for (const [k] of FX) d[k] = clamp(Number(d[k]) || 0, 0, 1);
   d.bright = clamp(Number(d.bright) || 1, .5, 1.5);
+  d.animate = !!d.animate;
+  for (const [k] of ANIM) d[k] = clamp(Number.isFinite(Number(d[k])) ? Number(d[k]) : DEFAULT_DISPLAY[k], 0, 1);
   d.sat = clamp(Number.isFinite(Number(d.sat)) ? Number(d.sat) : 1, 0, 2);
   if (!COLOR_MODES.includes(d.color)) d.color = 'normal';
   if (!['fit', '1', '2', '3', '4', '5', '6'].includes(String(d.scale))) d.scale = 'fit';
@@ -1351,6 +1381,7 @@ struct Params {
   time: f32, color_mode: f32, scan: f32, curve: f32,
   mask: f32, bloom: f32, vignette: f32, smooth_on: f32,
   bright: f32, sat: f32, idle: f32, aberr: f32,
+  a_flicker: f32, a_roll: f32, a_noise: f32, a_jitter: f32,
 };
 @group(0) @binding(0) var<uniform> P: Params;
 @group(0) @binding(1) var tex: texture_2d<f32>;
@@ -1422,7 +1453,13 @@ fn color_mode(c: vec3f, m: i32) -> vec3f {
   let edgePx = select(1.0, 2.5, k > 0.0) / P.out_size;
   let e = smoothstep(vec2f(0.0), edgePx, uv) * smoothstep(vec2f(0.0), edgePx, 1.0 - uv);
   let inside = e.x * e.y;
-  let suv = clamp(uv, vec2f(0.0), vec2f(1.0));
+  var suv = clamp(uv, vec2f(0.0), vec2f(1.0));
+  // Animated: per-scanline signal wobble.
+  if (P.a_jitter > 0.0) {
+    let line = floor(suv.y * P.src_size.y);
+    let w = sin(line * 0.73 + P.time * 41.0) * 0.6 + sin(line * 0.11 - P.time * 13.0) * 0.4;
+    suv.x = clamp(suv.x + w * P.a_jitter * 0.7 / P.src_size.x, 0.0, 1.0);
+  }
 
   let shift = (suv - 0.5) * P.aberr * 0.009;
   var col = vec3f(fetch(suv + shift).r, fetch(suv).g, fetch(suv - shift).b);
@@ -1454,6 +1491,18 @@ fn color_mode(c: vec3f, m: i32) -> vec3f {
   let v = suv * (1.0 - suv);
   col *= mix(1.0, pow(clamp(v.x * v.y * 18.0, 0.0, 1.0), 0.3), P.vignette);
 
+  // Animated: rolling refresh band, frame flicker and signal noise.
+  if (P.a_roll > 0.0) {
+    let band = fract(suv.y * 0.6 - P.time * 0.11);
+    let glow = smoothstep(0.0, 0.05, band) * (1.0 - smoothstep(0.05, 0.2, band));
+    col *= (1.0 + glow * P.a_roll * 0.22) * (1.0 - P.a_roll * 0.05 * smoothstep(0.2, 0.7, band));
+  }
+  if (P.a_flicker > 0.0) { col *= 1.0 - P.a_flicker * 0.08 * hash(vec2f(floor(P.time * 60.0), 7.0)); }
+  if (P.a_noise > 0.0) {
+    let g = hash(floor(in.pos.xy) * 0.731 + vec2f(fract(P.time * 1.37) * 413.0, fract(P.time * 0.71) * 191.0)) - 0.5;
+    col += vec3f(g * P.a_noise * 0.14);
+  }
+
   return vec4f(clamp(col, vec3f(0.0), vec3f(1.0)) * inside, 1.0);
 }`;
 
@@ -1476,7 +1525,7 @@ async function createGPURenderer(canvas) {
   });
   const texture = device.createTexture({ size: [NES_W, NES_H], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
   const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge' });
-  const ubuf = device.createBuffer({ size: 64, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+  const ubuf = device.createBuffer({ size: 80, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
   const bindGroup = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(0),
     entries: [{ binding: 0, resource: { buffer: ubuf } }, { binding: 1, resource: texture.createView() }, { binding: 2, resource: sampler }]
@@ -1484,7 +1533,7 @@ async function createGPURenderer(canvas) {
   const err = await device.popErrorScope();
   if (err) { device.destroy(); throw new Error('WebGPU setup failed: ' + err.message); }
   device.addEventListener('uncapturederror', e => console.warn('WebGPU error:', e.error && e.error.message));
-  const u = new Float32Array(16);
+  const u = new Float32Array(20);
   return {
     kind: 'webgpu', device, hiDPI: true, supportsAll: true,
     label: 'WebGPU' + (adapter.info && adapter.info.vendor ? ' · ' + adapter.info.vendor : ''),
@@ -1495,6 +1544,8 @@ async function createGPURenderer(canvas) {
       u[4] = o.time; u[5] = COLOR_MODES.indexOf(o.color); u[6] = o.scan; u[7] = o.curve;
       u[8] = o.mask; u[9] = o.bloom; u[10] = o.vignette; u[11] = o.filter === 'smooth' ? 1 : 0;
       u[12] = o.bright; u[13] = o.sat; u[14] = o.idle ? 1 : 0; u[15] = o.aberr;
+      const an = o.animate && !o.idle;
+      u[16] = an ? o.aFlicker : 0; u[17] = an ? o.aRoll : 0; u[18] = an ? o.aNoise : 0; u[19] = an ? o.aJitter : 0;
       device.queue.writeBuffer(ubuf, 0, u);
       const enc = device.createCommandEncoder();
       const pass = enc.beginRenderPass({ colorAttachments: [{ view: context.getCurrentTexture().createView(), loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
@@ -1507,7 +1558,7 @@ async function createGPURenderer(canvas) {
 
 function createCanvasRenderer(canvas) {
   canvas.width = NES_W; canvas.height = NES_H;
-  const ctx = canvas.getContext('2d', { alpha: false });
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
   if (!ctx) throw new Error('Canvas 2D is unavailable');
   const img = ctx.createImageData(NES_W, NES_H);
   const out = new Uint32Array(img.data.buffer);
@@ -1540,12 +1591,15 @@ function createCanvasRenderer(canvas) {
     },
     draw(o) {
       mode = o.color;
-      const key = [o.color, o.filter, o.scan, o.vignette, o.bright, o.sat].join();
+      const key = [o.color, o.filter, o.scan, o.vignette, o.bright, o.sat, o.animate, o.aFlicker, o.aRoll].join();
       if (key === lastKey) return; lastKey = key;
       canvas.style.imageRendering = o.filter === 'smooth' ? 'auto' : 'pixelated';
       canvas.style.filter = [CSS[o.color] || '', o.bright !== 1 ? `brightness(${o.bright})` : '', o.sat !== 1 ? `saturate(${o.sat})` : ''].join(' ').trim() || 'none';
       stage.style.setProperty('--fx-scan', (o.scan * .55).toFixed(3));
       stage.style.setProperty('--fx-vig', (o.vignette * .85).toFixed(3));
+      stage.classList.toggle('fx-anim', !!o.animate);
+      stage.style.setProperty('--fx-roll', (o.aRoll * .09).toFixed(3));
+      stage.style.setProperty('--fx-flick', (o.aFlicker * .06).toFixed(3));
     },
     destroy() {}
   };
@@ -1644,7 +1698,7 @@ function setupAudio() {
   if (!AC) return null;
   try {
     audioCtx = new AC({ latencyHint: 'interactive' });
-    aMax = Math.min(AUDIO_SIZE - 1, Math.round(audioCtx.sampleRate * 0.12));
+    aMax = Math.min(AUDIO_SIZE - 1, Math.round(audioCtx.sampleRate * 0.06));
     audioNode = audioCtx.createScriptProcessor(1024, 0, 2);
     audioGain = audioCtx.createGain();
     applyVolume();
@@ -1735,21 +1789,23 @@ function togglePause() {
 /* ------------------------------------------------------------------
    Main loop: one rAF loop drives emulation and presentation.
    ------------------------------------------------------------------ */
-let lastIdleDraw = 0;
+let lastIdleDraw = 0, wasRunning = false;
 function tick(t) {
   requestAnimationFrame(tick);
   pollMenuPad(t, romLoaded && !paused && view === 'play' && !qmOpen);
+  const runningNow = !!(romLoaded && !paused && nes);
+  if (runningNow && !wasRunning) padSeed = true;
+  wasRunning = runningNow;
   if (romLoaded && !paused && nes) {
     if (!lastTick) lastTick = t;
     const dt = Math.min(250, t - lastTick); lastTick = t;
     acc += dt * NES_FPS * speed / 1000;
     const maxSteps = Math.ceil(speed) + 2;
     if (acc > maxSteps) acc = maxSteps; // never spiral when the device can't keep up
-    pollGamepads();
     let n = 0;
     try {
       while (acc >= 1 && n < maxSteps) {
-        applyGameGenie(); applyRamCheats();
+        pollGamepads(); applyTurbo(); applyGameGenie(); applyRamCheats();
         nes.frame();
         applyRamCheats();
         acc--; n++; emuFrames++;
@@ -1770,6 +1826,7 @@ function tick(t) {
     if (display.ambient && ++ambientCounter >= 12) { ambientCounter = 0; updateAmbient(); }
   }
   const idle = !romLoaded;
+  if (display.animate && romLoaded && renderer && renderer.kind === 'webgpu' && (view === 'play' || isFullscreen())) needsDraw = true;
   if (idle && renderer && renderer.kind === 'webgpu' && t - lastIdleDraw > 50) { lastIdleDraw = t; needsDraw = true; }
   if (needsDraw && renderer && (view === 'play' || isFullscreen())) {
     needsDraw = false;
@@ -2505,8 +2562,10 @@ const QM = [
       const i = PRESET_ORDER.indexOf(display.preset); const n = PRESET_ORDER[(Math.max(0, i) + d + PRESET_ORDER.length) % PRESET_ORDER.length];
       document.querySelector(`[data-preset=${n}]`).click(); } },
   { id: 'speed', icon: 'load', label: 'Speed', value: () => speed + '×', step: d => setSpeed(SPEEDS[clamp(SPEEDS.indexOf(speed) + d, 0, SPEEDS.length - 1)], false) },
+  { id: 'anim', icon: 'screen', label: 'CRT animation', value: () => display.animate ? 'On' : 'Off', step: () => setAnimate(!display.animate) },
   { id: 'sound', icon: 'vol', label: 'Game audio', value: () => soundToggle.checked ? 'On' : 'Off', step: () => setSound(!soundToggle.checked) },
   { id: 'details', icon: 'edit', label: 'Game details', run: () => { closeQuickMenu(false); openGameDialog(currentName); } },
+  { id: 'settings', icon: 'sliders', label: 'Settings', run: () => openSettings() }, // Quick Menu stays open underneath
   { id: 'full', icon: 'full', label: 'Fullscreen', run: () => { closeQuickMenu(true); toggleFullscreen(); } },
   { id: 'home', icon: 'home', label: 'Back to Home', run: () => { closeQuickMenu(false); autoPaused = qmWasRunning; showView('library'); } }
 ];
@@ -2589,6 +2648,7 @@ function menuInput(k) {
   if (view === 'library') return homeNav(k);
   if (view === 'saves') { if (k === 'back') { showView('library'); return true; } return xmbMove(k); }
   if (view === 'play' && (k === 'back' || k === 'home')) { if (romLoaded) openQuickMenu(); else showView('library'); return true; }
+  if (view === 'play' && (k === 'start' || k === 'ok') && romLoaded && paused) { sfx.play('resume', { gesture: false }); setPaused(false); return true; }
   return false;
 }
 const KEYMAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Enter: 'ok', Escape: 'back', Backspace: 'back', Home: 'home' };
@@ -2613,11 +2673,11 @@ window.addEventListener('keydown', e => {
    plus Start+Select (or the Home button) for the Quick Menu while playing. */
 const menuPad = { prev: new Set(), dir: null, repeat: 0, active: false, hot: false };
 function pollMenuPad(t, inGame) {
-  if (!navigator.getGamepads) return;
-  const pads = [...navigator.getGamepads()].filter(p => p && p.connected);
+  const pads = gamepadList();
   $('padInd').hidden = !pads.length;
   if (!pads.length) { menuPad.active = false; return; }
-  const pad = pads[0], b = i => !!(pad.buttons[i] && pad.buttons[i].pressed), ax = pad.axes || [];
+  if (padListening) { capturePadBind(); menuPad.active = false; return; }
+  const pad = pads[0], b = i => padPressed(pad, i);
   if (inGame) {
     const hot = (b(8) && b(9)) || b(16);
     if (hot && !menuPad.hot) openQuickMenu();
@@ -2625,15 +2685,14 @@ function pollMenuPad(t, inGame) {
     return;
   }
   const now = new Set();
-  if (b(12) || ax[1] < -.6) now.add('up'); if (b(13) || ax[1] > .6) now.add('down');
-  if (b(14) || ax[0] < -.6) now.add('left'); if (b(15) || ax[0] > .6) now.add('right');
+  const dirs = padDirs(pad);
+  for (const k of ['up', 'down', 'left', 'right']) if (dirs[k]) now.add(k);
   if (b(0)) now.add('ok'); if (b(1)) now.add('back'); if (b(2)) now.add('x'); if (b(3)) now.add('y'); if (b(9)) now.add('start'); if (b(16)) now.add('home');
   if (!menuPad.active) { menuPad.active = true; menuPad.prev = now; menuPad.hot = (b(8) && b(9)) || b(16); return; } // ignore buttons held from gameplay
   const dialogs = anyDialogOpen();
   for (const k of now) {
     if (menuPad.prev.has(k)) continue;
     if (dialogs) { const d = topDialog(); if (d && ['up', 'down', 'left', 'right', 'ok', 'back'].includes(k)) dialogNav(d, k); if (['up', 'down', 'left', 'right'].includes(k)) { menuPad.dir = k; menuPad.repeat = t + 380; } continue; }
-    if (k === 'ok' && view === 'library' && !homeRows().some(r => r.includes(document.activeElement))) { homeNav('left'); continue; }
     if (menuInput(k) && ['up', 'down', 'left', 'right'].includes(k) && !qmOpen && view === 'library') sfx.play('move', { gesture: false });
     if (['up', 'down', 'left', 'right'].includes(k)) { menuPad.dir = k; menuPad.repeat = t + 380; }
   }
@@ -2677,7 +2736,7 @@ const ribbon = (() => {
   }
   function loop(t) {
     requestAnimationFrame(loop);
-    const busy = document.hidden || (view === 'play' && romLoaded && !paused && !qmOpen);
+    const busy = document.hidden || view === 'play';
     if (busy || reduce.matches || t - last < 33) return;
     last = t; draw(t);
   }
@@ -2770,12 +2829,34 @@ function spatialNext(from, dir, cands) {
 }
 function anyDialogOpen() { return [settingsDialog, gameDialog, sgdbDialog, layoutDialog].some(d => d && d.open); }
 function topDialog() { return [sgdbDialog, gameDialog, layoutDialog, settingsDialog].find(d => d && d.open); }
+// Change a slider by 5% of its range, or step a drop-down to the next visible option.
+function adjustControl(el, dir) {
+  if (el.type === 'range') {
+    const min = Number(el.min) || 0, max = Number(el.max) || 100, step = Number(el.step) || 1;
+    const delta = Math.max(step, Math.round((max - min) / 20 / step) * step);
+    const v = clamp(Number(el.value) + dir * delta, min, max);
+    if (v === Number(el.value)) return true;
+    el.value = String(v);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+  if (el.tagName === 'SELECT') {
+    const opts = [...el.options];
+    let i = el.selectedIndex;
+    do { i += dir; } while (i >= 0 && i < opts.length && (opts[i].hidden || opts[i].disabled));
+    if (i >= 0 && i < opts.length && i !== el.selectedIndex) { el.selectedIndex = i; el.dispatchEvent(new Event('change', { bubbles: true })); }
+    return true;
+  }
+  return false;
+}
 function dialogNav(d, k) {
   const items = [...d.querySelectorAll('button:not([disabled]), [href], input:not([type=hidden]), select, textarea, [tabindex]:not([tabindex="-1"])')].filter(el => el.offsetParent !== null || el.getClientRects().length);
   const a = d.contains(document.activeElement) ? document.activeElement : null;
   if (k === 'back') { d.close(); return; }
   if (k === 'ok') { if (a) a.click(); else if (items[0]) items[0].focus(); return; }
   if (!a) { if (items[0]) items[0].focus(); return; }
+  if ((k === 'left' || k === 'right') && adjustControl(a, k === 'right' ? 1 : -1)) return;
   const n = spatialNext(a, k, items);
   if (n) { n.focus(); n.scrollIntoView({ block: 'nearest' }); sfx.play('move', { gesture: false }); }
 }
@@ -2882,7 +2963,7 @@ async function loadBytes(bytes, name, save, skipAutoRestore = false) {
     next.loadROM(bin);
     if (token !== loadToken) return;
     releaseAllInput();
-    nes = next; romLoaded = true; currentName = name; currentSize = bytes.length;
+    nes = next; input.reset(); romLoaded = true; currentName = name; currentSize = bytes.length;
     clearAudio(); frame.fill(0xff000000); frameDirty = true; clearAmbient();
     resetCheats();
     lastAutosave = performance.now();
@@ -3063,13 +3144,13 @@ window.addEventListener('keydown', e => {
   }
   if (anyDialogOpen() || isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
   if ((view !== 'play' && !isFullscreen()) || qmOpen) return;
-  const id = norm(e.key);
+  const id = norm(e.key), code = e.code || id;
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { e.preventDefault(); if (!e.repeat) { zapperDown = true; zapperAt(null, true); } return; }
   if (zapperOn && id === norm(keybinds.zapperReload)) { e.preventDefault(); zapperDown = false; zapperAt(null, false, true); return; }
   const b = bindingFor(e.key);
   if (b && b.button != null) {
     e.preventDefault();
-    if (nes && romLoaded && !paused && !heldKeys.has(id)) { heldKeys.set(id, b); nes.buttonDown(b.player, b.button); }
+    if (nes && romLoaded && !paused && !heldKeys.has(code)) { heldKeys.set(code, b); input.press(b.player, b.button, 'k:' + code); }
     return;
   }
   if (e.repeat) return;
@@ -3080,10 +3161,10 @@ window.addEventListener('keydown', e => {
   else if (id === 'm') { e.preventDefault(); setSound(!soundToggle.checked); }
 });
 window.addEventListener('keyup', e => {
-  const id = norm(e.key);
+  const id = norm(e.key), code = e.code || id;
   if (zapperOn && keybinds.zapperFire !== 'Mouse1' && id === norm(keybinds.zapperFire)) { zapperDown = false; zapperAt(null, false); }
-  const b = heldKeys.get(id);
-  if (b) { heldKeys.delete(id); if (nes) nes.buttonUp(b.player, b.button); }
+  const b = heldKeys.get(code);
+  if (b) { heldKeys.delete(code); input.release(b.player, b.button, 'k:' + code); }
 });
 // Stuck buttons were possible when focus left the page mid-press; release everything instead.
 window.addEventListener('blur', () => releaseAllInput());
@@ -3093,45 +3174,191 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pagehide', () => { if (romLoaded && !paused && autosaveOn) saveState(true).catch(() => {}); });
 
-function releaseAllInput() {
-  if (nes) {
-    for (const b of heldKeys.values()) nes.buttonUp(b.player, b.button);
-    for (const [, entry] of touchHeld) nes.buttonUp(1, entry.value);
-    for (const [key, set] of padPrev) { const player = Number(key.split(':')[1]); for (const a of set) { const c = btnCode(a); if (c != null) nes.buttonUp(player, c); } }
+/* Input manager: every source (keyboard, controller, touch, turbo) presses and releases
+   through here. A NES button stays down while any source holds it, and opposite directions
+   (left+right, up+down) resolve to the most recent one, like a real D-pad. */
+const input = (() => {
+  const held = { 1: new Map(), 2: new Map() };   // button -> Set of sources holding it
+  const applied = { 1: new Set(), 2: new Set() }; // buttons currently down on the NES
+  const since = { 1: new Map(), 2: new Map() };   // button -> time it was last pressed
+  function sync(p) {
+    if (!nes || !window.jsnes) return;
+    const C = jsnes.Controller, want = new Set(held[p].keys());
+    for (const [a, b] of [[C.BUTTON_LEFT, C.BUTTON_RIGHT], [C.BUTTON_UP, C.BUTTON_DOWN]])
+      if (want.has(a) && want.has(b)) want.delete((since[p].get(a) || 0) >= (since[p].get(b) || 0) ? b : a);
+    for (const b of [...applied[p]]) if (!want.has(b)) { nes.buttonUp(p, b); applied[p].delete(b); }
+    for (const b of want) if (!applied[p].has(b)) { nes.buttonDown(p, b); applied[p].add(b); }
   }
-  heldKeys.clear(); padPrev.clear();
+  return {
+    press(p, button, src) {
+      if (button == null) return;
+      let set = held[p].get(button);
+      if (!set) { set = new Set(); held[p].set(button, set); since[p].set(button, performance.now()); }
+      set.add(src); sync(p);
+    },
+    release(p, button, src) {
+      const set = held[p].get(button); if (!set) return;
+      set.delete(src); if (!set.size) held[p].delete(button);
+      sync(p);
+    },
+    releaseAll() { for (const p of [1, 2]) { held[p].clear(); sync(p); } },
+    reset() { for (const p of [1, 2]) { held[p].clear(); applied[p].clear(); since[p].clear(); } } // new console instance
+  };
+})();
+function releaseAllInput() {
+  input.releaseAll();
+  heldKeys.clear(); padPrev.clear(); releaseTurbo();
   for (const [pid, entry] of touchHeld) { entry.el.classList.remove('on'); try { entry.el.releasePointerCapture(pid); } catch (_) {} }
   touchHeld.clear();
   if (zapperDown) { zapperDown = false; zapperAt(null, false); }
 }
 
-/* Gamepads: the first two connected pads drive players 1 and 2 (standard mapping). */
-const PAD_MAP = [['up', [12]], ['down', [13]], ['left', [14]], ['right', [15]], ['a', [1, 3]], ['b', [0, 2]], ['select', [8]], ['start', [9]]];
-const padPrev = new Map();
-let padCount = -1;
+/* Gamepads: the first two real controllers drive players 1 and 2.
+   Buttons are remappable; the D-pad, left stick and (on generic pads) the hat switch always steer. */
+const PAD_ACTIONS = [['a', 'A'], ['b', 'B'], ['turboA', 'Turbo A'], ['turboB', 'Turbo B'], ['select', 'Select'], ['start', 'Start']];
+const PAD_DIRS = { up: [12], down: [13], left: [14], right: [15] };
+const PAD_PRESETS = {
+  xbox: { a: [0], b: [2], turboA: [1], turboB: [3], select: [8], start: [9] },      // bottom = A, left = B
+  nintendo: { a: [1], b: [0], turboA: [3], turboB: [2], select: [8], start: [9] }   // right = A, bottom = B (NES / RetroArch)
+};
+const PAD_NAMES = ['A / Cross', 'B / Circle', 'X / Square', 'Y / Triangle', 'LB / L1', 'RB / R1', 'LT / L2', 'RT / R2', 'View / Select', 'Menu / Start', 'Left stick', 'Right stick', 'D-pad ↑', 'D-pad ↓', 'D-pad ←', 'D-pad →', 'Home'];
+const padName = n => (PAD_NAMES[n] || 'Button') + ' · ' + n;
+let padBinds = (() => {
+  const b = { ...PAD_PRESETS.xbox }, saved = pref.json('padbinds', null);
+  if (saved && typeof saved === 'object') for (const [k] of PAD_ACTIONS) if (Array.isArray(saved[k]) && saved[k].length && saved[k].every(n => Number.isInteger(n) && n >= 0 && n < 32)) b[k] = saved[k].slice(0, 2);
+  return b;
+})();
+// Real controllers first: standard-mapped pads, then others; skip devices with almost no buttons.
+function gamepadList() {
+  if (!navigator.getGamepads) return [];
+  let list = [];
+  try { list = [...navigator.getGamepads()]; } catch (_) { return []; }
+  return list.filter(p => p && p.connected && p.buttons && p.buttons.length >= 4)
+    .sort((a, b) => ((b.mapping === 'standard') - (a.mapping === 'standard')) || a.index - b.index);
+}
+const padPressed = (pad, n) => { const b = pad.buttons[n]; return !!b && (b.pressed || b.value > 0.5); };
+const stickState = new Map();
+function padDirs(pad) {
+  const ax = pad.axes || [], st = stickState.get(pad.index) || { l: false, r: false, u: false, d: false };
+  const hyst = (was, v) => was ? v > 0.35 : v > 0.55; // press at 0.55, release below 0.35: no flicker at the edge
+  st.l = hyst(st.l, -(ax[0] || 0)); st.r = hyst(st.r, ax[0] || 0); st.u = hyst(st.u, -(ax[1] || 0)); st.d = hyst(st.d, ax[1] || 0);
+  stickState.set(pad.index, st);
+  const d = { up: st.u, down: st.d, left: st.l, right: st.r };
+  for (const k in PAD_DIRS) if (PAD_DIRS[k].some(n => padPressed(pad, n))) d[k] = true;
+  // Generic (non-standard) USB pads report the D-pad as a hat switch on axis 9.
+  if (pad.mapping !== 'standard' && ax.length >= 10 && ax[9] >= -1.05 && ax[9] <= 1.05) {
+    const pos = Math.round((ax[9] + 1) / 0.2857); // 0 up, 1 up-right, 2 right, 3 down-right, 4 down, 5 down-left, 6 left, 7 up-left
+    if ([7, 0, 1].includes(pos)) d.up = true; if ([1, 2, 3].includes(pos)) d.right = true;
+    if ([3, 4, 5].includes(pos)) d.down = true; if ([5, 6, 7].includes(pos)) d.left = true;
+  }
+  return d;
+}
+const padPrev = new Map();     // "padIndex:player" -> Set of NES buttons currently held
+const padBlocked = new Set();  // buttons still held from a menu; ignored until released
+let padSeed = false, padStatusKey = '';
+const turboHeld = { 1: { a: false, b: false }, 2: { a: false, b: false } };
+const turboOn = { 1: { a: false, b: false }, 2: { a: false, b: false } };
+let turboPhase = 0;
+function updatePadStatus(pads) {
+  const key = pads.map(p => p.index + p.id).join('|');
+  if (key === padStatusKey) return;
+  padStatusKey = key;
+  const short = p => (p.id.split('(')[0].trim() || 'Controller').slice(0, 40);
+  $('gamepadStatus').textContent = pads.length ? pads.slice(0, 2).map((p, i) => 'Player ' + (i + 1) + ': ' + short(p) + (p.mapping === 'standard' ? '' : ' (generic)')).join(' · ') : 'Connect a controller and press any button.';
+}
 function pollGamepads() {
-  if (!navigator.getGamepads) return;
-  const pads = [...navigator.getGamepads()].filter(p => p && p.connected);
-  if (pads.length !== padCount) { padCount = pads.length; $('gamepadStatus').textContent = padCount ? padCount + ' connected — pad 1 is Player 1' + (padCount > 1 ? ', pad 2 is Player 2.' : '.') : 'Connect a controller and press any button.'; }
+  const pads = gamepadList();
+  updatePadStatus(pads);
+  const seen = new Set();
   pads.slice(0, 2).forEach((pad, i) => {
     const player = i + 1, key = pad.index + ':' + player;
+    seen.add(key);
     const prev = padPrev.get(key) || new Set(), next = new Set();
-    for (const [action, idx] of PAD_MAP) {
-      let on = idx.some(n => pad.buttons[n] && pad.buttons[n].pressed);
-      const ax = pad.axes || [];
-      if (action === 'up') on = on || ax[1] < -0.55;
-      if (action === 'down') on = on || ax[1] > 0.55;
-      if (action === 'left') on = on || ax[0] < -0.55;
-      if (action === 'right') on = on || ax[0] > 0.55;
+    const dirs = padDirs(pad);
+    const state = { up: dirs.up, down: dirs.down, left: dirs.left, right: dirs.right };
+    for (const [k] of PAD_ACTIONS) state[k] = (padBinds[k] || []).some(n => padPressed(pad, n));
+    for (const action in state) {
+      const id = key + ':' + action, on = state[action];
+      if (padSeed && on) padBlocked.add(id);
+      if (padBlocked.has(id)) { if (!on) padBlocked.delete(id); if (action.startsWith('turbo')) turboHeld[player][action === 'turboA' ? 'a' : 'b'] = false; continue; }
+      if (action === 'turboA') { turboHeld[player].a = on; continue; }
+      if (action === 'turboB') { turboHeld[player].b = on; continue; }
       if (on) next.add(action);
       const c = btnCode(action);
-      if (c != null && nes) { if (on && !prev.has(action)) nes.buttonDown(player, c); else if (!on && prev.has(action)) nes.buttonUp(player, c); }
+      if (on && !prev.has(action)) input.press(player, c, 'p:' + key + ':' + action);
+      else if (!on && prev.has(action)) input.release(player, c, 'p:' + key + ':' + action);
     }
     padPrev.set(key, next);
   });
+  padSeed = false;
+  // A controller that disappears mid-press must not leave buttons stuck down.
+  for (const [key, set] of padPrev) if (!seen.has(key)) {
+    const player = Number(key.split(':')[1]);
+    for (const a of set) input.release(player, btnCode(a), 'p:' + key + ':' + a);
+    padPrev.delete(key);
+    turboHeld[player].a = turboHeld[player].b = false;
+  }
 }
-window.addEventListener('gamepadconnected', e => { toast('Controller connected: ' + (e.gamepad.id.split('(')[0].trim() || 'gamepad'), 'ok'); padCount = -1; });
-window.addEventListener('gamepaddisconnected', () => { padPrev.clear(); padCount = -1; pollGamepads(); });
+// Turbo: 15 presses per second (2 frames on, 2 off), driven by emulated frames.
+function applyTurbo() {
+  if (!nes) return;
+  turboPhase = (turboPhase + 1) % 4;
+  for (const p of [1, 2]) for (const k of ['a', 'b']) {
+    const want = turboHeld[p][k] && turboPhase < 2;
+    if (want === turboOn[p][k]) continue;
+    turboOn[p][k] = want;
+    want ? input.press(p, btnCode(k), 'turbo:' + k) : input.release(p, btnCode(k), 'turbo:' + k);
+  }
+}
+function releaseTurbo() {
+  for (const p of [1, 2]) for (const k of ['a', 'b']) {
+    if (turboOn[p][k]) input.release(p, btnCode(k), 'turbo:' + k);
+    turboOn[p][k] = turboHeld[p][k] = false;
+  }
+}
+window.addEventListener('gamepadconnected', e => { toast('Controller connected: ' + (e.gamepad.id.split('(')[0].trim() || 'gamepad'), 'ok'); padStatusKey = ''; updatePadStatus(gamepadList()); });
+window.addEventListener('gamepaddisconnected', () => { padStatusKey = ''; if (romLoaded && !paused) pollGamepads(); else updatePadStatus(gamepadList()); });
+
+/* Controller button remapping (Settings → Controls) */
+let padListening = null, padListenPrev = null;
+function renderPadBinds() {
+  const t = $('padTable');
+  t.replaceChildren(...PAD_ACTIONS.flatMap(([k, label]) => {
+    const l = document.createElement('span'); l.textContent = label;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'key pad-key' + (padListening === k ? ' listening' : '');
+    b.textContent = padListening === k ? 'Press a button…' : (padBinds[k] || []).map(padName).join(', ') || '—';
+    b.addEventListener('click', () => { padListening = k; padListenPrev = null; renderPadBinds(); $('padHelp').textContent = 'Press the controller button for ' + label + '. Press Esc or click elsewhere to cancel.'; });
+    return [l, b];
+  }));
+  const match = Object.keys(PAD_PRESETS).find(p => PAD_ACTIONS.every(([k]) => JSON.stringify(PAD_PRESETS[p][k]) === JSON.stringify(padBinds[k])));
+  $('padPreset').value = match || 'custom';
+  $('padPresetCustom').hidden = !!match;
+}
+function savePadBinds() { pref.setJson('padbinds', padBinds); renderPadBinds(); }
+function cancelPadListen(msg) { if (!padListening) return; padListening = null; padListenPrev = null; renderPadBinds(); if (msg) $('padHelp').textContent = msg; }
+function capturePadBind() {
+  const pad = gamepadList()[0]; if (!pad) return;
+  const now = new Set(pad.buttons.map((_, i) => i).filter(i => padPressed(pad, i)));
+  if (padListenPrev === null) { padListenPrev = now; return; } // ignore whatever was already held
+  const fresh = [...now].find(i => !padListenPrev.has(i));
+  padListenPrev = now;
+  if (fresh == null) return;
+  const action = padListening;
+  for (const [k] of PAD_ACTIONS) if (k !== action) padBinds[k] = (padBinds[k] || []).filter(n => n !== fresh); // a button does one thing
+  padBinds[action] = [fresh];
+  padListening = null; padListenPrev = null;
+  savePadBinds();
+  $('padHelp').textContent = 'Saved: ' + padName(fresh) + ' → ' + PAD_ACTIONS.find(a => a[0] === action)[1] + '.';
+  sfx.play('success', { gesture: false });
+}
+$('padPreset').addEventListener('change', e => {
+  const p = PAD_PRESETS[e.target.value]; if (!p) return;
+  padBinds = { ...p }; savePadBinds(); $('padHelp').textContent = 'Layout applied.';
+});
+$('resetPadBinds').addEventListener('click', () => { padBinds = { ...PAD_PRESETS.xbox }; cancelPadListen(); savePadBinds(); $('padHelp').textContent = 'Controller buttons reset.'; });
+document.addEventListener('pointerdown', e => { if (padListening && !e.target.closest('.pad-key')) cancelPadListen('Cancelled.'); }, true);
+window.addEventListener('keydown', e => { if (padListening && e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); cancelPadListen('Cancelled.'); } }, true);
+renderPadBinds();
 
 /* Touch controls */
 const touchHeld = new Map();
@@ -3150,13 +3377,13 @@ document.querySelectorAll('[data-touch]').forEach(el => {
     const value = btnCode(name); if (value == null) return;
     touchHeld.set(e.pointerId, { el, value });
     try { el.setPointerCapture(e.pointerId); } catch (_) {}
-    el.classList.add('on'); nes.buttonDown(1, value);
+    el.classList.add('on'); input.press(1, value, 't:' + e.pointerId);
     if (navigator.vibrate) try { navigator.vibrate(8); } catch (_) {}
   };
   const up = e => {
     const entry = touchHeld.get(e.pointerId); if (!entry) return;
     touchHeld.delete(e.pointerId);
-    if (nes) nes.buttonUp(1, entry.value);
+    input.release(1, entry.value, 't:' + e.pointerId);
     if (![...touchHeld.values()].some(x => x.el === el)) el.classList.remove('on');
   };
   el.addEventListener('pointerdown', down);
@@ -3287,7 +3514,7 @@ const openSettings = () => { $('app').classList.remove('nav-open'); settingsDial
 $('topSettingsBtn').addEventListener('click', openSettings);
 $('closeSettings').addEventListener('click', () => settingsDialog.close());
 settingsDialog.addEventListener('click', e => { if (e.target === settingsDialog) settingsDialog.close(); });
-settingsDialog.addEventListener('close', () => { if (listeningFor) stopListening(); });
+settingsDialog.addEventListener('close', () => { if (listeningFor) stopListening(); cancelPadListen(); });
 document.querySelectorAll('#settingsTabs [data-tab]').forEach(tab => tab.addEventListener('click', () => {
   document.querySelectorAll('#settingsTabs [data-tab]').forEach(t => t.setAttribute('aria-selected', String(t === tab)));
   document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== tab.dataset.tab);
@@ -3316,6 +3543,15 @@ for (const [k, label, min, max] of ADJUST) {
   fxRows[k] = sliderRow(k, label, min, max, 0.01, display[k], v => { display[k] = v; saveDisplay(); needsDraw = true; });
   $('adjustSliders').append(fxRows[k]);
 }
+for (const [k, label] of ANIM) {
+  fxRows[k] = sliderRow(k, label, 0, 1, 0.01, display[k], v => { display[k] = v; saveDisplay(); needsDraw = true; });
+  $('animSliders').append(fxRows[k]);
+}
+function setAnimate(on) {
+  display.animate = !!on; $('fxAnimate').checked = display.animate; saveDisplay(); needsDraw = true; syncFxAvailability();
+}
+$('fxAnimate').checked = display.animate;
+$('fxAnimate').addEventListener('change', () => setAnimate($('fxAnimate').checked));
 function syncPresets() {
   document.querySelectorAll('[data-preset]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.preset === display.preset)));
   $('customTag').hidden = display.preset !== 'custom';
@@ -3330,6 +3566,7 @@ syncPresets();
 function syncFxAvailability() {
   const full = renderer && renderer.supportsAll;
   for (const k of ['curve', 'mask', 'bloom', 'aberr']) fxRows[k].classList.toggle('disabled', !full);
+  for (const [k] of ANIM) fxRows[k].classList.toggle('disabled', !display.animate || (!full && (k === 'aNoise' || k === 'aJitter')));
   $('fxNote').hidden = full;
   $('fxNote').textContent = 'Curvature, phosphor mask, bloom and color fringing need WebGPU. Your browser is using the Canvas 2D fallback; try a recent Chrome, Edge or Safari for the full effect set.';
 }

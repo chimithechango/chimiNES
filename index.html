@@ -541,6 +541,8 @@ input.switch:checked::before{transform:translateX(18px)}
 .key:hover{border-color:var(--accent-line)}
 .key.listening{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);animation:pulse 1s ease-in-out infinite alternate}
 @keyframes pulse{to{box-shadow:0 0 0 5px var(--accent-soft)}}
+.pad-keys{grid-template-columns:minmax(0,1fr) auto}
+.pad-key{min-width:150px}
 .help{color:var(--muted);font-size:12px;line-height:1.45;padding:0 0 12px}
 
 .cheat-form{display:flex;gap:8px;padding:12px 0 4px}
@@ -1017,10 +1019,18 @@ body[data-layout="arcade"] :is(.round,.orb-c,.btn,.pill,.chip,.cats,.cats button
         <div class="help" id="keybindHelp">Click a key, then press the new key. Esc cancels.</div>
       </div>
       <div style="margin-top:10px"><button class="btn btn-sm" id="resetKeybinds">Reset to defaults</button></div>
-      <div class="gtitle">Other inputs</div>
+      <div class="gtitle">Controller</div>
+      <div class="group">
+        <div class="row"><span class="lbl">Connected<span class="desc" id="gamepadStatus">Connect a controller and press any button.</span></span></div>
+        <div class="row"><label for="padPreset">Button layout<span class="desc">Which face button is NES A. The D-pad and left stick always steer.</span></label><select class="select" id="padPreset"><option value="xbox">Bottom = A, left = B</option><option value="nintendo">Right = A, bottom = B</option><option value="custom" id="padPresetCustom" hidden>Custom</option></select></div>
+        <div class="keys pad-keys" id="padTable"></div>
+        <div class="help" id="padHelp">Click a button, then press the controller button you want. Turbo buttons fire 15 times a second.</div>
+      </div>
+      <div style="margin-top:10px"><button class="btn btn-sm" id="resetPadBinds">Reset controller buttons</button></div>
+      <p class="note">Menus: D-pad to move, A/Cross to select, B/Circle to go back, X details, Y layouts, Start settings. In a game, Start+Select or Home opens the Quick Menu; Start resumes a paused game.</p>
+      <div class="gtitle">Touch</div>
       <div class="group">
         <div class="row"><label for="touchControlsToggle">On-screen touch controls</label><input class="switch" type="checkbox" id="touchControlsToggle"></div>
-        <div class="row"><span class="lbl">Gamepads<span class="desc" id="gamepadStatus">Connect a controller and press any button.</span></span></div>
       </div>
       <div class="gtitle">NES Zapper</div>
       <div class="group">
@@ -1735,10 +1745,13 @@ function togglePause() {
 /* ------------------------------------------------------------------
    Main loop: one rAF loop drives emulation and presentation.
    ------------------------------------------------------------------ */
-let lastIdleDraw = 0;
+let lastIdleDraw = 0, wasRunning = false;
 function tick(t) {
   requestAnimationFrame(tick);
   pollMenuPad(t, romLoaded && !paused && view === 'play' && !qmOpen);
+  const runningNow = !!(romLoaded && !paused && nes);
+  if (runningNow && !wasRunning) padSeed = true;
+  wasRunning = runningNow;
   if (romLoaded && !paused && nes) {
     if (!lastTick) lastTick = t;
     const dt = Math.min(250, t - lastTick); lastTick = t;
@@ -1749,7 +1762,7 @@ function tick(t) {
     let n = 0;
     try {
       while (acc >= 1 && n < maxSteps) {
-        applyGameGenie(); applyRamCheats();
+        applyTurbo(); applyGameGenie(); applyRamCheats();
         nes.frame();
         applyRamCheats();
         acc--; n++; emuFrames++;
@@ -2589,6 +2602,7 @@ function menuInput(k) {
   if (view === 'library') return homeNav(k);
   if (view === 'saves') { if (k === 'back') { showView('library'); return true; } return xmbMove(k); }
   if (view === 'play' && (k === 'back' || k === 'home')) { if (romLoaded) openQuickMenu(); else showView('library'); return true; }
+  if (view === 'play' && (k === 'start' || k === 'ok') && romLoaded && paused) { sfx.play('resume', { gesture: false }); setPaused(false); return true; }
   return false;
 }
 const KEYMAP = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', Enter: 'ok', Escape: 'back', Backspace: 'back', Home: 'home' };
@@ -2613,11 +2627,11 @@ window.addEventListener('keydown', e => {
    plus Start+Select (or the Home button) for the Quick Menu while playing. */
 const menuPad = { prev: new Set(), dir: null, repeat: 0, active: false, hot: false };
 function pollMenuPad(t, inGame) {
-  if (!navigator.getGamepads) return;
-  const pads = [...navigator.getGamepads()].filter(p => p && p.connected);
+  const pads = gamepadList();
   $('padInd').hidden = !pads.length;
   if (!pads.length) { menuPad.active = false; return; }
-  const pad = pads[0], b = i => !!(pad.buttons[i] && pad.buttons[i].pressed), ax = pad.axes || [];
+  if (padListening) { capturePadBind(); menuPad.active = false; return; }
+  const pad = pads[0], b = i => padPressed(pad, i);
   if (inGame) {
     const hot = (b(8) && b(9)) || b(16);
     if (hot && !menuPad.hot) openQuickMenu();
@@ -2625,15 +2639,14 @@ function pollMenuPad(t, inGame) {
     return;
   }
   const now = new Set();
-  if (b(12) || ax[1] < -.6) now.add('up'); if (b(13) || ax[1] > .6) now.add('down');
-  if (b(14) || ax[0] < -.6) now.add('left'); if (b(15) || ax[0] > .6) now.add('right');
+  const dirs = padDirs(pad);
+  for (const k of ['up', 'down', 'left', 'right']) if (dirs[k]) now.add(k);
   if (b(0)) now.add('ok'); if (b(1)) now.add('back'); if (b(2)) now.add('x'); if (b(3)) now.add('y'); if (b(9)) now.add('start'); if (b(16)) now.add('home');
   if (!menuPad.active) { menuPad.active = true; menuPad.prev = now; menuPad.hot = (b(8) && b(9)) || b(16); return; } // ignore buttons held from gameplay
   const dialogs = anyDialogOpen();
   for (const k of now) {
     if (menuPad.prev.has(k)) continue;
     if (dialogs) { const d = topDialog(); if (d && ['up', 'down', 'left', 'right', 'ok', 'back'].includes(k)) dialogNav(d, k); if (['up', 'down', 'left', 'right'].includes(k)) { menuPad.dir = k; menuPad.repeat = t + 380; } continue; }
-    if (k === 'ok' && view === 'library' && !homeRows().some(r => r.includes(document.activeElement))) { homeNav('left'); continue; }
     if (menuInput(k) && ['up', 'down', 'left', 'right'].includes(k) && !qmOpen && view === 'library') sfx.play('move', { gesture: false });
     if (['up', 'down', 'left', 'right'].includes(k)) { menuPad.dir = k; menuPad.repeat = t + 380; }
   }
@@ -3099,39 +3112,161 @@ function releaseAllInput() {
     for (const [, entry] of touchHeld) nes.buttonUp(1, entry.value);
     for (const [key, set] of padPrev) { const player = Number(key.split(':')[1]); for (const a of set) { const c = btnCode(a); if (c != null) nes.buttonUp(player, c); } }
   }
-  heldKeys.clear(); padPrev.clear();
+  heldKeys.clear(); padPrev.clear(); releaseTurbo();
   for (const [pid, entry] of touchHeld) { entry.el.classList.remove('on'); try { entry.el.releasePointerCapture(pid); } catch (_) {} }
   touchHeld.clear();
   if (zapperDown) { zapperDown = false; zapperAt(null, false); }
 }
 
-/* Gamepads: the first two connected pads drive players 1 and 2 (standard mapping). */
-const PAD_MAP = [['up', [12]], ['down', [13]], ['left', [14]], ['right', [15]], ['a', [1, 3]], ['b', [0, 2]], ['select', [8]], ['start', [9]]];
-const padPrev = new Map();
-let padCount = -1;
+/* Gamepads: the first two real controllers drive players 1 and 2.
+   Buttons are remappable; the D-pad, left stick and (on generic pads) the hat switch always steer. */
+const PAD_ACTIONS = [['a', 'A'], ['b', 'B'], ['turboA', 'Turbo A'], ['turboB', 'Turbo B'], ['select', 'Select'], ['start', 'Start']];
+const PAD_DIRS = { up: [12], down: [13], left: [14], right: [15] };
+const PAD_PRESETS = {
+  xbox: { a: [0], b: [2], turboA: [1], turboB: [3], select: [8], start: [9] },      // bottom = A, left = B
+  nintendo: { a: [1], b: [0], turboA: [3], turboB: [2], select: [8], start: [9] }   // right = A, bottom = B (NES / RetroArch)
+};
+const PAD_NAMES = ['A / Cross', 'B / Circle', 'X / Square', 'Y / Triangle', 'LB / L1', 'RB / R1', 'LT / L2', 'RT / R2', 'View / Select', 'Menu / Start', 'Left stick', 'Right stick', 'D-pad ↑', 'D-pad ↓', 'D-pad ←', 'D-pad →', 'Home'];
+const padName = n => (PAD_NAMES[n] || 'Button') + ' · ' + n;
+let padBinds = (() => {
+  const b = { ...PAD_PRESETS.xbox }, saved = pref.json('padbinds', null);
+  if (saved && typeof saved === 'object') for (const [k] of PAD_ACTIONS) if (Array.isArray(saved[k]) && saved[k].length && saved[k].every(n => Number.isInteger(n) && n >= 0 && n < 32)) b[k] = saved[k].slice(0, 2);
+  return b;
+})();
+// Real controllers first: standard-mapped pads, then others; skip devices with almost no buttons.
+function gamepadList() {
+  if (!navigator.getGamepads) return [];
+  let list = [];
+  try { list = [...navigator.getGamepads()]; } catch (_) { return []; }
+  return list.filter(p => p && p.connected && p.buttons && p.buttons.length >= 4)
+    .sort((a, b) => ((b.mapping === 'standard') - (a.mapping === 'standard')) || a.index - b.index);
+}
+const padPressed = (pad, n) => { const b = pad.buttons[n]; return !!b && (b.pressed || b.value > 0.5); };
+const stickState = new Map();
+function padDirs(pad) {
+  const ax = pad.axes || [], st = stickState.get(pad.index) || { l: false, r: false, u: false, d: false };
+  const hyst = (was, v) => was ? v > 0.35 : v > 0.55; // press at 0.55, release below 0.35: no flicker at the edge
+  st.l = hyst(st.l, -(ax[0] || 0)); st.r = hyst(st.r, ax[0] || 0); st.u = hyst(st.u, -(ax[1] || 0)); st.d = hyst(st.d, ax[1] || 0);
+  stickState.set(pad.index, st);
+  const d = { up: st.u, down: st.d, left: st.l, right: st.r };
+  for (const k in PAD_DIRS) if (PAD_DIRS[k].some(n => padPressed(pad, n))) d[k] = true;
+  // Generic (non-standard) USB pads report the D-pad as a hat switch on axis 9.
+  if (pad.mapping !== 'standard' && ax.length >= 10 && ax[9] >= -1.05 && ax[9] <= 1.05) {
+    const pos = Math.round((ax[9] + 1) / 0.2857); // 0 up, 1 up-right, 2 right, 3 down-right, 4 down, 5 down-left, 6 left, 7 up-left
+    if ([7, 0, 1].includes(pos)) d.up = true; if ([1, 2, 3].includes(pos)) d.right = true;
+    if ([3, 4, 5].includes(pos)) d.down = true; if ([5, 6, 7].includes(pos)) d.left = true;
+  }
+  return d;
+}
+const padPrev = new Map();     // "padIndex:player" -> Set of NES buttons currently held
+const padBlocked = new Set();  // buttons still held from a menu; ignored until released
+let padSeed = false, padStatusKey = '';
+const turboHeld = { 1: { a: false, b: false }, 2: { a: false, b: false } };
+const turboOn = { 1: { a: false, b: false }, 2: { a: false, b: false } };
+let turboPhase = 0;
+function updatePadStatus(pads) {
+  const key = pads.map(p => p.index + p.id).join('|');
+  if (key === padStatusKey) return;
+  padStatusKey = key;
+  const short = p => (p.id.split('(')[0].trim() || 'Controller').slice(0, 40);
+  $('gamepadStatus').textContent = pads.length ? pads.slice(0, 2).map((p, i) => 'Player ' + (i + 1) + ': ' + short(p) + (p.mapping === 'standard' ? '' : ' (generic)')).join(' · ') : 'Connect a controller and press any button.';
+}
 function pollGamepads() {
-  if (!navigator.getGamepads) return;
-  const pads = [...navigator.getGamepads()].filter(p => p && p.connected);
-  if (pads.length !== padCount) { padCount = pads.length; $('gamepadStatus').textContent = padCount ? padCount + ' connected — pad 1 is Player 1' + (padCount > 1 ? ', pad 2 is Player 2.' : '.') : 'Connect a controller and press any button.'; }
+  const pads = gamepadList();
+  updatePadStatus(pads);
+  const seen = new Set();
   pads.slice(0, 2).forEach((pad, i) => {
     const player = i + 1, key = pad.index + ':' + player;
+    seen.add(key);
     const prev = padPrev.get(key) || new Set(), next = new Set();
-    for (const [action, idx] of PAD_MAP) {
-      let on = idx.some(n => pad.buttons[n] && pad.buttons[n].pressed);
-      const ax = pad.axes || [];
-      if (action === 'up') on = on || ax[1] < -0.55;
-      if (action === 'down') on = on || ax[1] > 0.55;
-      if (action === 'left') on = on || ax[0] < -0.55;
-      if (action === 'right') on = on || ax[0] > 0.55;
+    const dirs = padDirs(pad);
+    const state = { up: dirs.up, down: dirs.down, left: dirs.left, right: dirs.right };
+    for (const [k] of PAD_ACTIONS) state[k] = (padBinds[k] || []).some(n => padPressed(pad, n));
+    for (const action in state) {
+      const id = key + ':' + action, on = state[action];
+      if (padSeed && on) padBlocked.add(id);
+      if (padBlocked.has(id)) { if (!on) padBlocked.delete(id); if (action.startsWith('turbo')) turboHeld[player][action === 'turboA' ? 'a' : 'b'] = false; continue; }
+      if (action === 'turboA') { turboHeld[player].a = on; continue; }
+      if (action === 'turboB') { turboHeld[player].b = on; continue; }
       if (on) next.add(action);
       const c = btnCode(action);
-      if (c != null && nes) { if (on && !prev.has(action)) nes.buttonDown(player, c); else if (!on && prev.has(action)) nes.buttonUp(player, c); }
+      if (c != null && nes) {
+        if (on && !prev.has(action)) nes.buttonDown(player, c);
+        else if (!on && prev.has(action) && !turboOn[player][action]) nes.buttonUp(player, c);
+      }
     }
     padPrev.set(key, next);
   });
+  padSeed = false;
+  // A controller that disappears mid-press must not leave buttons stuck down.
+  for (const [key, set] of padPrev) if (!seen.has(key)) {
+    const player = Number(key.split(':')[1]);
+    for (const a of set) { const c = btnCode(a); if (c != null && nes) nes.buttonUp(player, c); }
+    padPrev.delete(key);
+    turboHeld[player].a = turboHeld[player].b = false;
+  }
 }
-window.addEventListener('gamepadconnected', e => { toast('Controller connected: ' + (e.gamepad.id.split('(')[0].trim() || 'gamepad'), 'ok'); padCount = -1; });
-window.addEventListener('gamepaddisconnected', () => { padPrev.clear(); padCount = -1; pollGamepads(); });
+// Turbo: 15 presses per second (2 frames on, 2 off), driven by emulated frames.
+function applyTurbo() {
+  if (!nes) return;
+  turboPhase = (turboPhase + 1) % 4;
+  for (const p of [1, 2]) for (const k of ['a', 'b']) {
+    const want = turboHeld[p][k] && turboPhase < 2;
+    if (want === turboOn[p][k]) continue;
+    turboOn[p][k] = want;
+    const held = [...padPrev].some(([key, s]) => key.endsWith(':' + p) && s.has(k));
+    if (!held) { const c = btnCode(k); if (c != null) want ? nes.buttonDown(p, c) : nes.buttonUp(p, c); }
+  }
+}
+function releaseTurbo() {
+  for (const p of [1, 2]) for (const k of ['a', 'b']) {
+    if (turboOn[p][k] && nes) { const c = btnCode(k); if (c != null) nes.buttonUp(p, c); }
+    turboOn[p][k] = turboHeld[p][k] = false;
+  }
+}
+window.addEventListener('gamepadconnected', e => { toast('Controller connected: ' + (e.gamepad.id.split('(')[0].trim() || 'gamepad'), 'ok'); padStatusKey = ''; updatePadStatus(gamepadList()); });
+window.addEventListener('gamepaddisconnected', () => { padStatusKey = ''; if (romLoaded && !paused) pollGamepads(); else updatePadStatus(gamepadList()); });
+
+/* Controller button remapping (Settings → Controls) */
+let padListening = null, padListenPrev = null;
+function renderPadBinds() {
+  const t = $('padTable');
+  t.replaceChildren(...PAD_ACTIONS.flatMap(([k, label]) => {
+    const l = document.createElement('span'); l.textContent = label;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'key pad-key' + (padListening === k ? ' listening' : '');
+    b.textContent = padListening === k ? 'Press a button…' : (padBinds[k] || []).map(padName).join(', ') || '—';
+    b.addEventListener('click', () => { padListening = k; padListenPrev = null; renderPadBinds(); $('padHelp').textContent = 'Press the controller button for ' + label + '. Press Esc or click elsewhere to cancel.'; });
+    return [l, b];
+  }));
+  const match = Object.keys(PAD_PRESETS).find(p => PAD_ACTIONS.every(([k]) => JSON.stringify(PAD_PRESETS[p][k]) === JSON.stringify(padBinds[k])));
+  $('padPreset').value = match || 'custom';
+  $('padPresetCustom').hidden = !!match;
+}
+function savePadBinds() { pref.setJson('padbinds', padBinds); renderPadBinds(); }
+function cancelPadListen(msg) { if (!padListening) return; padListening = null; padListenPrev = null; renderPadBinds(); if (msg) $('padHelp').textContent = msg; }
+function capturePadBind() {
+  const pad = gamepadList()[0]; if (!pad) return;
+  const now = new Set(pad.buttons.map((_, i) => i).filter(i => padPressed(pad, i)));
+  if (padListenPrev === null) { padListenPrev = now; return; } // ignore whatever was already held
+  const fresh = [...now].find(i => !padListenPrev.has(i));
+  padListenPrev = now;
+  if (fresh == null) return;
+  const action = padListening;
+  for (const [k] of PAD_ACTIONS) if (k !== action) padBinds[k] = (padBinds[k] || []).filter(n => n !== fresh); // a button does one thing
+  padBinds[action] = [fresh];
+  padListening = null; padListenPrev = null;
+  savePadBinds();
+  $('padHelp').textContent = 'Saved: ' + padName(fresh) + ' → ' + PAD_ACTIONS.find(a => a[0] === action)[1] + '.';
+  sfx.play('success', { gesture: false });
+}
+$('padPreset').addEventListener('change', e => {
+  const p = PAD_PRESETS[e.target.value]; if (!p) return;
+  padBinds = { ...p }; savePadBinds(); $('padHelp').textContent = 'Layout applied.';
+});
+$('resetPadBinds').addEventListener('click', () => { padBinds = { ...PAD_PRESETS.xbox }; cancelPadListen(); savePadBinds(); $('padHelp').textContent = 'Controller buttons reset.'; });
+document.addEventListener('pointerdown', e => { if (padListening && !e.target.closest('.pad-key')) cancelPadListen('Cancelled.'); }, true);
+window.addEventListener('keydown', e => { if (padListening && e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); cancelPadListen('Cancelled.'); } }, true);
+renderPadBinds();
 
 /* Touch controls */
 const touchHeld = new Map();
@@ -3287,7 +3422,7 @@ const openSettings = () => { $('app').classList.remove('nav-open'); settingsDial
 $('topSettingsBtn').addEventListener('click', openSettings);
 $('closeSettings').addEventListener('click', () => settingsDialog.close());
 settingsDialog.addEventListener('click', e => { if (e.target === settingsDialog) settingsDialog.close(); });
-settingsDialog.addEventListener('close', () => { if (listeningFor) stopListening(); });
+settingsDialog.addEventListener('close', () => { if (listeningFor) stopListening(); cancelPadListen(); });
 document.querySelectorAll('#settingsTabs [data-tab]').forEach(tab => tab.addEventListener('click', () => {
   document.querySelectorAll('#settingsTabs [data-tab]').forEach(t => t.setAttribute('aria-selected', String(t === tab)));
   document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== tab.dataset.tab);

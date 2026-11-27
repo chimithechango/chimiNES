@@ -17,6 +17,8 @@ effect presets: clean, soft crt, crt and arcade, each with sliders to fine-tune.
 
 console-style interface (playstation 5 + nintendo switch + retroarch): a home screen of game tiles whose art fills the background, a big play button, and retroarch's animated xmb ribbon. save states use a retroarch xmb browser (games across, saves down). while playing, esc (or start+select / the home button on a gamepad) opens a retroarch-style quick menu with resume, save, load, reset, screen effect, speed, audio, game details, fullscreen and home. everything works with arrow keys, enter and esc, or a gamepad (d-pad, a = ok, b = back, x = details, y = layouts, start = settings). leaving a game pauses it; coming back resumes it.
 
+controllers: the bottom face button (xbox a / playstation cross) is nes a and the left one is nes b; a "right = a, bottom = b" layout is one click away, and every button can be remapped in settings → controls. turbo a and turbo b are on the other two face buttons. the d-pad, left stick and the hat switch on generic usb pads all steer. start resumes a paused game; start+select or home opens the quick menu.
+
 layouts: the layouts button on the home screen opens a menu of 14 home-screen layouts with live previews: console, switch, playstation, xmb, cover flow, library grid, shelf, big picture, list, sidebar, spotlight, compact, minimal and arcade. keyboard and gamepad navigation work in every one.
 
 save states with thumbnails, relative timestamps and one-key shortcuts (F2 save, F4 load).
